@@ -142,7 +142,7 @@ const addRule = (rules: FinanceRule[], payload: Omit<FinanceRule, 'id' | 'househ
   return id
 }
 
-const parseInstallmentTokens = (line: string, dueDay: number, warnings: string[], nowYear: number): InstallmentDraft[] => {
+const parseInstallmentTokens = (line: string, dueDay: number, nowYear: number): InstallmentDraft[] => {
   const chunks = line
     .split('-')
     .map((chunk) => chunk.trim())
@@ -161,7 +161,6 @@ const parseInstallmentTokens = (line: string, dueDay: number, warnings: string[]
       }
       installments.push({ month: nextMonth, year: lastYear, amount: parseAmount(onlyValue[1] ?? '0') })
       lastMonth = nextMonth
-      warnings.push(`Mes ausente em trecho "${chunk}". Aplicado mes sequencial automaticamente.`)
       continue
     }
 
@@ -477,7 +476,7 @@ export const parseDadosText = (text: string): ParsedSeed => {
     }
 
     const context = installmentContext as InstallmentContext
-    const drafts = parseInstallmentTokens(line, context.dueDay, warnings, nowYear)
+    const drafts = parseInstallmentTokens(line, context.dueDay, nowYear)
     if (drafts.length === 0) {
       continue
     }

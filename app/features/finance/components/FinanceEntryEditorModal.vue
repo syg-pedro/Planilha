@@ -1,10 +1,10 @@
 <template>
   <div
     v-if="open"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 px-4 py-6"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 px-3 py-4 sm:px-4 sm:py-6"
     @click.self="emit('close')"
   >
-    <BasePanel class="w-full max-w-2xl" title="Editar lancamento" subtitle="Ajuste os dados e salve para atualizar dashboard, planilha e calendario.">
+    <BasePanel class="w-full max-h-[92vh] max-w-2xl overflow-y-auto" title="Editar lancamento" subtitle="Ajuste os dados e salve para atualizar dashboard, planilha e calendario.">
       <div class="grid gap-3 md:grid-cols-2">
         <BaseInput v-model="draft.title" label="Descricao" placeholder="Ex.: Mercado" />
 
@@ -37,10 +37,10 @@
 
       <BaseTextarea v-model="draft.description" class="mt-3" :rows="3" label="Observacoes" placeholder="Notas opcionais" />
 
-      <div class="mt-4 flex flex-wrap justify-end gap-2">
-        <BaseButton variant="ghost" @click="emit('close')">Cancelar</BaseButton>
-        <BaseButton v-if="entry" variant="danger" @click="onDelete">Excluir</BaseButton>
-        <BaseButton variant="primary" @click="onSave">Salvar</BaseButton>
+      <div class="mt-4 grid gap-2 sm:flex sm:flex-wrap sm:justify-end">
+        <BaseButton class="w-full sm:w-auto" variant="ghost" @click="emit('close')">Cancelar</BaseButton>
+        <BaseButton v-if="entry" class="w-full sm:w-auto" variant="danger" @click="onDelete">Excluir</BaseButton>
+        <BaseButton class="w-full sm:w-auto" variant="primary" @click="onSave">Salvar</BaseButton>
       </div>
     </BasePanel>
   </div>

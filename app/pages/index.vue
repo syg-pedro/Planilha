@@ -1,17 +1,22 @@
 <template>
   <section class="space-y-4">
     <BasePanel>
-      <div class="flex flex-wrap items-center gap-2">
-        <BaseButton
-          v-for="tab in tabs"
-          :key="tab.id"
-          :variant="activeTab === tab.id ? 'primary' : 'secondary'"
-          @click="activeTab = tab.id"
-        >
-          {{ tab.label }}
-        </BaseButton>
+      <div class="space-y-3">
+        <div class="-mx-1 overflow-x-auto px-1 pb-1">
+          <div class="flex min-w-max items-center gap-2">
+            <BaseButton
+              v-for="tab in tabs"
+              :key="tab.id"
+              :variant="activeTab === tab.id ? 'primary' : 'secondary'"
+              size="sm"
+              @click="activeTab = tab.id"
+            >
+              {{ tab.label }}
+            </BaseButton>
+          </div>
+        </div>
 
-        <div class="ml-auto grid w-full gap-2 sm:w-auto sm:grid-flow-col">
+        <div class="grid gap-2 sm:grid-cols-3">
           <BaseSelect v-model="store.filters.range">
             <option v-for="option in rangeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
           </BaseSelect>

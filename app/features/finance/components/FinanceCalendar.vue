@@ -1,10 +1,10 @@
 <template>
   <BasePanel title="Calendario financeiro">
     <template #header>
-      <div class="flex flex-wrap gap-2">
-        <BaseButton size="sm" variant="secondary" @click="setView('multiMonthYear')">Anual</BaseButton>
-        <BaseButton size="sm" variant="secondary" @click="setView('multiMonthQuarter')">3 meses</BaseButton>
-        <BaseButton size="sm" variant="secondary" @click="setView('dayGridMonth')">Mensal</BaseButton>
+      <div class="grid w-full gap-2 sm:flex sm:w-auto">
+        <BaseButton size="sm" class="w-full sm:w-auto" variant="secondary" @click="setView('multiMonthYear')">Anual</BaseButton>
+        <BaseButton size="sm" class="w-full sm:w-auto" variant="secondary" @click="setView('multiMonthQuarter')">3 meses</BaseButton>
+        <BaseButton size="sm" class="w-full sm:w-auto" variant="secondary" @click="setView('dayGridMonth')">Mensal</BaseButton>
       </div>
     </template>
 

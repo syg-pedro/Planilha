@@ -1,6 +1,6 @@
 .ds-panel {
   @apply rounded-2xl border p-4;
-  background: color-mix(in srgb, var(--ds-color-surface-card) 98%, transparent);
+  background: color-mix(in srgb, var(--ds-color-surface-card) 97%, transparent);
   box-shadow: var(--ds-shadow-md);
 }
 
@@ -18,6 +18,74 @@
   background: var(--ds-color-surface-card);
 }
 
+.ds-badge {
+  border: 1px solid var(--ds-color-border-default);
+}
+
+.ds-badge-success {
+  background: color-mix(in srgb, var(--ds-color-state-success) 18%, var(--ds-color-surface-card));
+  color: color-mix(in srgb, var(--ds-color-state-success) 82%, #052e16);
+}
+
+.ds-badge-warning {
+  background: color-mix(in srgb, var(--ds-color-brand-accent) 18%, var(--ds-color-surface-card));
+  color: color-mix(in srgb, var(--ds-color-brand-accent) 82%, #7c2d12);
+}
+
+.ds-badge-neutral {
+  background: color-mix(in srgb, var(--ds-color-state-neutral) 20%, var(--ds-color-surface-card));
+  color: color-mix(in srgb, var(--ds-color-state-neutral) 88%, var(--ds-color-text-primary));
+}
+
+.ds-field {
+  width: 100%;
+  border: 1px solid var(--ds-color-border-strong);
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in srgb, var(--ds-color-surface-card) 97%, transparent);
+  color: var(--ds-color-text-primary);
+  padding: 0.55rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+  outline: none;
+  transition:
+    border-color var(--ds-motion-fast) ease,
+    box-shadow var(--ds-motion-fast) ease,
+    background-color var(--ds-motion-fast) ease;
+}
+
+.ds-field::placeholder {
+  color: color-mix(in srgb, var(--ds-color-text-muted) 75%, transparent);
+  font-weight: 500;
+}
+
+.ds-field:hover {
+  border-color: color-mix(in srgb, var(--ds-color-brand-primary) 36%, var(--ds-color-border-strong));
+}
+
+.ds-field:focus-visible {
+  border-color: color-mix(in srgb, var(--ds-color-brand-primary) 72%, #ffffff);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-color-brand-primary) 22%, transparent);
+}
+
+.ds-field:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ds-select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, color-mix(in srgb, var(--ds-color-text-muted) 82%, transparent) 50%),
+    linear-gradient(135deg, color-mix(in srgb, var(--ds-color-text-muted) 82%, transparent) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) calc(50% - 2px),
+    calc(100% - 10px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.1rem;
+}
+
 .ds-ag-theme {
   --ag-background-color: color-mix(in srgb, var(--ds-color-surface-card) 98%, transparent);
   --ag-foreground-color: var(--ds-color-text-primary);
@@ -31,13 +99,13 @@
 }
 
 .ds-alert-warning {
-  border: 1px solid color-mix(in srgb, var(--ds-color-brand-accent) 68%, #7c2d12);
-  background: color-mix(in srgb, var(--ds-color-brand-accent) 18%, var(--ds-color-surface-card));
-  color: #7c2d12;
+  border: 1px solid color-mix(in srgb, var(--ds-color-brand-accent) 74%, #7c2d12);
+  background: color-mix(in srgb, var(--ds-color-brand-accent) 22%, var(--ds-color-surface-card));
+  color: #713f12;
 }
 
 .ds-alert-warning .ds-text-muted {
-  color: #92400e;
+  color: #7c5318;
 }
 
 .ds-alert-error {
@@ -62,4 +130,63 @@
 :root[data-theme='eva_01'] .ds-alert-error,
 :root.dark .ds-alert-error {
   color: #fecdd3;
+}
+
+.fc .fc-toolbar-title,
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number {
+  color: var(--ds-color-text-primary);
+}
+
+.fc .fc-button-primary {
+  border: 1px solid var(--ds-color-border-strong);
+  background: color-mix(in srgb, var(--ds-color-surface-card) 96%, transparent);
+  color: var(--ds-color-text-primary);
+}
+
+.fc .fc-button-primary:hover {
+  background: color-mix(in srgb, var(--ds-color-brand-primary) 14%, var(--ds-color-surface-card));
+}
+
+@media (max-width: 640px) {
+  .ds-panel {
+    padding: 0.8rem;
+    border-radius: 0.9rem;
+  }
+
+  .ds-kpi-card {
+    padding: 0.75rem;
+  }
+
+  .ds-field {
+    min-height: 2.6rem;
+    font-size: 0.88rem;
+  }
+
+  .fc .fc-toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .fc .fc-button {
+    padding: 0.42rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .fc .fc-daygrid-day-number {
+    font-size: 0.72rem;
+  }
 }

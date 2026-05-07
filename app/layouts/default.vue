@@ -8,25 +8,25 @@
         background: 'color-mix(in srgb, var(--ds-color-surface-card) 94%, transparent)'
       }"
     >
-      <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-start gap-3 px-3 py-3 sm:items-center sm:px-4">
         <div class="mr-auto">
           <p class="text-xs uppercase tracking-[0.2em] ds-text-muted">Financeiro Familiar</p>
-          <h1 class="text-lg font-semibold">Dashboard e Planilha</h1>
+          <h1 class="text-base font-semibold sm:text-lg">Dashboard e Planilha</h1>
         </div>
 
         <BaseBadge :tone="online ? 'success' : 'warning'">
           {{ online ? 'Online' : 'Offline' }}
         </BaseBadge>
 
-        <div class="flex items-end gap-2">
+        <div class="grid w-full gap-2 sm:w-auto sm:grid-cols-[minmax(220px,1fr)_auto_auto] sm:items-end">
           <BaseInput v-model="keyDraft" type="password" placeholder="edit key" />
-          <BaseButton variant="secondary" @click="applyKey">Aplicar chave</BaseButton>
-          <BaseButton variant="primary" @click="refresh">Atualizar</BaseButton>
+          <BaseButton class="w-full sm:w-auto" variant="secondary" @click="applyKey">Aplicar chave</BaseButton>
+          <BaseButton class="w-full sm:w-auto" variant="primary" @click="refresh">Atualizar</BaseButton>
         </div>
       </div>
     </header>
 
-    <main class="mx-auto max-w-7xl px-4 py-5">
+    <main class="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-5">
       <slot />
     </main>
   </div>

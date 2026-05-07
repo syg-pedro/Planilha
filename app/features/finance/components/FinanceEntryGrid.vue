@@ -1,24 +1,28 @@
 <template>
   <BasePanel title="Planilha editavel">
     <template #header>
-      <div class="flex flex-wrap gap-2">
+      <div class="-mx-1 overflow-x-auto px-1 pb-1">
+        <div class="flex min-w-max gap-2">
         <BaseButton size="sm" variant="secondary" @click="addRow">Novo lancamento</BaseButton>
         <BaseButton size="sm" variant="secondary" @click="deleteSelected">Excluir selecionados</BaseButton>
         <BaseButton size="sm" variant="primary" @click="store.rebuildRules">Regenerar recorrencias</BaseButton>
+        </div>
       </div>
     </template>
 
-    <div class="ag-theme-quartz ds-ag-theme h-[66vh] w-full rounded-xl border">
-      <AgGridVue
-        :columnDefs="columnDefs"
-        :defaultColDef="defaultColDef"
-        :rowData="gridRows"
-        :rowSelection="'multiple'"
-        animateRows
-        @grid-ready="onGridReady"
-        @row-clicked="onRowClicked"
-        @cell-value-changed="onCellValueChanged"
-      />
+    <div class="overflow-x-auto rounded-xl border">
+      <div class="ag-theme-quartz ds-ag-theme h-[56vh] min-w-[920px] w-full sm:h-[66vh]">
+        <AgGridVue
+          :columnDefs="columnDefs"
+          :defaultColDef="defaultColDef"
+          :rowData="gridRows"
+          :rowSelection="'multiple'"
+          animateRows
+          @grid-ready="onGridReady"
+          @row-clicked="onRowClicked"
+          @cell-value-changed="onCellValueChanged"
+        />
+      </div>
     </div>
 
     <p v-if="showFilterFallback" class="mt-2 text-xs ds-text-muted">

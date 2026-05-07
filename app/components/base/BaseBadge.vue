@@ -17,8 +17,8 @@ const props = withDefaults(
 )
 
 const toneClass = computed(() => {
-  if (props.tone === 'success') return 'bg-emerald-100 text-emerald-700'
-  if (props.tone === 'warning') return 'bg-amber-100 text-amber-700'
-  return 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100'
+  if (props.tone === 'success') return 'ds-badge ds-badge-success'
+  if (props.tone === 'warning') return 'ds-badge ds-badge-warning'
+  return 'ds-badge ds-badge-neutral'
 })
 </script>
