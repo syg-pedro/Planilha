@@ -1,49 +1,55 @@
 <template>
-  <div
-    v-if="open"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 px-4 py-6"
-    @click.self="emit('close')"
-  >
-    <BasePanel class="w-full max-w-2xl" title="Editar lancamento" subtitle="Ajuste os dados e salve para atualizar dashboard, planilha e calendario.">
-      <div class="grid gap-3 md:grid-cols-2">
-        <BaseInput v-model="draft.title" label="Descricao" placeholder="Ex.: Mercado" />
+  <Teleport to="body">
+    <div
+      v-if="open"
+      class="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/55 px-4 pb-4 pt-12 sm:items-center sm:py-6"
+      @click.self="emit('close')"
+    >
+      <BasePanel
+        class="w-full max-w-2xl max-h-[92dvh] overflow-y-auto"
+        title="Editar lancamento"
+        subtitle="Ajuste os dados e salve para atualizar dashboard, planilha e calendario."
+      >
+        <div class="grid gap-3 sm:grid-cols-2">
+          <BaseInput v-model="draft.title" label="Descricao" placeholder="Ex.: Mercado" />
 
-        <BaseSelect v-model="draft.kind" label="Tipo">
-          <option value="income">Receita</option>
-          <option value="expense">Despesa</option>
-        </BaseSelect>
+          <BaseSelect v-model="draft.kind" label="Tipo">
+            <option value="income">Receita</option>
+            <option value="expense">Despesa</option>
+          </BaseSelect>
 
-        <BaseInput v-model="draft.amount" label="Valor" type="number" placeholder="0.00" />
+          <BaseInput v-model="draft.amount" label="Valor" type="number" placeholder="0.00" />
 
-        <BaseSelect v-model="draft.status" label="Status">
-          <option value="pending">Pendente</option>
-          <option value="paid">Pago</option>
-          <option value="review">Revisar</option>
-        </BaseSelect>
+          <BaseSelect v-model="draft.status" label="Status">
+            <option value="pending">Pendente</option>
+            <option value="paid">Pago</option>
+            <option value="review">Revisar</option>
+          </BaseSelect>
 
-        <BaseInput v-model="draft.dueDate" label="Vencimento" placeholder="dd/MM/yyyy" />
-        <BaseInput v-model="draft.competenceDate" label="Competencia" placeholder="dd/MM/yyyy" />
+          <BaseInput v-model="draft.dueDate" label="Vencimento" placeholder="dd/MM/yyyy" />
+          <BaseInput v-model="draft.competenceDate" label="Competencia" placeholder="dd/MM/yyyy" />
 
-        <BaseSelect v-model="draft.accountId" label="Conta">
-          <option value="">Sem conta</option>
-          <option v-for="account in accounts" :key="account.id" :value="account.id">{{ account.name }}</option>
-        </BaseSelect>
+          <BaseSelect v-model="draft.accountId" label="Conta">
+            <option value="">Sem conta</option>
+            <option v-for="account in accounts" :key="account.id" :value="account.id">{{ account.name }}</option>
+          </BaseSelect>
 
-        <BaseSelect v-model="draft.categoryId" label="Categoria">
-          <option value="">Sem categoria</option>
-          <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
-        </BaseSelect>
-      </div>
+          <BaseSelect v-model="draft.categoryId" label="Categoria">
+            <option value="">Sem categoria</option>
+            <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+          </BaseSelect>
+        </div>
 
-      <BaseTextarea v-model="draft.description" class="mt-3" :rows="3" label="Observacoes" placeholder="Notas opcionais" />
+        <BaseTextarea v-model="draft.description" class="mt-3" :rows="3" label="Observacoes" placeholder="Notas opcionais" />
 
-      <div class="mt-4 flex flex-wrap justify-end gap-2">
-        <BaseButton variant="ghost" @click="emit('close')">Cancelar</BaseButton>
-        <BaseButton v-if="entry" variant="danger" @click="onDelete">Excluir</BaseButton>
-        <BaseButton variant="primary" @click="onSave">Salvar</BaseButton>
-      </div>
-    </BasePanel>
-  </div>
+        <div class="mt-4 flex flex-wrap justify-end gap-2">
+          <BaseButton variant="ghost" @click="emit('close')">Cancelar</BaseButton>
+          <BaseButton v-if="entry" variant="danger" @click="onDelete">Excluir</BaseButton>
+          <BaseButton variant="primary" @click="onSave">Salvar</BaseButton>
+        </div>
+      </BasePanel>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">

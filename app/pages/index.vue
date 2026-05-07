@@ -1,31 +1,37 @@
 <template>
   <section class="space-y-4">
     <BasePanel>
-      <div class="flex flex-wrap items-center gap-2">
+      <!-- Tabs: scroll horizontal no mobile, wrap no desktop -->
+      <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [&::-webkit-scrollbar]:hidden">
         <BaseButton
           v-for="tab in tabs"
           :key="tab.id"
+          class="shrink-0"
           :variant="activeTab === tab.id ? 'primary' : 'secondary'"
           @click="activeTab = tab.id"
         >
           {{ tab.label }}
         </BaseButton>
+      </div>
 
-        <div class="ml-auto grid w-full gap-2 sm:w-auto sm:grid-flow-col">
-          <BaseSelect v-model="store.filters.range">
-            <option v-for="option in rangeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-          </BaseSelect>
+      <!-- Filtros: visíveis apenas nas abas com dados -->
+      <div
+        v-if="activeTab === 'dashboard' || activeTab === 'planilha'"
+        class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3"
+      >
+        <BaseSelect v-model="store.filters.range">
+          <option v-for="option in rangeOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
+        </BaseSelect>
 
-          <BaseSelect v-model="selectedAccount">
-            <option value="">Todas as contas</option>
-            <option v-for="account in store.accounts" :key="account.id" :value="account.id">{{ account.name }}</option>
-          </BaseSelect>
+        <BaseSelect v-model="selectedAccount">
+          <option value="">Todas as contas</option>
+          <option v-for="account in store.accounts" :key="account.id" :value="account.id">{{ account.name }}</option>
+        </BaseSelect>
 
-          <BaseSelect v-model="selectedCategory">
-            <option value="">Todas as categorias</option>
-            <option v-for="category in store.categories" :key="category.id" :value="category.id">{{ category.name }}</option>
-          </BaseSelect>
-        </div>
+        <BaseSelect v-model="selectedCategory">
+          <option value="">Todas as categorias</option>
+          <option v-for="category in store.categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+        </BaseSelect>
       </div>
     </BasePanel>
 
@@ -47,7 +53,17 @@
       </ul>
     </BasePanel>
 
-    <transition name="fade-slide" mode="out-in">
+    <!-- Skeleton de carregamento -->
+    <div v-if="store.loading" class="space-y-4">
+      <div
+        v-for="n in 3"
+        :key="n"
+        class="h-32 animate-pulse rounded-2xl border"
+        :style="{ background: 'var(--ds-color-surface-card-soft)', borderColor: 'var(--ds-color-border-default)' }"
+      />
+    </div>
+
+    <transition v-else name="fade-slide" mode="out-in">
       <div v-if="activeTab === 'dashboard'" key="dashboard" class="space-y-4">
         <FinanceKpiCards v-if="isWidgetEnabled('kpis')" :kpis="store.kpis" />
         <FinanceCharts />

@@ -4,6 +4,11 @@ body,
   min-height: 100%;
 }
 
+/* Prevent horizontal overflow on mobile */
+html {
+  overflow-x: hidden;
+}
+
 body {
   font-family: var(--ds-font-family-sans);
   color: var(--ds-color-text-primary);

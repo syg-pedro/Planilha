@@ -8,7 +8,7 @@
       </div>
     </template>
 
-    <div class="ag-theme-quartz ds-ag-theme h-[66vh] w-full rounded-xl border">
+    <div class="ag-theme-quartz ds-ag-theme h-[60vh] min-h-64 w-full rounded-xl border sm:h-[66vh]">
       <AgGridVue
         :columnDefs="columnDefs"
         :defaultColDef="defaultColDef"

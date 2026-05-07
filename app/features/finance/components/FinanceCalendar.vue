@@ -57,10 +57,11 @@ const calendarOptions = computed(() => ({
   initialView: 'dayGridMonth',
   locale: ptBrLocale,
   height: 'auto',
+  multiMonthMaxColumns: 2,
   events: events.value,
   views: {
     multiMonthYear: { type: 'multiMonth', duration: { months: 12 } },
-    multiMonthQuarter: { type: 'multiMonth', duration: { months: 3 } }
+    multiMonthQuarter: { type: 'multiMonth', duration: { months: 3 }, multiMonthMaxColumns: 1 }
   },
   eventClick: onEventClick,
   headerToolbar: {
