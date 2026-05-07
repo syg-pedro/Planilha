@@ -1,4 +1,4 @@
-export type ThemeMode = 'light' | 'dark' | 'eva_01'
+export type ThemeMode = 'light' | 'dark' | 'eva'
 export type DensityMode = 'compact' | 'comfortable'
 export type PeriodMode = 'due_date' | 'competence'
 export type EntryKind = 'income' | 'expense'

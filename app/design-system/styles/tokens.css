@@ -1,5 +1,5 @@
 :root {
-  --ds-font-family-sans: Manrope, 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --ds-font-family-sans: 'Plus Jakarta Sans', Manrope, 'Segoe UI', system-ui, sans-serif;
   --ds-font-family-mono: 'JetBrains Mono', Consolas, monospace;
 
   --ds-space-1: 0.25rem;
@@ -9,63 +9,129 @@
   --ds-space-5: 1.25rem;
   --ds-space-6: 1.5rem;
 
-  --ds-radius-sm: 0.5rem;
+  --ds-radius-xs: 0.375rem;
+  --ds-radius-sm: 0.625rem;
   --ds-radius-md: 0.75rem;
   --ds-radius-lg: 1rem;
   --ds-radius-xl: 1.25rem;
 
-  --ds-shadow-sm: 0 3px 10px rgba(15, 23, 42, 0.08);
-  --ds-shadow-md: 0 12px 28px rgba(15, 23, 42, 0.14);
+  --ds-shadow-sm: 0 1px 4px oklch(0% 0 0 / 0.06), 0 0 0 1px oklch(0% 0 0 / 0.04);
+  --ds-shadow-md: 0 4px 16px oklch(0% 0 0 / 0.08), 0 0 0 1px oklch(0% 0 0 / 0.04);
+  --ds-shadow-lg: 0 8px 32px oklch(0% 0 0 / 0.12);
 
-  --ds-motion-fast: 180ms;
-  --ds-motion-base: 240ms;
+  --ds-motion-fast: 150ms;
+  --ds-motion-base: 200ms;
 
-  --ds-color-brand-primary: #0f766e;
-  --ds-color-brand-accent: #f59e0b;
-  --ds-color-state-success: #16a34a;
-  --ds-color-state-danger: #dc2626;
+  --ds-color-brand-primary: oklch(55% 0.18 185);
+  --ds-color-brand-primary-dim: oklch(55% 0.18 185 / 0.15);
+  --ds-color-brand-primary-light: oklch(94% 0.06 185);
+  --ds-color-brand-accent: oklch(72% 0.18 75);
+  --ds-color-state-success: oklch(58% 0.18 145);
+  --ds-color-state-success-light: oklch(94% 0.06 145);
+  --ds-color-state-danger: oklch(55% 0.22 25);
+  --ds-color-state-danger-light: oklch(95% 0.06 25);
+  --ds-color-state-warning: oklch(72% 0.18 75);
+  --ds-color-state-warning-light: oklch(96% 0.06 75);
   --ds-color-state-neutral: #64748b;
 
-  --ds-color-surface-bg: #eef5f7;
+  --ds-color-surface-bg: oklch(97% 0.008 220);
+  --ds-color-surface-bg2: oklch(93% 0.012 220);
   --ds-color-surface-card: #ffffff;
-  --ds-color-surface-card-soft: #f4f8fa;
-  --ds-color-text-primary: #0f172a;
-  --ds-color-text-muted: #334155;
-  --ds-color-border-default: rgba(71, 85, 105, 0.36);
-  --ds-color-border-strong: rgba(71, 85, 105, 0.58);
+  --ds-color-surface-card-soft: oklch(96% 0.006 220);
+  --ds-color-text-primary: oklch(18% 0.02 255);
+  --ds-color-text-secondary: oklch(45% 0.02 255);
+  --ds-color-text-muted: oklch(60% 0.01 255);
+  --ds-color-border-default: oklch(88% 0.01 220);
+  --ds-color-border-strong: oklch(80% 0.015 220);
 
   --ds-z-header: 20;
+
+  /* Short aliases matching design */
+  --bg: var(--ds-color-surface-bg);
+  --bg2: var(--ds-color-surface-bg2);
+  --surface: var(--ds-color-surface-card);
+  --surface2: var(--ds-color-surface-card-soft);
+  --border: var(--ds-color-border-default);
+  --border-strong: var(--ds-color-border-strong);
+  --text: var(--ds-color-text-primary);
+  --text2: var(--ds-color-text-secondary);
+  --text3: var(--ds-color-text-muted);
+  --primary: var(--ds-color-brand-primary);
+  --primary-light: var(--ds-color-brand-primary-light);
+  --primary-dim: var(--ds-color-brand-primary-dim);
+  --accent: var(--ds-color-brand-accent);
+  --accent-light: oklch(96% 0.06 75);
+  --success: var(--ds-color-state-success);
+  --success-light: var(--ds-color-state-success-light);
+  --danger: var(--ds-color-state-danger);
+  --danger-light: var(--ds-color-state-danger-light);
+  --warning: var(--ds-color-state-warning);
+  --warning-light: var(--ds-color-state-warning-light);
+  --shadow-sm: var(--ds-shadow-sm);
+  --shadow-md: var(--ds-shadow-md);
+  --shadow-lg: var(--ds-shadow-lg);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
 }
 
 :root[data-theme='dark'],
 :root.dark {
-  --ds-color-brand-primary: #14b8a6;
-  --ds-color-brand-accent: #f59e0b;
-  --ds-color-state-success: #22c55e;
-  --ds-color-state-danger: #f43f5e;
+  --ds-color-brand-primary: oklch(65% 0.18 185);
+  --ds-color-brand-primary-dim: oklch(65% 0.18 185 / 0.18);
+  --ds-color-brand-primary-light: oklch(30% 0.08 185);
+  --ds-color-brand-accent: oklch(78% 0.18 75);
+  --ds-color-state-success: oklch(65% 0.18 145);
+  --ds-color-state-success-light: oklch(25% 0.08 145);
+  --ds-color-state-danger: oklch(65% 0.22 25);
+  --ds-color-state-danger-light: oklch(25% 0.08 25);
+  --ds-color-state-warning: oklch(78% 0.18 75);
+  --ds-color-state-warning-light: oklch(28% 0.08 75);
   --ds-color-state-neutral: #94a3b8;
 
-  --ds-color-surface-bg: #0b1020;
-  --ds-color-surface-card: #111827;
-  --ds-color-surface-card-soft: #1f2937;
-  --ds-color-text-primary: #e2e8f0;
-  --ds-color-text-muted: #94a3b8;
-  --ds-color-border-default: rgba(148, 163, 184, 0.32);
-  --ds-color-border-strong: rgba(148, 163, 184, 0.5);
+  --ds-color-surface-bg: oklch(13% 0.02 260);
+  --ds-color-surface-bg2: oklch(17% 0.025 260);
+  --ds-color-surface-card: oklch(19% 0.025 260);
+  --ds-color-surface-card-soft: oklch(22% 0.022 260);
+  --ds-color-text-primary: oklch(93% 0.01 260);
+  --ds-color-text-secondary: oklch(70% 0.015 260);
+  --ds-color-text-muted: oklch(52% 0.012 260);
+  --ds-color-border-default: oklch(28% 0.025 260);
+  --ds-color-border-strong: oklch(36% 0.025 260);
+
+  --ds-shadow-sm: 0 1px 4px oklch(0% 0 0 / 0.3);
+  --ds-shadow-md: 0 4px 16px oklch(0% 0 0 / 0.35);
+  --ds-shadow-lg: 0 8px 32px oklch(0% 0 0 / 0.4);
+
+  --accent-light: oklch(28% 0.08 75);
 }
 
-:root[data-theme='eva_01'] {
-  --ds-color-brand-primary: #6f3cc3;
-  --ds-color-brand-accent: #7cff2b;
-  --ds-color-state-success: #44d62c;
-  --ds-color-state-danger: #ff5a5f;
+:root[data-theme='eva'] {
+  --ds-color-brand-primary: oklch(60% 0.22 295);
+  --ds-color-brand-primary-dim: oklch(60% 0.22 295 / 0.18);
+  --ds-color-brand-primary-light: oklch(25% 0.1 295);
+  --ds-color-brand-accent: oklch(80% 0.25 135);
+  --ds-color-state-success: oklch(72% 0.25 135);
+  --ds-color-state-success-light: oklch(22% 0.1 135);
+  --ds-color-state-danger: oklch(62% 0.24 20);
+  --ds-color-state-danger-light: oklch(22% 0.08 20);
+  --ds-color-state-warning: oklch(80% 0.25 135);
+  --ds-color-state-warning-light: oklch(22% 0.1 135);
   --ds-color-state-neutral: #8a84a8;
 
-  --ds-color-surface-bg: #0c0b14;
-  --ds-color-surface-card: #1b1430;
-  --ds-color-surface-card-soft: #231941;
-  --ds-color-text-primary: #ece7ff;
-  --ds-color-text-muted: #b8addd;
-  --ds-color-border-default: rgba(167, 139, 250, 0.28);
-  --ds-color-border-strong: rgba(167, 139, 250, 0.45);
+  --ds-color-surface-bg: oklch(10% 0.04 295);
+  --ds-color-surface-bg2: oklch(14% 0.05 295);
+  --ds-color-surface-card: oklch(17% 0.06 295);
+  --ds-color-surface-card-soft: oklch(21% 0.055 295);
+  --ds-color-text-primary: oklch(92% 0.02 295);
+  --ds-color-text-secondary: oklch(72% 0.04 295);
+  --ds-color-text-muted: oklch(55% 0.03 295);
+  --ds-color-border-default: oklch(30% 0.06 295);
+  --ds-color-border-strong: oklch(40% 0.07 295);
+
+  --ds-shadow-sm: 0 1px 4px oklch(0% 0 0 / 0.4);
+  --ds-shadow-md: 0 4px 16px oklch(0% 0 0 / 0.45), 0 0 0 1px var(--ds-color-border-default);
+  --ds-shadow-lg: 0 8px 32px oklch(0% 0 0 / 0.5);
+
+  --accent-light: oklch(22% 0.1 135);
 }

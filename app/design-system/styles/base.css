@@ -4,18 +4,15 @@ body,
   min-height: 100%;
 }
 
-/* Prevent horizontal overflow on mobile */
 html {
   overflow-x: hidden;
 }
 
 body {
   font-family: var(--ds-font-family-sans);
-  color: var(--ds-color-text-primary);
-  background:
-    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--ds-color-brand-primary) 14%, transparent), transparent 42%),
-    radial-gradient(circle at 8% 92%, color-mix(in srgb, var(--ds-color-brand-accent) 12%, transparent), transparent 46%),
-    var(--ds-color-surface-bg);
+  color: var(--text);
+  background: var(--bg);
+  transition: background 0.3s, color 0.3s;
 }
 
 * {
@@ -23,5 +20,19 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--ds-color-brand-primary) 28%, transparent);
+  background: var(--ds-color-brand-primary-dim);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ds-color-border-strong);
+  border-radius: 99px;
 }

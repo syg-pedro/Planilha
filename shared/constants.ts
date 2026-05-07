@@ -22,7 +22,7 @@ export const DARK_COLORS: ColorTokens = {
   card: '#111827'
 }
 
-export const EVA_01_COLORS: ColorTokens = {
+export const EVA_COLORS: ColorTokens = {
   primary: '#6f3cc3',
   accent: '#7cff2b',
   positive: '#44d62c',
@@ -35,7 +35,7 @@ export const EVA_01_COLORS: ColorTokens = {
 export const THEME_PRESETS: Record<ThemeMode, ColorTokens> = {
   light: DEFAULT_COLORS,
   dark: DARK_COLORS,
-  eva_01: EVA_01_COLORS
+  eva: EVA_COLORS
 }
 
 export const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {

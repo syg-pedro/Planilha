@@ -108,16 +108,7 @@ export const useFinanceStore = defineStore('finance', () => {
 
     const root = document.documentElement
     root.dataset.theme = settings.value.themeMode
-    root.classList.toggle('dark', settings.value.themeMode === 'dark' || settings.value.themeMode === 'eva_01')
-    const tokens = settings.value.colorTokens
-    root.style.setProperty('--ds-color-brand-primary', tokens.primary)
-    root.style.setProperty('--ds-color-brand-accent', tokens.accent)
-    root.style.setProperty('--ds-color-state-success', tokens.positive)
-    root.style.setProperty('--ds-color-state-danger', tokens.negative)
-    root.style.setProperty('--ds-color-state-neutral', tokens.neutral)
-    root.style.setProperty('--ds-color-surface-bg', tokens.background)
-    root.style.setProperty('--ds-color-surface-card', tokens.card)
-    root.style.setProperty('--ds-color-surface-card-soft', tokens.card)
+    root.classList.toggle('dark', settings.value.themeMode === 'dark')
   }
 
   const setThemeMode = (mode: ThemeMode) => {

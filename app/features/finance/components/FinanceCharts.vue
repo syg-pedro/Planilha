@@ -1,56 +1,193 @@
 <template>
-  <div class="grid gap-4 lg:grid-cols-2">
-    <BasePanel v-if="isVisible('cashflow')" title="Fluxo de caixa">
-      <VChart class="h-72" :option="cashflowOption" autoresize />
-    </BasePanel>
-
-    <BasePanel v-if="isVisible('projection')" title="Projecao de saldo (18 meses)">
-      <VChart class="h-72" :option="projectionOption" autoresize />
-    </BasePanel>
-
-    <BasePanel v-if="isVisible('category')" title="Despesas por categoria">
-      <VChart class="h-72" :option="categoryOption" autoresize />
-    </BasePanel>
-
-    <BasePanel v-if="isVisible('cards')" title="Despesas por conta/cartao">
-      <VChart class="h-72" :option="cardOption" autoresize />
-    </BasePanel>
-
-    <BasePanel v-if="isVisible('limits')" title="Utilizacao de limites">
-      <VChart class="h-72" :option="limitOption" autoresize />
-    </BasePanel>
-
-    <BasePanel v-if="isVisible('heatmap')" title="Heatmap de despesas por dia">
-      <VChart class="h-72" :option="heatmapOption" autoresize />
-    </BasePanel>
-
-    <BasePanel v-if="isVisible('upcoming')" title="Proximos vencimentos" class="lg:col-span-2">
-      <div class="overflow-x-auto">
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="text-left text-xs uppercase tracking-wide ds-text-muted">
-              <th class="py-2">Data</th>
-              <th class="py-2">Titulo</th>
-              <th class="py-2">Conta</th>
-              <th class="py-2 text-right">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="item in upcomingEntries"
-              :key="item.id"
-              class="border-t"
-              :style="{ borderColor: 'var(--ds-color-border-default)' }"
+  <div class="flex flex-col gap-4">
+    <!-- Charts row -->
+    <div class="grid gap-4 lg:grid-cols-2">
+      <!-- Cashflow Chart -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h3 class="panel-title">Fluxo de caixa</h3>
+            <p class="panel-sub">Últimos meses + próximos</p>
+          </div>
+          <div style="display:flex;gap:8px">
+            <span style="font-size:11px;color:var(--success);display:flex;align-items:center;gap:4px">
+              <span style="width:8px;height:8px;background:var(--success);border-radius:2px;display:inline-block" />
+              Receita
+            </span>
+            <span style="font-size:11px;color:var(--danger);display:flex;align-items:center;gap:4px">
+              <span style="width:8px;height:8px;background:var(--danger);border-radius:2px;display:inline-block" />
+              Despesa
+            </span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 4px">
+            <div
+              v-for="(d, i) in cashflowData"
+              :key="i"
+              style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"
             >
-              <td class="py-2">{{ formatDate(item.dueDate) }}</td>
-              <td class="py-2">{{ item.title }}</td>
-              <td class="py-2">{{ accountLabel(item.accountId) }}</td>
-              <td class="py-2 text-right font-medium">{{ currency.format(item.amount) }}</td>
-            </tr>
-          </tbody>
-        </table>
+              <div style="display:flex;align-items:flex-end;gap:2px;height:100px">
+                <div
+                  :title="`Receitas: ${fmt(d.income)}`"
+                  :style="{
+                    width:'10px', borderRadius:'3px 3px 0 0',
+                    background:'var(--success)', opacity: i===currentIdx?1:0.55,
+                    height: maxCashflow > 0 ? `${Math.round((d.income/maxCashflow)*100)}%` : '2px',
+                    boxShadow: i===currentIdx ? '0 0 8px var(--success)' : 'none',
+                    transition:'height 0.5s ease'
+                  }"
+                />
+                <div
+                  :title="`Despesas: ${fmt(d.expense)}`"
+                  :style="{
+                    width:'10px', borderRadius:'3px 3px 0 0',
+                    background:'var(--danger)', opacity: i===currentIdx?1:0.55,
+                    height: maxCashflow > 0 ? `${Math.round((d.expense/maxCashflow)*100)}%` : '2px',
+                    boxShadow: i===currentIdx ? '0 0 8px var(--danger)' : 'none',
+                    transition:'height 0.5s ease'
+                  }"
+                />
+              </div>
+              <span :style="{ fontSize:'10px', color:'var(--text3)', fontWeight: i===currentIdx?700:400 }">{{ d.month }}</span>
+            </div>
+          </div>
+          <div style="margin-top:12px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-xs);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div v-for="(d, i) in cashflowData" :key="i" style="text-align:center">
+              <p style="font-size:10px;color:var(--text3);font-weight:600">{{ d.month }}</p>
+              <p :style="{ fontSize:'12px', fontWeight:700, color: (d.income - d.expense) >= 0 ? 'var(--success)' : 'var(--danger)' }">{{ fmt(d.income - d.expense) }}</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </BasePanel>
+
+      <!-- Donut Chart -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h3 class="panel-title">Despesas por categoria</h3>
+            <p class="panel-sub">Total: {{ fmt(store.kpis.totalExpense) }}</p>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div v-if="donutSegments.length > 0" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <svg width="180" height="180" viewBox="0 0 180 180">
+              <path
+                v-for="(s, i) in donutSegments"
+                :key="i"
+                :d="s.d"
+                fill="none"
+                :stroke="s.color"
+                stroke-width="24"
+                stroke-linecap="butt"
+                opacity="0.9"
+              >
+                <title>{{ s.label }}: {{ fmt(s.value) }}</title>
+              </path>
+              <circle cx="90" cy="90" r="58" fill="var(--surface)" />
+              <text x="90" y="84" text-anchor="middle" font-size="11" fill="var(--text3)" font-family="Plus Jakarta Sans">Total</text>
+              <text x="90" y="102" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)" font-family="Plus Jakarta Sans">{{ fmtShort(store.kpis.totalExpense) }}</text>
+            </svg>
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:120px">
+              <div v-for="(s, i) in donutSegments" :key="i" style="display:flex;align-items:center;gap:8px">
+                <div :style="{ width:'10px', height:'10px', borderRadius:'3px', background:s.color, flexShrink:0 }" />
+                <span style="font-size:12px;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.label }}</span>
+                <span style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap">{{ Math.round(s.pct*100) }}%</span>
+              </div>
+            </div>
+          </div>
+          <p v-else style="color:var(--text3);font-size:13px">Sem dados de despesas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card Limits -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3 class="panel-title">Utilização dos cartões de crédito</h3>
+          <p class="panel-sub">Limite total disponível vs. utilizado</p>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div v-for="card in cardLimits" :key="card.id">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+              <span style="font-size:13px;font-weight:600;color:var(--text)">{{ card.name }}</span>
+              <span style="font-size:12px;color:var(--text3)">{{ fmt(card.spent) }} / {{ fmt(card.limit) }}</span>
+            </div>
+            <div style="height:8px;background:var(--bg2);border-radius:99px;overflow:hidden">
+              <div
+                :style="{
+                  width:`${card.pct}%`, height:'100%', borderRadius:'99px',
+                  background: card.pct>80?'var(--danger)':card.pct>60?'var(--warning)':'var(--primary)',
+                  boxShadow: card.pct>80?'0 0 8px var(--danger)':'none',
+                  transition:'width 0.6s ease'
+                }"
+              />
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:3px">
+              <span style="font-size:11px;color:var(--text3)">Vence dia {{ card.dueDay }}</span>
+              <span :style="{ fontSize:'11px', fontWeight:700, color: card.pct>80?'var(--danger)':card.pct>60?'var(--warning)':'var(--primary)' }">{{ card.pct.toFixed(1) }}%</span>
+            </div>
+          </div>
+          <p v-if="cardLimits.length === 0" style="color:var(--text3);font-size:13px">Nenhum cartão com limite cadastrado</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Table -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3 class="panel-title">Próximos vencimentos</h3>
+          <p class="panel-sub">Despesas pendentes ordenadas por data</p>
+        </div>
+        <span style="font-size:11px;color:var(--text3)">{{ upcomingEntries.length }} pendente(s)</span>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border)">
+                <th
+                  v-for="h in ['Vencimento','Descrição','Conta','Valor','Urgência']"
+                  :key="h"
+                  style="padding:8px 10px;text-align:left;color:var(--text3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap"
+                >
+                  {{ h }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="e in upcomingEntries"
+                :key="e.id"
+                style="border-bottom:1px solid var(--border);transition:background 0.15s"
+                @mouseenter="($event.currentTarget as HTMLElement).style.background='var(--surface2)'"
+                @mouseleave="($event.currentTarget as HTMLElement).style.background='transparent'"
+              >
+                <td style="padding:10px;font-weight:600;color:var(--text);white-space:nowrap">{{ fmtDateBR(e.dueDate) }}</td>
+                <td style="padding:10px;color:var(--text)">
+                  {{ e.title }}
+                  <span v-if="e.installmentIndex" style="font-size:11px;color:var(--text3);margin-left:6px">{{ e.installmentIndex }}/{{ e.installmentTotal }}</span>
+                </td>
+                <td style="padding:10px;color:var(--text2);white-space:nowrap">{{ store.accountMap.get(e.accountId ?? '')?.name || '—' }}</td>
+                <td style="padding:10px;font-weight:700;color:var(--danger);white-space:nowrap">{{ fmt(e.amount) }}</td>
+                <td style="padding:10px">
+                  <span
+                    :style="{ background: urgency(e.dueDate).bg, color: urgency(e.dueDate).color, borderRadius:'99px', padding:'2px 10px', fontSize:'11px', fontWeight:700, whiteSpace:'nowrap' }"
+                  >{{ urgency(e.dueDate).label }}</span>
+                </td>
+              </tr>
+              <tr v-if="upcomingEntries.length === 0">
+                <td colspan="5" style="padding:24px;text-align:center;color:var(--text3)">Nenhum vencimento próximo</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -60,156 +197,126 @@ import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 
 const store = useFinanceStore()
 const currency = useCurrency()
-const { formatDate } = useDateFormat()
-const chartTextColor = 'var(--ds-color-text-muted)'
-const chartGridLine = 'color-mix(in srgb, var(--ds-color-border-default) 72%, transparent)'
-const tooltipTheme = {
-  backgroundColor: 'color-mix(in srgb, var(--ds-color-surface-card) 96%, transparent)',
-  borderColor: 'var(--ds-color-border-strong)',
-  textStyle: { color: 'var(--ds-color-text-primary)' }
+
+const fmt = (v: number) => currency.format(v)
+const fmtShort = (v: number) => {
+  if (v >= 1000) return `R$${(v / 1000).toFixed(1)}k`
+  return currency.format(v)
 }
 
-const heatmapColors = computed(() => {
-  if (store.settings.themeMode === 'dark') {
-    return ['#0f172a', '#14b8a6', '#22c55e', '#f59e0b']
-  }
-  if (store.settings.themeMode === 'eva_01') {
-    return ['#1b1430', '#6f3cc3', '#7cff2b', '#fde047']
-  }
-  return ['#dbeafe', '#60a5fa', '#0ea5e9', '#0f766e']
+const fmtDateBR = (d: string) => {
+  const [y, m, day] = d.split('-')
+  return `${day}/${m}/${y}`
+}
+
+const cashflowData = computed(() => store.chartData.cashflow.slice(-6))
+const maxCashflow = computed(() => Math.max(...cashflowData.value.map(d => Math.max(d.income, d.expense)), 1))
+const currentIdx = computed(() => {
+  const now = new Date()
+  const monthLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+  const label = monthLabels[now.getMonth()] ?? ''
+  const idx = cashflowData.value.findIndex(d => d.month.startsWith(label))
+  return idx >= 0 ? idx : Math.floor(cashflowData.value.length / 2)
 })
 
-const isVisible = (id: string) => store.settings.dashboardConfig.visibleWidgets.includes(id)
+const donutSegments = computed(() => {
+  const catBreakdown = store.chartData.category
+  const data = Object.entries(catBreakdown)
+    .map(([catId, val]) => ({
+      name: store.categoryMap.get(catId)?.name ?? 'Outros',
+      value: val as number,
+      color: store.categoryMap.get(catId)?.color ?? '#888'
+    }))
+    .filter(d => d.value > 0)
 
-const categoryOption = computed(() => {
-  const data = Object.entries(store.chartData.category).map(([categoryId, total]) => ({
-    name: store.categoryMap.get(categoryId)?.name ?? 'Sem categoria',
-    value: total
-  }))
+  const total = data.reduce((s, d) => s + d.value, 0)
+  if (total === 0) return []
 
-  return {
-    tooltip: { ...tooltipTheme, trigger: 'item' },
-    legend: { top: 0, textStyle: { color: chartTextColor } },
-    series: [
-      {
-        type: 'pie',
-        radius: ['42%', '70%'],
-        data
-      }
-    ]
-  }
-})
+  const radius = 70
+  const cx = 90
+  const cy = 90
+  let cumAngle = -90
 
-const cashflowOption = computed(() => {
-  const data = store.chartData.cashflow
-  return {
-    tooltip: { ...tooltipTheme, trigger: 'axis' },
-    legend: { top: 0, textStyle: { color: chartTextColor } },
-    xAxis: { type: 'category', data: data.map((item) => item.month), axisLabel: { color: chartTextColor } },
-    yAxis: { type: 'value', axisLabel: { color: chartTextColor }, splitLine: { lineStyle: { color: chartGridLine } } },
-    series: [
-      { name: 'Receitas', type: 'bar', data: data.map((item) => item.income), itemStyle: { color: 'var(--ds-color-state-success)' } },
-      { name: 'Despesas', type: 'bar', data: data.map((item) => item.expense), itemStyle: { color: 'var(--ds-color-state-danger)' } },
-      { name: 'Saldo', type: 'line', smooth: true, data: data.map((item) => item.net), itemStyle: { color: 'var(--ds-color-brand-primary)' } }
-    ]
-  }
-})
-
-const projectionOption = computed(() => {
-  const data = store.chartData.projection
-  return {
-    tooltip: { ...tooltipTheme, trigger: 'axis' },
-    xAxis: { type: 'category', data: data.map((item) => item.month), axisLabel: { color: chartTextColor } },
-    yAxis: { type: 'value', axisLabel: { color: chartTextColor }, splitLine: { lineStyle: { color: chartGridLine } } },
-    series: [
-      {
-        type: 'line',
-        smooth: true,
-        areaStyle: {},
-        data: data.map((item) => item.balance),
-        itemStyle: { color: 'var(--ds-color-brand-primary)' }
-      }
-    ]
-  }
-})
-
-const cardOption = computed(() => {
-  const breakdown = store.chartData.cards
-  const labels = Object.keys(breakdown).map((id) => store.accountMap.get(id)?.name ?? 'Sem conta')
-  return {
-    tooltip: { ...tooltipTheme, trigger: 'axis' },
-    xAxis: { type: 'category', data: labels, axisLabel: { color: chartTextColor } },
-    yAxis: { type: 'value', axisLabel: { color: chartTextColor }, splitLine: { lineStyle: { color: chartGridLine } } },
-    series: [
-      {
-        type: 'bar',
-        data: Object.values(breakdown),
-        itemStyle: { color: 'var(--ds-color-brand-accent)' }
-      }
-    ]
-  }
-})
-
-const limitOption = computed(() => ({
-  series: [
-    {
-      type: 'gauge',
-      progress: { show: true, width: 16 },
-      axisLine: { lineStyle: { width: 16 } },
-      detail: { valueAnimation: true, formatter: '{value}%' },
-      data: [{ value: Number(store.kpis.cardsUsedPercent.toFixed(1)), name: 'Uso de limite' }]
+  return data.map((d) => {
+    const pct = d.value / total
+    const angle = pct * 360
+    const start = cumAngle
+    cumAngle += angle
+    const startRad = (start * Math.PI) / 180
+    const endRad = ((start + angle) * Math.PI) / 180
+    const x1 = cx + radius * Math.cos(startRad)
+    const y1 = cy + radius * Math.sin(startRad)
+    const x2 = cx + radius * Math.cos(endRad)
+    const y2 = cy + radius * Math.sin(endRad)
+    const large = angle > 180 ? 1 : 0
+    return {
+      d: `M ${x1} ${y1} A ${radius} ${radius} 0 ${large} 1 ${x2} ${y2}`,
+      color: d.color,
+      label: d.name,
+      value: d.value,
+      pct
     }
-  ]
-}))
-
-const heatmapOption = computed(() => {
-  const groupedMonths = [...new Set(store.chartData.heatmap.map((item) => item.month))]
-  const points = store.chartData.heatmap.map((item) => [groupedMonths.indexOf(item.month), item.day - 1, item.value])
-
-  return {
-    tooltip: {
-      ...tooltipTheme,
-      formatter: (params: { data: [number, number, number] }) => {
-        const month = groupedMonths[params.data[0]]
-        return `${month} / dia ${params.data[1] + 1}: R$ ${params.data[2].toFixed(2)}`
-      }
-    },
-    xAxis: { type: 'category', data: groupedMonths, axisLabel: { color: chartTextColor } },
-    yAxis: { type: 'category', data: Array.from({ length: 31 }, (_, i) => String(i + 1)), axisLabel: { color: chartTextColor } },
-    visualMap: {
-      min: 0,
-      max: Math.max(...store.chartData.heatmap.map((item) => item.value), 100),
-      orient: 'horizontal',
-      left: 'center',
-      bottom: 0,
-      textStyle: { color: chartTextColor },
-      inRange: { color: heatmapColors.value }
-    },
-    textStyle: { color: chartTextColor },
-    series: [
-      {
-        type: 'heatmap',
-        data: points,
-        emphasis: {
-          itemStyle: {
-            borderColor: '#334155',
-            borderWidth: 1
-          }
-        }
-      }
-    ]
-  }
+  })
 })
 
-const upcomingEntries = computed(() =>
-  [...store.filteredEntries]
-    .filter((entry) => entry.kind === 'expense' && entry.status !== 'paid')
-    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
-    .slice(0, 12)
-)
+const cardLimits = computed(() => {
+  const spendByCard: Record<string, number> = {}
+  store.entries.forEach(e => {
+    if (e.kind === 'expense' && e.accountId) {
+      spendByCard[e.accountId] = (spendByCard[e.accountId] || 0) + e.amount
+    }
+  })
+  return store.accounts
+    .filter(a => a.type === 'credit_card' && a.limitTotal)
+    .map(a => {
+      const spent = spendByCard[a.id] || 0
+      const pct = Math.min(100, (spent / (a.limitTotal ?? 1)) * 100)
+      return { id: a.id, name: a.name, spent, limit: a.limitTotal ?? 0, pct, dueDay: a.dueDay }
+    })
+})
 
-const accountLabel = (accountId: string | null) => {
-  if (!accountId) return 'Sem conta'
-  return store.accountMap.get(accountId)?.name ?? 'Sem conta'
+const upcomingEntries = computed(() => {
+  const now = new Date()
+  return [...store.entries]
+    .filter(e => e.kind === 'expense' && e.status !== 'paid' && new Date(e.dueDate + 'T00:00:00') >= now)
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .slice(0, 8)
+})
+
+const urgency = (dueDate: string) => {
+  const days = Math.ceil((new Date(dueDate + 'T00:00:00').getTime() - new Date().getTime()) / 86400000)
+  if (days <= 3) return { label: 'Urgente', bg: 'var(--danger-light)', color: 'var(--danger)' }
+  if (days <= 7) return { label: 'Esta semana', bg: 'var(--warning-light)', color: 'var(--warning)' }
+  return { label: 'OK', bg: 'var(--primary-light)', color: 'var(--primary)' }
 }
 </script>
+
+<style scoped>
+.panel {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.panel-header {
+  padding: 16px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.panel-sub {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+.panel-body {
+  padding: 16px 20px;
+}
+</style>

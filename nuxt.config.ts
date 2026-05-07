@@ -26,6 +26,20 @@ export default defineNuxtConfig({
     'ag-grid-community/styles/ag-theme-quartz.css'
   ],
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@vite-pwa/nuxt', '@nuxt/eslint'],
+  vite: {
+    optimizeDeps: {
+      include: [
+        'ag-grid-community',
+        'ag-grid-vue3',
+        '@fullcalendar/core',
+        '@fullcalendar/daygrid',
+        '@fullcalendar/interaction',
+        '@fullcalendar/multimonth',
+        '@fullcalendar/vue3',
+        '@fullcalendar/core/locales/pt-br'
+      ]
+    }
+  },
   runtimeConfig: {
     editKey: process.env.EDIT_KEY || 'demo-finance-key',
     supabaseUrl: envSupabaseUrl,
@@ -84,6 +98,12 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'Financeiro Familiar',
+      link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap' },
+        { rel: 'apple-touch-icon', href: '/icon-192.png' }
+      ],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'theme-color', content: '#0f766e' },
@@ -91,9 +111,6 @@ export default defineNuxtConfig({
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
         { name: 'apple-mobile-web-app-title', content: 'Financeiro' },
         { name: 'mobile-web-app-capable', content: 'yes' }
-      ],
-      link: [
-        { rel: 'apple-touch-icon', href: '/icon-192.png' }
       ]
     }
   }
