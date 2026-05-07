@@ -350,10 +350,11 @@ const mapEntryToRow = (entry: FinanceEntry) => ({
 })
 
 const mapSettingFromRow = (row: Record<string, any>): HouseholdSettings => ({
+  // Backward compatibility: legacy persisted theme id `eva_01` now maps to `eva`.
+  themeMode: row.theme_mode === 'eva_01' ? 'eva' : row.theme_mode,
   id: row.id,
   currency: row.currency,
   timezone: row.timezone,
-  themeMode: row.theme_mode,
   densityMode: row.density_mode,
   periodMode: row.period_mode,
   horizonMonths: row.horizon_months,
