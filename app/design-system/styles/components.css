@@ -1,0 +1,65 @@
+.ds-panel {
+  @apply rounded-2xl border p-4;
+  background: color-mix(in srgb, var(--ds-color-surface-card) 98%, transparent);
+  box-shadow: var(--ds-shadow-md);
+}
+
+.ds-kpi-card {
+  @apply rounded-xl p-3;
+  background: color-mix(in srgb, var(--ds-color-surface-card-soft) 96%, transparent);
+  border: 1px solid var(--ds-color-border-default);
+}
+
+.ds-text-muted {
+  color: var(--ds-color-text-muted);
+}
+
+.ds-surface-card {
+  background: var(--ds-color-surface-card);
+}
+
+.ds-ag-theme {
+  --ag-background-color: color-mix(in srgb, var(--ds-color-surface-card) 98%, transparent);
+  --ag-foreground-color: var(--ds-color-text-primary);
+  --ag-header-background-color: color-mix(in srgb, var(--ds-color-brand-primary) 16%, var(--ds-color-surface-card));
+  --ag-font-size: 12px;
+  --ag-border-color: color-mix(in srgb, var(--ds-color-border-default) 84%, transparent);
+  --ag-header-foreground-color: var(--ds-color-text-primary);
+  --ag-odd-row-background-color: color-mix(in srgb, var(--ds-color-surface-card-soft) 95%, transparent);
+  --ag-row-hover-color: color-mix(in srgb, var(--ds-color-brand-primary) 8%, transparent);
+  --ag-selected-row-background-color: color-mix(in srgb, var(--ds-color-brand-primary) 14%, transparent);
+}
+
+.ds-alert-warning {
+  border: 1px solid color-mix(in srgb, var(--ds-color-brand-accent) 68%, #7c2d12);
+  background: color-mix(in srgb, var(--ds-color-brand-accent) 18%, var(--ds-color-surface-card));
+  color: #7c2d12;
+}
+
+.ds-alert-warning .ds-text-muted {
+  color: #92400e;
+}
+
+.ds-alert-error {
+  border: 1px solid color-mix(in srgb, var(--ds-color-state-danger) 66%, #7f1d1d);
+  background: color-mix(in srgb, var(--ds-color-state-danger) 14%, var(--ds-color-surface-card));
+  color: #7f1d1d;
+}
+
+:root[data-theme='dark'] .ds-alert-warning,
+:root[data-theme='eva_01'] .ds-alert-warning,
+:root.dark .ds-alert-warning {
+  color: #fde68a;
+}
+
+:root[data-theme='dark'] .ds-alert-warning .ds-text-muted,
+:root[data-theme='eva_01'] .ds-alert-warning .ds-text-muted,
+:root.dark .ds-alert-warning .ds-text-muted {
+  color: #fef3c7;
+}
+
+:root[data-theme='dark'] .ds-alert-error,
+:root[data-theme='eva_01'] .ds-alert-error,
+:root.dark .ds-alert-error {
+  color: #fecdd3;
+}

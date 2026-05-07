@@ -1,0 +1,357 @@
+import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
+import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection } from '#shared/finance'
+import { DEFAULT_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
+import type {
+  Account,
+  BootstrapResponse,
+  Category,
+  DashboardFilters,
+  EntryBatchRequest,
+  FinanceEntry,
+  FinanceKpis,
+  FinanceRule,
+  HouseholdSettings,
+  ThemeMode
+} from '#shared/types'
+
+const defaultSettings = (): HouseholdSettings => ({
+  id: 'household-main',
+  currency: 'BRL',
+  timezone: 'America/Sao_Paulo',
+  themeMode: 'light',
+  densityMode: 'compact',
+  periodMode: 'due_date',
+  horizonMonths: 18,
+  notificationDays: [3, 1],
+  colorTokens: { ...DEFAULT_COLORS },
+  dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG },
+  updatedAt: new Date().toISOString()
+})
+
+const defaultFilters = (): DashboardFilters => ({
+  range: 'month',
+  periodMode: 'due_date',
+  categoryIds: [],
+  accountIds: []
+})
+
+export const useFinanceStore = defineStore('finance', () => {
+  const runtime = useRuntimeConfig()
+  const route = useRoute()
+
+  const loading = ref(false)
+  const initialized = ref(false)
+  const error = ref<string | null>(null)
+  const editKey = ref<string>(runtime.public.defaultEditKey)
+
+  const settings = ref<HouseholdSettings>(defaultSettings())
+  const accounts = ref<Account[]>([])
+  const categories = ref<Category[]>([])
+  const rules = ref<FinanceRule[]>([])
+  const entries = ref<FinanceEntry[]>([])
+  const warnings = ref<string[]>([])
+  const kpis = ref<FinanceKpis>({
+    totalIncome: 0,
+    totalExpense: 0,
+    net: 0,
+    pendingAmount: 0,
+    upcoming7Days: 0,
+    cardsUsedPercent: 0
+  })
+
+  const filters = ref<DashboardFilters>(defaultFilters())
+  const offlineQueue = ref<EntryBatchRequest[]>([])
+
+  const filteredEntries = computed(() => applyFilters(entries.value, filters.value))
+
+  const categoryMap = computed(() => {
+    const map = new Map<string, Category>()
+    for (const category of categories.value) {
+      map.set(category.id, category)
+    }
+    return map
+  })
+
+  const accountMap = computed(() => {
+    const map = new Map<string, Account>()
+    for (const account of accounts.value) {
+      map.set(account.id, account)
+    }
+    return map
+  })
+
+  const chartData = computed(() => ({
+    cashflow: buildCashflowSeries(filteredEntries.value, filters.value.periodMode),
+    projection: buildProjection(filteredEntries.value, filters.value.periodMode),
+    category: buildCategoryBreakdown(filteredEntries.value),
+    cards: buildCardBreakdown(filteredEntries.value),
+    heatmap: buildHeatmap(filteredEntries.value)
+  }))
+
+  const fetchApi = async <T>(
+    path: string,
+    options: { method?: 'GET' | 'POST'; body?: any } = {}
+  ): Promise<T> => {
+    const queryKey = encodeURIComponent(editKey.value)
+    const response = await $fetch(`${path}${path.includes('?') ? '&' : '?'}key=${queryKey}`, {
+      method: options.method ?? 'GET',
+      body: options.body
+    })
+    return response as T
+  }
+
+  const applyTheme = () => {
+    if (!process.client) {
+      return
+    }
+
+    const root = document.documentElement
+    root.dataset.theme = settings.value.themeMode
+    root.classList.toggle('dark', settings.value.themeMode === 'dark' || settings.value.themeMode === 'eva_01')
+    const tokens = settings.value.colorTokens
+    root.style.setProperty('--ds-color-brand-primary', tokens.primary)
+    root.style.setProperty('--ds-color-brand-accent', tokens.accent)
+    root.style.setProperty('--ds-color-state-success', tokens.positive)
+    root.style.setProperty('--ds-color-state-danger', tokens.negative)
+    root.style.setProperty('--ds-color-state-neutral', tokens.neutral)
+    root.style.setProperty('--ds-color-surface-bg', tokens.background)
+    root.style.setProperty('--ds-color-surface-card', tokens.card)
+    root.style.setProperty('--ds-color-surface-card-soft', tokens.card)
+  }
+
+  const setThemeMode = (mode: ThemeMode) => {
+    settings.value.themeMode = mode
+    settings.value.colorTokens = { ...THEME_PRESETS[mode] }
+    applyTheme()
+  }
+
+  const loadOfflineQueue = () => {
+    if (!process.client) {
+      return
+    }
+    const raw = localStorage.getItem('finance-offline-queue')
+    if (!raw) {
+      return
+    }
+    try {
+      offlineQueue.value = JSON.parse(raw)
+    } catch {
+      offlineQueue.value = []
+    }
+  }
+
+  const persistOfflineQueue = () => {
+    if (!process.client) {
+      return
+    }
+    localStorage.setItem('finance-offline-queue', JSON.stringify(offlineQueue.value))
+  }
+
+  const pushOfflineBatch = (batch: EntryBatchRequest) => {
+    offlineQueue.value.push(batch)
+    persistOfflineQueue()
+  }
+
+  const flushOfflineQueue = async () => {
+    if (!process.client || !navigator.onLine || offlineQueue.value.length === 0) {
+      return
+    }
+
+    const pending = [...offlineQueue.value]
+    offlineQueue.value = []
+    persistOfflineQueue()
+
+    for (const batch of pending) {
+      await fetchApi<{ entries: FinanceEntry[] }>('/api/entries/batch', {
+        method: 'POST',
+        body: batch
+      })
+    }
+
+    await bootstrap()
+  }
+
+  const initEditKey = () => {
+    if (!process.client) {
+      return
+    }
+
+    const queryKey = typeof route.query.key === 'string' ? route.query.key : null
+    const saved = localStorage.getItem('finance-edit-key')
+    editKey.value = queryKey ?? saved ?? runtime.public.defaultEditKey
+    localStorage.setItem('finance-edit-key', editKey.value)
+  }
+
+  const setEditKey = (value: string) => {
+    editKey.value = value.trim()
+    if (process.client) {
+      localStorage.setItem('finance-edit-key', editKey.value)
+    }
+  }
+
+  const bootstrap = async () => {
+    loading.value = true
+    error.value = null
+    try {
+      const response = await fetchApi<BootstrapResponse>('/api/bootstrap')
+      settings.value = response.settings
+      accounts.value = response.accounts
+      categories.value = response.categories
+      rules.value = response.rules
+      entries.value = response.entries
+      warnings.value = response.warnings
+      kpis.value = response.kpis
+      filters.value.periodMode = response.settings.periodMode
+      if (!filters.value.range) {
+        filters.value.range = response.settings.dashboardConfig.defaultRange
+      }
+      applyTheme()
+      initialized.value = true
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Falha ao carregar dados'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const saveEntriesBatch = async (batch: EntryBatchRequest) => {
+    if (process.client && !navigator.onLine) {
+      pushOfflineBatch(batch)
+      for (const entry of batch.upserts) {
+        if (!entry.id) {
+          continue
+        }
+        const index = entries.value.findIndex((item) => item.id === entry.id)
+        if (index >= 0) {
+          entries.value[index] = { ...entries.value[index], ...entry } as FinanceEntry
+        }
+      }
+      if (batch.deletes.length > 0) {
+        entries.value = entries.value.filter((entry) => !batch.deletes.includes(entry.id))
+      }
+      return
+    }
+
+    const response = await fetchApi<{ entries: FinanceEntry[] }>('/api/entries/batch', {
+      method: 'POST',
+      body: batch
+    })
+    entries.value = response.entries
+  }
+
+  const rebuildRules = async () => {
+    await fetchApi('/api/rules/rebuild', { method: 'POST' })
+    await bootstrap()
+  }
+
+  const saveTheme = async () => {
+    const response = await fetchApi<{ settings: HouseholdSettings }>('/api/settings/theme', {
+      method: 'POST',
+      body: {
+        themeMode: settings.value.themeMode,
+        densityMode: settings.value.densityMode,
+        colorTokens: settings.value.colorTokens
+      }
+    })
+    settings.value = response.settings
+    applyTheme()
+  }
+
+  const saveDashboard = async () => {
+    const response = await fetchApi<{ settings: HouseholdSettings }>('/api/settings/dashboard', {
+      method: 'POST',
+      body: {
+        periodMode: filters.value.periodMode,
+        dashboardConfig: settings.value.dashboardConfig
+      }
+    })
+    settings.value = response.settings
+  }
+
+  const importCsv = async (csvText: string, accountId: string | null) => {
+    await fetchApi('/api/import/csv', {
+      method: 'POST',
+      body: { csvText, accountId }
+    })
+    await bootstrap()
+  }
+
+  const requestNotifications = async () => {
+    if (!process.client || !('Notification' in window)) {
+      return
+    }
+    if (Notification.permission === 'default') {
+      await Notification.requestPermission()
+    }
+  }
+
+  const notifyUpcoming = () => {
+    if (!process.client || !('Notification' in window) || Notification.permission !== 'granted') {
+      return
+    }
+
+    const today = new Date()
+    const start = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()))
+    const end = new Date(start)
+    end.setUTCDate(end.getUTCDate() + 3)
+
+    const upcoming = entries.value.filter((entry) => {
+      if (entry.kind !== 'expense' || entry.status === 'paid') {
+        return false
+      }
+      const due = new Date(`${entry.dueDate}T00:00:00.000Z`)
+      return due >= start && due <= end
+    })
+
+    if (upcoming.length > 0) {
+      const total = upcoming.reduce((sum, entry) => sum + entry.amount, 0)
+      new Notification('Vencimentos proximos', {
+        body: `${upcoming.length} conta(s) em ate 3 dias. Total R$ ${total.toFixed(2)}`
+      })
+    }
+  }
+
+  const boot = async () => {
+    initEditKey()
+    loadOfflineQueue()
+    await bootstrap()
+    if (process.client) {
+      window.addEventListener('online', flushOfflineQueue)
+    }
+  }
+
+  return {
+    loading,
+    initialized,
+    error,
+    editKey,
+    settings,
+    accounts,
+    categories,
+    rules,
+    entries,
+    warnings,
+    kpis,
+    filters,
+    chartData,
+    filteredEntries,
+    categoryMap,
+    accountMap,
+    offlineQueue,
+    setEditKey,
+    bootstrap,
+    boot,
+    saveEntriesBatch,
+    rebuildRules,
+    saveTheme,
+    saveDashboard,
+    importCsv,
+    requestNotifications,
+    notifyUpcoming,
+    applyTheme,
+    setThemeMode,
+    flushOfflineQueue
+  }
+})

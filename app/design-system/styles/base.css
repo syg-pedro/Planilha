@@ -1,0 +1,22 @@
+html,
+body,
+#__nuxt {
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--ds-font-family-sans);
+  color: var(--ds-color-text-primary);
+  background:
+    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--ds-color-brand-primary) 14%, transparent), transparent 42%),
+    radial-gradient(circle at 8% 92%, color-mix(in srgb, var(--ds-color-brand-accent) 12%, transparent), transparent 46%),
+    var(--ds-color-surface-bg);
+}
+
+* {
+  border-color: var(--ds-color-border-default);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--ds-color-brand-primary) 28%, transparent);
+}
