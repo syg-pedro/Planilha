@@ -21,13 +21,15 @@ const parseAmount = (raw: string): number => {
 }
 
 const parseDay = (line: string): number | null => {
-  const match = line.match(/(?:dia|vence|vencimento)\s*(\d{1,2})/i)
+  // Prefer explicit vence/vencimento (due date) over standalone "dia" which can also appear in "fecha dia N"
+  const match =
+    line.match(/(?:vence|vencimento)\s*(?:dia\s*)?(\d{1,2})/i) ??
+    line.match(/\bdia\s+(\d{1,2})\b/i)
   if (!match) {
     return null
   }
-
   const day = Number.parseInt(match[1] ?? '0', 10)
-  return Number.isFinite(day) ? day : null
+  return day > 0 && day <= 31 ? day : null
 }
 
 const parseLimit = (line: string): number | null => {
@@ -36,7 +38,8 @@ const parseLimit = (line: string): number | null => {
 }
 
 const parseClosingDay = (line: string): number | null => {
-  const match = line.match(/(?:fechamento|fecha|final)\s*(\d{1,2})/i)
+  // Handle both "fechamento 11" and "fecha dia 12" patterns
+  const match = line.match(/(?:fechamento|fecha|final)\s*(?:dia\s*)?(\d{1,2})/i)
   if (!match) {
     return null
   }
@@ -165,7 +168,9 @@ const parseInstallmentTokens = (line: string, dueDay: number, warnings: string[]
       continue
     }
 
-    const match = chunk.match(/(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s*(\d{2,4})?.*?([\d.,]+)$/i)
+    // Strip trailing alphabetic words after the last number (e.g. "ago 56,88 assinaturas mensais" → "ago 56,88")
+    const cleanedChunk = chunk.replace(/([\d,]+)\s+[a-zA-ZÀ-ú][a-zA-ZÀ-ú\s]*$/, '$1')
+    const match = cleanedChunk.match(/(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s*(\d{2,4})?.*?([\d.,]+)$/i)
     if (!match) {
       continue
     }
