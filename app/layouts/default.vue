@@ -1,162 +1,396 @@
 <template>
-  <div
-    class="min-h-dvh"
-    style="padding-bottom: env(safe-area-inset-bottom, 0px)"
-  >
-    <header
-      class="sticky top-0 border-b backdrop-blur-md"
+  <div :style="{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', display: 'flex' }">
+
+    <!-- Desktop sidebar -->
+    <aside
+      v-if="!isMobile"
       :style="{
-        zIndex: 'var(--ds-z-header)',
-        borderColor: 'var(--ds-color-border-default)',
-        background: 'color-mix(in srgb, var(--ds-color-surface-card) 92%, transparent)',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-        boxShadow: 'var(--ds-shadow-sm)'
+        width: collapsed ? '68px' : '240px',
+        minHeight: '100vh',
+        position: 'sticky',
+        top: 0,
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-sm)',
+        transition: 'width .25s cubic-bezier(.4,0,.2,1)',
+        overflow: 'hidden',
+        zIndex: 100,
+        height: '100vh',
       }"
     >
-      <div class="mx-auto flex h-[58px] max-w-7xl items-center gap-4 px-5">
-        <!-- Logo -->
-        <div class="mr-2 flex shrink-0 items-center gap-2.5">
-          <div
-            class="flex items-center justify-center rounded-[9px]"
-            style="width: 32px; height: 32px; background: var(--ds-color-brand-primary)"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-          </div>
-          <div class="leading-none">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.08em]" style="color: var(--ds-color-text-muted); line-height: 1">Financeiro</p>
-            <p class="text-sm font-extrabold" style="color: var(--ds-color-text-primary); line-height: 1.2">Familiar</p>
-          </div>
+      <!-- Logo -->
+      <div :style="{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 14px', borderBottom: '1px solid var(--border)', height: '56px', flexShrink: 0, overflow: 'hidden' }">
+        <div style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+          <BaseIcon name="balance" :size="17" color="#fff" />
         </div>
-
-        <!-- Nav tabs (desktop) -->
-        <nav class="hidden flex-1 gap-1 sm:flex">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            class="flex items-center gap-1.5 rounded-md border-none px-3.5 py-1.5 text-[13px] font-semibold transition-all"
-            :style="activeTab === tab.id
-              ? { background: 'var(--ds-color-brand-primary-dim)', color: 'var(--ds-color-brand-primary)' }
-              : { background: 'transparent', color: 'var(--ds-color-text-secondary)' }"
-            @click="activeTab = tab.id"
-            @mouseenter="($event.currentTarget as HTMLElement).style.background = activeTab === tab.id ? 'var(--ds-color-brand-primary-dim)' : 'var(--ds-color-surface-card-soft)'"
-            @mouseleave="($event.currentTarget as HTMLElement).style.background = activeTab === tab.id ? 'var(--ds-color-brand-primary-dim)' : 'transparent'"
-          >
-            <svg v-if="tab.id === 'dashboard'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-            <svg v-else-if="tab.id === 'planilha'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            <svg v-else-if="tab.id === 'calendario'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <svg v-else-if="tab.id === 'config'" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-            {{ tab.label }}
-          </button>
-        </nav>
-
-        <!-- Right side: month indicator + net balance -->
-        <div class="ml-auto flex shrink-0 items-center gap-2.5">
-          <span
-            class="hidden items-center gap-1.5 text-xs font-semibold sm:flex"
-            style="color: var(--ds-color-text-muted)"
-          >
-            <span
-              class="inline-block rounded-full"
-              style="width: 7px; height: 7px; background: var(--ds-color-state-success)"
-            />
-            {{ currentMonthLabel }}
-          </span>
-          <div
-            v-if="store.entries.length > 0"
-            class="rounded-full px-2.5 py-1 text-xs font-bold"
-            style="background: var(--ds-color-brand-primary-dim); color: var(--ds-color-brand-primary)"
-          >
-            {{ currency.format(store.kpis.net) }}
-          </div>
-
-          <!-- Key toggle (hidden by default, show on hover) -->
-          <div class="relative" @mouseenter="showKeyInput = true" @mouseleave="showKeyInput = false">
-            <button
-              class="rounded-md border p-1.5 transition-colors"
-              :style="{ borderColor: 'var(--ds-color-border-default)', color: 'var(--ds-color-text-muted)', background: 'var(--ds-color-surface-card-soft)' }"
-              title="Chave de acesso"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
-              </svg>
-            </button>
-            <div
-              v-if="showKeyInput"
-              class="absolute right-0 top-full z-50 mt-1 flex gap-1 rounded-xl border p-2 shadow-md"
-              style="background: var(--ds-color-surface-card); border-color: var(--ds-color-border-default); box-shadow: var(--ds-shadow-md); min-width: 220px"
-            >
-              <input
-                v-model="keyDraft"
-                type="password"
-                placeholder="edit key"
-                class="ds-field flex-1"
-                style="height: 30px; font-size: 12px"
-                @keyup.enter="applyKey"
-              />
-              <button
-                class="rounded-lg px-2.5 text-xs font-semibold transition-all"
-                style="background: var(--ds-color-brand-primary); color: #fff; border: none; height: 30px; cursor: pointer"
-                @click="applyKey"
-              >
-                OK
-              </button>
-            </div>
-          </div>
+        <div :style="{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: collapsed ? 0 : 1, transition: 'opacity .15s', pointerEvents: collapsed ? 'none' : 'auto' }">
+          <p style="font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">Financeiro</p>
+          <p style="font-size: 14px; font-weight: 800; color: var(--text)">Familiar</p>
         </div>
       </div>
 
-      <!-- Mobile nav tabs (below header) -->
-      <div
-        class="flex gap-1 overflow-x-auto border-t px-4 pb-1 pt-1 sm:hidden [&::-webkit-scrollbar]:hidden"
-        style="border-color: var(--ds-color-border-default)"
-      >
+      <!-- Nav -->
+      <nav style="flex: 1; padding: 8px 6px; overflow-y: auto; overflow-x: hidden">
+        <div v-for="group in NAV_GROUPS" :key="group.id" style="margin-bottom: 4px">
+          <!-- Group header -->
+          <button
+            v-if="!collapsed"
+            style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 5px 8px; background: none; border: none; cursor: pointer; color: var(--text3); font-family: inherit; margin-bottom: 1px"
+            @click="toggleGroup(group.id)"
+          >
+            <span style="font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase">{{ group.label }}</span>
+            <span :style="{ display: 'flex', transition: 'transform .2s', transform: openGroups.includes(group.id) ? 'rotate(0)' : 'rotate(-90deg)' }">
+              <BaseIcon name="chevron_down" :size="12" />
+            </span>
+          </button>
+          <!-- Items -->
+          <template v-if="collapsed || openGroups.includes(group.id)">
+            <button
+              v-for="item in group.items"
+              :key="item.id"
+              :title="collapsed ? item.label : ''"
+              :style="{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '9px',
+                padding: collapsed ? '9px 0' : '8px 10px',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                borderRadius: 'var(--radius-xs)',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontWeight: 600,
+                fontSize: '13px',
+                background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
+                color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
+                transition: 'background .12s, color .12s',
+                width: '100%',
+                position: 'relative',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+              }"
+              @mouseenter="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'var(--surface2)'"
+              @mouseleave="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'transparent'"
+              @click="goTo(item.id)"
+            >
+              <span v-if="activeScreen === item.id" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
+              <span style="position: relative; flex-shrink: 0">
+                <BaseIcon :name="item.icon" :size="16" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
+                <span
+                  v-if="item.id === 'alerts' && alertCount > 0"
+                  style="position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff"
+                >{{ alertCount }}</span>
+              </span>
+              <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">{{ item.label }}</span>
+            </button>
+          </template>
+          <div v-if="!collapsed" style="height: 4px" />
+        </div>
+      </nav>
+
+      <!-- Bottom -->
+      <div style="border-top: 1px solid var(--border); padding: 8px 6px; display: flex; flex-direction: column; gap: 2px">
         <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          class="shrink-0 rounded-md px-3 py-1 text-xs font-semibold transition-all"
-          :style="activeTab === tab.id
-            ? { background: 'var(--ds-color-brand-primary-dim)', color: 'var(--ds-color-brand-primary)' }
-            : { background: 'transparent', color: 'var(--ds-color-text-muted)' }"
-          @click="activeTab = tab.id"
+          v-for="item in [DS_ITEM, SETTINGS_ITEM]"
+          :key="item.id"
+          :title="collapsed ? item.label : ''"
+          :style="{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '9px',
+            padding: collapsed ? '9px 0' : '8px 10px',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            borderRadius: 'var(--radius-xs)',
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            fontWeight: 600,
+            fontSize: '13px',
+            background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
+            color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
+            transition: 'background .12s, color .12s',
+            width: '100%',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+          }"
+          @mouseenter="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'var(--surface2)'"
+          @mouseleave="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'transparent'"
+          @click="goTo(item.id)"
         >
-          {{ tab.label }}
+          <BaseIcon :name="item.icon" :size="16" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
+          <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">{{ item.label }}</span>
+        </button>
+
+        <!-- Net worth badge -->
+        <div
+          v-if="!collapsed"
+          style="margin: 4px 4px 0; padding: 9px 10px; border-radius: var(--radius-xs); background: var(--primary-dim); border: 1px solid var(--primary)"
+        >
+          <p style="font-size: 9px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px">{{ currentMonthName }}</p>
+          <p style="font-size: 14px; font-weight: 800; color: var(--primary)">{{ currency.format(store.kpis.net) }}</p>
+          <p style="font-size: 9px; color: var(--primary); opacity: 0.7">saldo líquido</p>
+        </div>
+
+        <!-- Collapse button -->
+        <button
+          style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-xs); border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 12px; font-weight: 600; width: 100%; transition: background .12s; white-space: nowrap; overflow: hidden"
+          :style="{ justifyContent: collapsed ? 'center' : 'flex-start' }"
+          @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
+          @mouseleave="($event.currentTarget as HTMLElement).style.background = 'transparent'"
+          @click="collapsed = !collapsed"
+        >
+          <span :style="{ display: 'flex', flexShrink: 0, transition: 'transform .25s cubic-bezier(.4,0,.2,1)', transform: collapsed ? 'rotate(180deg)' : 'none' }">
+            <BaseIcon name="chevron_left" :size="15" />
+          </span>
+          <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '120px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">Recolher</span>
         </button>
       </div>
-    </header>
+    </aside>
 
-    <main
-      class="mx-auto max-w-7xl px-5 py-5"
-      style="padding-left: max(1.25rem, env(safe-area-inset-left)); padding-right: max(1.25rem, env(safe-area-inset-right))"
+    <!-- Mobile drawer overlay -->
+    <div
+      v-if="isMobile && drawerOpen"
+      style="position: fixed; inset: 0; z-index: 300; display: flex"
+      @click="drawerOpen = false"
     >
-      <slot />
-    </main>
+      <div style="position: absolute; inset: 0; background: oklch(0% 0 0 / 0.45); backdrop-filter: blur(2px)" />
+      <div
+        style="position: relative; width: 280px; height: 100%; background: var(--surface); border-right: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 1; display: flex; flex-direction: column; animation: slideInLeft .22s cubic-bezier(.4,0,.2,1); overflow-y: auto"
+        @click.stop
+      >
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); height: 56px; flex-shrink: 0">
+          <div style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center">
+            <BaseIcon name="balance" :size="17" color="#fff" />
+          </div>
+          <div>
+            <p style="font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">Financeiro</p>
+            <p style="font-size: 14px; font-weight: 800; color: var(--text)">Familiar</p>
+          </div>
+        </div>
+        <nav style="flex: 1; padding: 8px 8px">
+          <div v-for="group in NAV_GROUPS" :key="group.id" style="margin-bottom: 8px">
+            <p style="font-size: 9px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 8px; margin-bottom: 2px">{{ group.label }}</p>
+            <button
+              v-for="item in group.items"
+              :key="item.id"
+              :style="{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px 10px',
+                borderRadius: 'var(--radius-sm)',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontWeight: 600,
+                fontSize: '14px',
+                background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
+                color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
+                transition: 'background .12s',
+                width: '100%',
+                position: 'relative',
+              }"
+              @mouseenter="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'var(--surface2)'"
+              @mouseleave="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'transparent'"
+              @click="goTo(item.id)"
+            >
+              <span v-if="activeScreen === item.id" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
+              <BaseIcon :name="item.icon" :size="18" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
+              {{ item.label }}
+              <span v-if="item.id === 'alerts' && alertCount > 0" style="margin-left: auto; display: inline-flex; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; background: var(--danger-light); color: var(--danger)">{{ alertCount }}</span>
+            </button>
+          </div>
+        </nav>
+        <div style="border-top: 1px solid var(--border); padding: 8px 8px">
+          <button
+            v-for="item in [DS_ITEM, SETTINGS_ITEM]"
+            :key="item.id"
+            :style="{
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 10px',
+              borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              fontWeight: 600, fontSize: '14px',
+              background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
+              color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
+              width: '100%', transition: 'background .12s',
+            }"
+            @click="goTo(item.id)"
+          >
+            <BaseIcon :name="item.icon" :size="18" />{{ item.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main area -->
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+
+      <!-- Top bar -->
+      <div style="height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 90; flex-shrink: 0">
+        <!-- Mobile: hamburger -->
+        <button
+          v-if="isMobile"
+          style="background: none; border: none; cursor: pointer; color: var(--text); display: flex; padding: 6px; border-radius: 8px; position: relative"
+          @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
+          @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
+          @click="drawerOpen = !drawerOpen"
+        >
+          <BaseIcon name="menu" :size="20" />
+          <span v-if="alertCount > 0" style="position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface)" />
+        </button>
+
+        <!-- Title -->
+        <div style="flex: 1; min-width: 0">
+          <h1 style="font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ currentItemLabel }}</h1>
+          <p v-if="!isMobile" style="font-size: 11px; color: var(--text3)">{{ currentMonthName }} de {{ currentYear }}</p>
+        </div>
+
+        <!-- Right: income/expense summary + alerts + balance -->
+        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
+          <span v-if="!isMobile" style="font-size: 12px; color: var(--text3); font-weight: 600">
+            ↑ <span style="color: var(--success)">{{ currency.format(store.kpis.totalIncome) }}</span>
+            &nbsp;↓ <span style="color: var(--danger)">{{ currency.format(store.kpis.totalExpense) }}</span>
+          </span>
+          <button
+            style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; padding: 6px; border-radius: 8px; position: relative"
+            @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
+            @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
+            @click="goTo('alerts')"
+          >
+            <BaseIcon name="alerts" :size="20" />
+            <span v-if="alertCount > 0" style="position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff">{{ alertCount }}</span>
+          </button>
+          <div style="padding: 4px 10px; border-radius: 99px; background: var(--primary-dim); border: 1px solid var(--primary)">
+            <span style="font-size: 12px; font-weight: 800; color: var(--primary)">{{ currency.format(store.kpis.net) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <main
+        :style="{
+          flex: 1,
+          padding: isMobile ? '16px 12px 80px' : '24px',
+          maxWidth: '1280px',
+          width: '100%',
+          margin: '0 auto',
+          animation: 'fadeIn .18s ease',
+        }"
+      >
+        <slot />
+      </main>
+    </div>
+
+    <!-- Mobile bottom nav -->
+    <nav
+      v-if="isMobile"
+      style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -4px 20px oklch(0% 0 0 / 0.1); display: flex"
+      :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
+    >
+      <button
+        v-for="item in BOTTOM_NAV_ITEMS"
+        :key="item.id"
+        :style="{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '3px',
+          padding: '10px 4px 8px',
+          border: 'none',
+          cursor: 'pointer',
+          background: 'transparent',
+          color: activeScreen === item.id ? 'var(--primary)' : 'var(--text3)',
+          fontFamily: 'inherit',
+          fontSize: '9px',
+          fontWeight: 700,
+          transition: 'color .12s',
+          position: 'relative',
+        }"
+        @click="goTo(item.id)"
+      >
+        <span v-if="activeScreen === item.id" style="position: absolute; top: 0; left: 20%; right: 20%; height: 2px; border-radius: 99px; background: var(--primary)" />
+        <span style="position: relative">
+          <BaseIcon :name="item.icon" :size="22" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
+          <span v-if="item.id === 'alerts' && alertCount > 0" style="position: absolute; top: -3px; right: -4px; width: 13px; height: 13px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 800; color: #fff">{{ alertCount }}</span>
+        </span>
+        {{ item.label }}
+      </button>
+      <button
+        style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px 4px 8px; border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 9px; font-weight: 700"
+        @click="drawerOpen = true"
+      >
+        <BaseIcon name="menu" :size="22" />Mais
+      </button>
+    </nav>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import BaseIcon from '~/components/base/BaseIcon.vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import { FINANCE_TABS } from '~/features/finance/constants/ui'
+import { NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, DS_ITEM } from '~/features/finance/constants/ui'
 
 const store = useFinanceStore()
 const currency = useCurrency()
-const activeTab = useState('finance-tab', () => 'dashboard')
-const keyDraft = ref(store.editKey)
-const showKeyInput = ref(false)
 
-const tabs = FINANCE_TABS
+const activeScreen = useState('finance-screen', () => 'dashboard')
+const collapsed = ref(false)
+const drawerOpen = ref(false)
+const isMobile = ref(false)
+const openGroups = ref(['overview', 'finance', 'control', 'commitments', 'analysis'])
+
+const alertCount = 3
 
 const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
-const currentMonthLabel = computed(() => {
-  const now = new Date()
-  return `${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`
+const now = new Date()
+const currentMonthName = MONTH_NAMES[now.getMonth()]
+const currentYear = now.getFullYear()
+
+const ALL_ITEMS = [...NAV_GROUPS.flatMap(g => g.items), SETTINGS_ITEM, DS_ITEM]
+const currentItemLabel = computed(() => ALL_ITEMS.find(i => i.id === activeScreen.value)?.label ?? 'Dashboard')
+
+watch(() => store.settings.themeMode, () => {
+  if (process.client) {
+    document.documentElement.dataset.theme = store.settings.themeMode
+    document.documentElement.classList.toggle('dark', store.settings.themeMode === 'dark')
+  }
+}, { immediate: true })
+
+const updateMobile = () => { isMobile.value = window.innerWidth < 768 }
+
+onMounted(() => {
+  updateMobile()
+  window.addEventListener('resize', updateMobile)
 })
 
-const applyKey = async () => {
-  store.setEditKey(keyDraft.value)
-  await store.bootstrap()
-  showKeyInput.value = false
+onUnmounted(() => window.removeEventListener('resize', updateMobile))
+
+const goTo = (id: string) => {
+  activeScreen.value = id
+  drawerOpen.value = false
+}
+
+const toggleGroup = (id: string) => {
+  if (openGroups.value.includes(id)) {
+    openGroups.value = openGroups.value.filter(x => x !== id)
+  } else {
+    openGroups.value = [...openGroups.value, id]
+  }
 }
 </script>
+
+<style>
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: .5 }
+  to   { transform: translateX(0);    opacity: 1  }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px) }
+  to   { opacity: 1; transform: none             }
+}
+</style>
