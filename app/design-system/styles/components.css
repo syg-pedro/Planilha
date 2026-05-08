@@ -1,111 +1,133 @@
+/* ── Form fields ──────────────────────────────────────────── */
+.ds-field {
+  @apply w-full rounded-lg border px-3 text-sm outline-none transition;
+  height: 38px;
+  background: var(--ds-color-surface-card-soft);
+  border-color: var(--ds-color-border-default);
+  color: var(--ds-color-text-primary);
+}
+
+.ds-field::placeholder {
+  color: var(--ds-color-text-muted);
+  opacity: 0.8;
+}
+
+.ds-field:focus {
+  border-color: var(--ds-color-brand-primary);
+  box-shadow: 0 0 0 3px var(--ds-color-brand-primary-dim);
+}
+
+.ds-select {
+  cursor: pointer;
+  padding-right: 2.25rem;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  background-size: 1.125rem 1.125rem;
+}
+
+/* ── Panels ───────────────────────────────────────────────── */
 .ds-panel {
-  @apply rounded-2xl border p-4;
-  background: color-mix(in srgb, var(--ds-color-surface-card) 97%, transparent);
-  box-shadow: var(--ds-shadow-md);
+  @apply rounded-2xl border overflow-hidden;
+  background: var(--ds-color-surface-card);
+  box-shadow: var(--ds-shadow-sm);
+  padding: 16px 20px;
+}
+
+.ds-panel-header {
+  padding: 16px 20px 0;
+}
+
+.ds-panel-body {
+  padding: 16px 20px;
 }
 
 .ds-kpi-card {
-  @apply rounded-xl p-3;
-  background: color-mix(in srgb, var(--ds-color-surface-card-soft) 96%, transparent);
-  border: 1px solid var(--ds-color-border-default);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: default;
+}
+
+.ds-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .ds-text-muted {
   color: var(--ds-color-text-muted);
 }
 
+.ds-text-secondary {
+  color: var(--ds-color-text-secondary);
+}
+
 .ds-surface-card {
   background: var(--ds-color-surface-card);
 }
 
-.ds-badge {
-  border: 1px solid var(--ds-color-border-default);
+/* ── Status badges ────────────────────────────────────────── */
+.ds-badge-paid {
+  background: var(--ds-color-state-success-light);
+  color: var(--ds-color-state-success);
+  border-radius: 99px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.ds-badge-success {
-  background: color-mix(in srgb, var(--ds-color-state-success) 18%, var(--ds-color-surface-card));
-  color: color-mix(in srgb, var(--ds-color-state-success) 82%, #052e16);
+.ds-badge-pending {
+  background: var(--ds-color-state-warning-light);
+  color: var(--ds-color-state-warning);
+  border-radius: 99px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.ds-badge-warning {
-  background: color-mix(in srgb, var(--ds-color-brand-accent) 18%, var(--ds-color-surface-card));
-  color: color-mix(in srgb, var(--ds-color-brand-accent) 82%, #7c2d12);
+.ds-badge-review {
+  background: var(--ds-color-state-danger-light);
+  color: var(--ds-color-state-danger);
+  border-radius: 99px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
-.ds-badge-neutral {
-  background: color-mix(in srgb, var(--ds-color-state-neutral) 20%, var(--ds-color-surface-card));
-  color: color-mix(in srgb, var(--ds-color-state-neutral) 88%, var(--ds-color-text-primary));
-}
-
-.ds-field {
-  width: 100%;
-  border: 1px solid var(--ds-color-border-strong);
-  border-radius: var(--ds-radius-md);
-  background: color-mix(in srgb, var(--ds-color-surface-card) 97%, transparent);
-  color: var(--ds-color-text-primary);
-  padding: 0.55rem 0.8rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  line-height: 1.4;
-  outline: none;
-  transition:
-    border-color var(--ds-motion-fast) ease,
-    box-shadow var(--ds-motion-fast) ease,
-    background-color var(--ds-motion-fast) ease;
-}
-
-.ds-field::placeholder {
-  color: color-mix(in srgb, var(--ds-color-text-muted) 75%, transparent);
-  font-weight: 500;
-}
-
-.ds-field:hover {
-  border-color: color-mix(in srgb, var(--ds-color-brand-primary) 36%, var(--ds-color-border-strong));
-}
-
-.ds-field:focus-visible {
-  border-color: color-mix(in srgb, var(--ds-color-brand-primary) 72%, #ffffff);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-color-brand-primary) 22%, transparent);
-}
-
-.ds-field:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.ds-select {
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, color-mix(in srgb, var(--ds-color-text-muted) 82%, transparent) 50%),
-    linear-gradient(135deg, color-mix(in srgb, var(--ds-color-text-muted) 82%, transparent) 50%, transparent 50%);
-  background-position:
-    calc(100% - 15px) calc(50% - 2px),
-    calc(100% - 10px) calc(50% - 2px);
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
-  padding-right: 2.1rem;
-}
-
+/* ── AG Grid theme ────────────────────────────────────────── */
 .ds-ag-theme {
-  --ag-background-color: color-mix(in srgb, var(--ds-color-surface-card) 98%, transparent);
+  --ag-background-color: var(--ds-color-surface-card);
   --ag-foreground-color: var(--ds-color-text-primary);
-  --ag-header-background-color: color-mix(in srgb, var(--ds-color-brand-primary) 16%, var(--ds-color-surface-card));
+  --ag-header-background-color: var(--ds-color-surface-card-soft);
   --ag-font-size: 12px;
-  --ag-border-color: color-mix(in srgb, var(--ds-color-border-default) 84%, transparent);
-  --ag-header-foreground-color: var(--ds-color-text-primary);
+  --ag-border-color: var(--ds-color-border-default);
+  --ag-header-foreground-color: var(--ds-color-text-secondary);
   --ag-odd-row-background-color: color-mix(in srgb, var(--ds-color-surface-card-soft) 95%, transparent);
   --ag-row-hover-color: color-mix(in srgb, var(--ds-color-brand-primary) 8%, transparent);
   --ag-selected-row-background-color: color-mix(in srgb, var(--ds-color-brand-primary) 14%, transparent);
 }
 
+/* ── Alert variants ───────────────────────────────────────── */
 .ds-alert-warning {
-  border: 1px solid color-mix(in srgb, var(--ds-color-brand-accent) 74%, #7c2d12);
-  background: color-mix(in srgb, var(--ds-color-brand-accent) 22%, var(--ds-color-surface-card));
-  color: #713f12;
+  border: 1px solid color-mix(in srgb, var(--ds-color-brand-accent) 68%, #7c2d12);
+  background: color-mix(in srgb, var(--ds-color-brand-accent) 18%, var(--ds-color-surface-card));
+  color: #7c2d12;
 }
 
 .ds-alert-warning .ds-text-muted {
-  color: #7c5318;
+  color: #92400e;
 }
 
 .ds-alert-error {
@@ -115,78 +137,19 @@
 }
 
 :root[data-theme='dark'] .ds-alert-warning,
-:root[data-theme='eva_01'] .ds-alert-warning,
+:root[data-theme='eva'] .ds-alert-warning,
 :root.dark .ds-alert-warning {
   color: #fde68a;
 }
 
 :root[data-theme='dark'] .ds-alert-warning .ds-text-muted,
-:root[data-theme='eva_01'] .ds-alert-warning .ds-text-muted,
+:root[data-theme='eva'] .ds-alert-warning .ds-text-muted,
 :root.dark .ds-alert-warning .ds-text-muted {
   color: #fef3c7;
 }
 
 :root[data-theme='dark'] .ds-alert-error,
-:root[data-theme='eva_01'] .ds-alert-error,
+:root[data-theme='eva'] .ds-alert-error,
 :root.dark .ds-alert-error {
   color: #fecdd3;
-}
-
-.fc .fc-toolbar-title,
-.fc .fc-col-header-cell-cushion,
-.fc .fc-daygrid-day-number {
-  color: var(--ds-color-text-primary);
-}
-
-.fc .fc-button-primary {
-  border: 1px solid var(--ds-color-border-strong);
-  background: color-mix(in srgb, var(--ds-color-surface-card) 96%, transparent);
-  color: var(--ds-color-text-primary);
-}
-
-.fc .fc-button-primary:hover {
-  background: color-mix(in srgb, var(--ds-color-brand-primary) 14%, var(--ds-color-surface-card));
-}
-
-@media (max-width: 640px) {
-  .ds-panel {
-    padding: 0.8rem;
-    border-radius: 0.9rem;
-  }
-
-  .ds-kpi-card {
-    padding: 0.75rem;
-  }
-
-  .ds-field {
-    min-height: 2.6rem;
-    font-size: 0.88rem;
-  }
-
-  .fc .fc-toolbar {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .fc .fc-toolbar-title {
-    font-size: 1rem;
-    text-align: center;
-  }
-
-  .fc .fc-toolbar-chunk {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-  }
-
-  .fc .fc-button {
-    padding: 0.42rem 0.6rem;
-    font-size: 0.75rem;
-  }
-
-  .fc .fc-daygrid-day-number {
-    font-size: 0.72rem;
-  }
 }

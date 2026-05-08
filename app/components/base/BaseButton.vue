@@ -49,7 +49,7 @@ const sizes: Record<Size, string> = {
 
 const buttonClass = computed(() => {
   const base =
-    'inline-flex min-h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg font-semibold transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60'
+    'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60'
   const sizeClass = sizes[props.size]
   const variantClass = variants[props.variant]
   return [base, sizeClass, variantClass, props.block ? 'w-full' : '']
