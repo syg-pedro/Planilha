@@ -1,79 +1,254 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 12px">
-    <div style="display: flex; justify-content: space-between; align-items: center">
+  <div style="display: flex; flex-direction: column; gap: 16px">
+
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px">
       <div>
         <h2 style="font-size: 16px; font-weight: 800; color: var(--text)">Alertas inteligentes</h2>
-        <p style="font-size: 12px; color: var(--text3)">{{ visible.length }} alertas ativos</p>
+        <p style="font-size: 12px; color: var(--text3); margin-top: 2px">{{ activeAlerts.length }} alerta(s) ativo(s)</p>
       </div>
       <button
-        style="display: inline-flex; align-items: center; padding: 5px 12px; font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border)"
+        v-if="activeAlerts.length > 0"
+        style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border)"
         @click="dismissAll"
-      >Limpar todos</button>
-    </div>
-
-    <BaseEmptyState v-if="visible.length === 0" icon="check" title="Tudo em ordem!" body="Nenhum alerta ativo no momento." />
-
-    <div v-else style="display: flex; flex-direction: column; gap: 10px">
-      <div
-        v-for="(a, i) in visible"
-        :key="i"
-        style="border-radius: var(--radius); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start"
-        :style="{ background: bgMap[a.tone], border: `1px solid ${borderMap[a.tone]}` }"
       >
-        <div
-          style="width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px"
-          :style="{ background: borderMap[a.tone] + '22' }"
-        >
-          <BaseIcon :name="a.icon" :size="18" :color="borderMap[a.tone]" />
-        </div>
-        <div style="flex: 1; min-width: 0">
-          <p style="font-size: 14px; font-weight: 700; color: var(--text)">{{ a.title }}</p>
-          <p style="font-size: 12px; color: var(--text2); margin-top: 3px">{{ a.body }}</p>
-          <button v-if="a.action" style="margin-top: 8px; font-size: 12px; font-weight: 700; background: none; border: none; cursor: pointer; padding: 0" :style="{ color: borderMap[a.tone] }">{{ a.action }} →</button>
-        </div>
-        <button
-          style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px; border-radius: 6px; display: flex"
-          @click="dismiss(i)"
-        >
-          <BaseIcon name="close" :size="14" />
-        </button>
-      </div>
+        <BaseIcon name="close" :size="13" />
+        Dispensar todos
+      </button>
     </div>
+
+    <!-- Empty -->
+    <BaseEmptyState
+      v-if="activeAlerts.length === 0"
+      icon="check"
+      title="Nenhum alerta"
+      body="Tudo parece estar sob controle. Continue assim!"
+    />
+
+    <!-- Alert cards -->
+    <div
+      v-for="alert in activeAlerts"
+      :key="alert.id"
+      :style="{
+        background: 'var(--surface)',
+        borderRadius: 'var(--radius)',
+        border: `1px solid ${TONE_COLORS[alert.tone].border}`,
+        borderLeft: `4px solid ${TONE_COLORS[alert.tone].accent}`,
+        padding: '14px 16px',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '12px',
+        boxShadow: 'var(--shadow-sm)'
+      }"
+    >
+      <div
+        :style="{
+          width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0,
+          background: TONE_COLORS[alert.tone].bg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }"
+      >
+        <BaseIcon :name="TONE_ICONS[alert.tone]" :size="16" :color="TONE_COLORS[alert.tone].accent" />
+      </div>
+      <div style="flex: 1; min-width: 0">
+        <p style="font-size: 13px; font-weight: 700; color: var(--text)">{{ alert.title }}</p>
+        <p style="font-size: 12px; color: var(--text3); margin-top: 3px">{{ alert.body }}</p>
+        <p v-if="alert.sub" style="font-size: 11px; color: var(--text3); margin-top: 4px; font-style: italic">{{ alert.sub }}</p>
+      </div>
+      <button
+        style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 2px; flex-shrink: 0; display: flex; align-items: center"
+        @click="dismiss(alert.id)"
+      >
+        <BaseIcon name="close" :size="14" />
+      </button>
+    </div>
+
+    <!-- Dismissed section -->
+    <div v-if="dismissedCount > 0" style="text-align: center; padding: 8px 0">
+      <button
+        style="background: none; border: none; cursor: pointer; font-size: 12px; color: var(--text3); text-decoration: underline"
+        @click="restoreAll"
+      >
+        Restaurar {{ dismissedCount }} alerta(s) dispensado(s)
+      </button>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
+import { useDateFormat } from '~/composables/useDateFormat'
+import BaseIcon       from '~/components/base/BaseIcon.vue'
 import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
-import BaseIcon from '~/components/base/BaseIcon.vue'
 
-const dismissed = ref<number[]>([])
+type AlertTone = 'danger' | 'warning' | 'info' | 'success'
 
-const ALL_ALERTS = [
-  { tone: 'danger',  icon: 'card',    title: 'Nubank vence em 3 dias',         body: 'Fatura de R$ 589,90 ainda não paga. Risco de juros.',  action: 'Marcar como pago' },
-  { tone: 'warning', icon: 'budget',  title: 'Orçamento de Cartões em 94%',     body: 'Você usou R$ 1.654 de R$ 1.750. Evite novos gastos.', action: 'Ver orçamento'    },
-  { tone: 'warning', icon: 'expense', title: 'Gasto fora do padrão detectado',  body: 'Despesa de Alimentação 38% acima da média.',           action: 'Ver lançamentos'  },
-  { tone: 'info',    icon: 'goal',    title: 'Meta Reserva: aporte pendente',   body: 'Contribua R$ 400 para ficar no ritmo.',               action: 'Aportar'          },
-  { tone: 'success', icon: 'check',   title: 'Salário Pedro creditado',         body: 'R$ 1.000 disponível na Conta Pedro.',                 action: null               },
-  { tone: 'info',    icon: 'alerts',  title: 'Will Pedro: banco inativo',       body: 'Parcela de R$ 281,89 vence dia 15. Atenção!',         action: 'Ver dívida'       },
-]
-
-const visible = computed(() => ALL_ALERTS.filter((_, i) => !dismissed.value.includes(i)))
-
-const bgMap: Record<string, string> = {
-  danger: 'var(--danger-light)', warning: 'var(--warning-light)', info: 'var(--primary-dim)', success: 'var(--success-light)',
-}
-const borderMap: Record<string, string> = {
-  danger: 'var(--danger)', warning: 'var(--warning)', info: 'var(--primary)', success: 'var(--success)',
+interface SmartAlert {
+  id:    string
+  tone:  AlertTone
+  title: string
+  body:  string
+  sub?:  string
 }
 
-const dismiss = (visibleIdx: number) => {
-  const alert = visible.value[visibleIdx]
-  const realIdx = ALL_ALERTS.indexOf(alert)
-  if (realIdx >= 0) dismissed.value = [...dismissed.value, realIdx]
+const store    = useFinanceStore()
+const currency = useCurrency()
+const { formatDate } = useDateFormat()
+const fmt      = (v: number) => currency.format(v)
+
+const TONE_COLORS: Record<AlertTone, { accent: string; bg: string; border: string }> = {
+  danger:  { accent: 'var(--danger)',  bg: 'color-mix(in srgb, var(--danger)  12%, transparent)', border: 'color-mix(in srgb, var(--danger)  25%, transparent)' },
+  warning: { accent: 'var(--warning)', bg: 'color-mix(in srgb, var(--warning) 12%, transparent)', border: 'color-mix(in srgb, var(--warning) 25%, transparent)' },
+  info:    { accent: 'var(--primary)', bg: 'color-mix(in srgb, var(--primary) 12%, transparent)', border: 'color-mix(in srgb, var(--primary) 25%, transparent)' },
+  success: { accent: 'var(--success)', bg: 'color-mix(in srgb, var(--success) 12%, transparent)', border: 'color-mix(in srgb, var(--success) 25%, transparent)' },
+}
+const TONE_ICONS: Record<AlertTone, string> = {
+  danger: 'warning', warning: 'warning', info: 'info', success: 'check'
 }
 
-const dismissAll = () => {
-  dismissed.value = ALL_ALERTS.map((_, i) => i)
+const DISMISSED_KEY = 'ff-dismissed-alerts'
+
+const dismissedIds = useLocalStorage<string[]>(DISMISSED_KEY, [])
+
+const generatedAlerts = computed((): SmartAlert[] => {
+  const alerts: SmartAlert[] = []
+  const today    = new Date()
+  const todayStr = today.toISOString().slice(0, 10)
+  const in3      = new Date(today); in3.setDate(in3.getDate() + 3)
+  const in3Str   = in3.toISOString().slice(0, 10)
+  const in7      = new Date(today); in7.setDate(in7.getDate() + 7)
+  const in7Str   = in7.toISOString().slice(0, 10)
+
+  // Vencimentos urgentes (≤ 3 dias)
+  const urgent = store.entries.filter(
+    e => e.kind === 'expense' && e.status !== 'paid' && e.dueDate >= todayStr && e.dueDate <= in3Str
+  )
+  for (const e of urgent) {
+    const account = e.accountId ? store.accountMap.get(e.accountId) : null
+    alerts.push({
+      id:    `urgent-${e.id}`,
+      tone:  'danger',
+      title: `${e.title} vence em breve`,
+      body:  `${fmt(e.amount)} — vencimento ${formatDate(e.dueDate)}${account ? ` via ${account.name}` : ''}`,
+    })
+  }
+
+  // Vencimentos próximos (4-7 dias)
+  const upcoming = store.entries.filter(
+    e => e.kind === 'expense' && e.status !== 'paid' && e.dueDate > in3Str && e.dueDate <= in7Str
+  )
+  if (upcoming.length > 0) {
+    const total = upcoming.reduce((s, e) => s + e.amount, 0)
+    alerts.push({
+      id:    'upcoming-week',
+      tone:  'warning',
+      title: `${upcoming.length} vencimento(s) esta semana`,
+      body:  `Total de ${fmt(total)} vence nos próximos 7 dias.`,
+    })
+  }
+
+  // Lançamentos vencidos e não pagos
+  const overdue = store.entries.filter(
+    e => e.kind === 'expense' && e.status !== 'paid' && e.dueDate < todayStr
+  )
+  if (overdue.length > 0) {
+    const total = overdue.reduce((s, e) => s + e.amount, 0)
+    alerts.push({
+      id:    'overdue',
+      tone:  'danger',
+      title: `${overdue.length} lançamento(s) vencido(s)`,
+      body:  `${fmt(total)} em despesas vencidas sem confirmação de pagamento.`,
+    })
+  }
+
+  // Orçamentos: consumo > 80% e > 100%
+  const currentMonthKey = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}`
+  for (const budget of store.budgets) {
+    if (!budget.monthRef.startsWith(currentMonthKey)) continue
+    const spent = store.entries
+      .filter(e => e.kind === 'expense' && e.categoryId === budget.categoryId && e.dueDate.startsWith(currentMonthKey))
+      .reduce((s, e) => s + e.amount, 0)
+    const pct = budget.amount > 0 ? (spent / budget.amount) * 100 : 0
+    const cat = store.categoryMap.get(budget.categoryId)
+    if (pct >= 100) {
+      alerts.push({
+        id:    `budget-over-${budget.id}`,
+        tone:  'danger',
+        title: `Orçamento de "${cat?.name ?? 'categoria'}" ultrapassado`,
+        body:  `Gasto: ${fmt(spent)} de ${fmt(budget.amount)} (${pct.toFixed(0)}%)`,
+      })
+    } else if (pct >= 80) {
+      alerts.push({
+        id:    `budget-warn-${budget.id}`,
+        tone:  'warning',
+        title: `Orçamento de "${cat?.name ?? 'categoria'}" em ${pct.toFixed(0)}%`,
+        body:  `Restam apenas ${fmt(budget.amount - spent)} do limite de ${fmt(budget.amount)}.`,
+      })
+    }
+  }
+
+  // Taxa de poupança baixa
+  const monthIncome  = store.entries.filter(e => e.kind === 'income'  && e.dueDate.startsWith(currentMonthKey)).reduce((s, e) => s + e.amount, 0)
+  const monthExpense = store.entries.filter(e => e.kind === 'expense' && e.dueDate.startsWith(currentMonthKey)).reduce((s, e) => s + e.amount, 0)
+  if (monthIncome > 0) {
+    const savingsRate = ((monthIncome - monthExpense) / monthIncome) * 100
+    if (savingsRate < 0) {
+      alerts.push({
+        id:    'savings-negative',
+        tone:  'danger',
+        title: 'Despesas superam receitas este mês',
+        body:  `Déficit de ${fmt(monthExpense - monthIncome)}. Revise seus gastos.`,
+      })
+    } else if (savingsRate < 10) {
+      alerts.push({
+        id:    'savings-low',
+        tone:  'warning',
+        title: `Taxa de poupança baixa: ${savingsRate.toFixed(1)}%`,
+        body:  'Recomendado manter pelo menos 20% de poupança mensal.',
+      })
+    }
+  }
+
+  // Uso alto de cartão de crédito
+  if (store.kpis.cardsUsedPercent >= 90) {
+    alerts.push({
+      id:    'card-critical',
+      tone:  'danger',
+      title: `Limite do cartão em ${store.kpis.cardsUsedPercent.toFixed(0)}%`,
+      body:  'Uso crítico do limite de crédito. Evite novas compras parceladas.',
+    })
+  } else if (store.kpis.cardsUsedPercent >= 70) {
+    alerts.push({
+      id:    'card-warn',
+      tone:  'warning',
+      title: `Uso do cartão em ${store.kpis.cardsUsedPercent.toFixed(0)}%`,
+      body:  'Atenção ao limite disponível nos cartões de crédito.',
+    })
+  }
+
+  return alerts
+})
+
+const activeAlerts = computed(() =>
+  generatedAlerts.value.filter(a => !dismissedIds.value.includes(a.id))
+)
+const dismissedCount = computed(() =>
+  generatedAlerts.value.filter(a => dismissedIds.value.includes(a.id)).length
+)
+
+const dismiss    = (id: string) => { if (!dismissedIds.value.includes(id)) dismissedIds.value.push(id) }
+const dismissAll = () => { dismissedIds.value = generatedAlerts.value.map(a => a.id) }
+const restoreAll = () => { dismissedIds.value = [] }
+
+// useLocalStorage — small inline implementation to avoid extra deps
+function useLocalStorage<T>(key: string, defaultValue: T) {
+  const data = ref<T>(defaultValue)
+  if (process.client) {
+    try { data.value = JSON.parse(localStorage.getItem(key) ?? 'null') ?? defaultValue } catch { /* */ }
+    watch(data, val => localStorage.setItem(key, JSON.stringify(val)), { deep: true })
+  }
+  return data
 }
 </script>

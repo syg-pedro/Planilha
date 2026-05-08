@@ -101,6 +101,28 @@ export interface Budget {
   amount: number
 }
 
+export interface PatrimonyItem {
+  id: string
+  householdId: string
+  name: string
+  kind: 'asset' | 'liability'
+  value: number
+  category: string
+  updatedAt: string
+}
+
+export interface FinanceGoal {
+  id: string
+  householdId: string
+  name: string
+  targetAmount: number
+  currentAmount: number
+  deadline: string | null
+  color: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface DashboardFilters {
   range: 'month' | 'quarter' | 'year'
   periodMode: PeriodMode
@@ -124,6 +146,8 @@ export interface BootstrapResponse {
   rules: FinanceRule[]
   entries: FinanceEntry[]
   budgets: Budget[]
+  patrimony: PatrimonyItem[]
+  goals: FinanceGoal[]
   kpis: FinanceKpis
   warnings: string[]
 }

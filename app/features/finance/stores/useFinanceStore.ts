@@ -5,13 +5,16 @@ import { DEFAULT_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared
 import type {
   Account,
   BootstrapResponse,
+  Budget,
   Category,
   DashboardFilters,
   EntryBatchRequest,
   FinanceEntry,
+  FinanceGoal,
   FinanceKpis,
   FinanceRule,
   HouseholdSettings,
+  PatrimonyItem,
   ThemeMode
 } from '#shared/types'
 
@@ -49,8 +52,11 @@ export const useFinanceStore = defineStore('finance', () => {
   const accounts = ref<Account[]>([])
   const categories = ref<Category[]>([])
   const rules = ref<FinanceRule[]>([])
-  const entries = ref<FinanceEntry[]>([])
-  const warnings = ref<string[]>([])
+  const entries   = ref<FinanceEntry[]>([])
+  const budgets   = ref<Budget[]>([])
+  const patrimony = ref<PatrimonyItem[]>([])
+  const goals     = ref<FinanceGoal[]>([])
+  const warnings  = ref<string[]>([])
   const kpis = ref<FinanceKpis>({
     totalIncome: 0,
     totalExpense: 0,
@@ -190,8 +196,11 @@ export const useFinanceStore = defineStore('finance', () => {
       accounts.value = response.accounts
       categories.value = response.categories
       rules.value = response.rules
-      entries.value = response.entries
-      warnings.value = response.warnings
+      entries.value   = response.entries
+      budgets.value   = response.budgets
+      patrimony.value = response.patrimony
+      goals.value     = response.goals
+      warnings.value  = response.warnings
       kpis.value = response.kpis
       filters.value.periodMode = response.settings.periodMode
       if (!filters.value.range) {
@@ -261,6 +270,38 @@ export const useFinanceStore = defineStore('finance', () => {
     settings.value = response.settings
   }
 
+  const savePatrimony = async (upserts: Partial<PatrimonyItem>[], deletes: string[]) => {
+    const response = await fetchApi<{ patrimony: PatrimonyItem[] }>('/api/patrimony/batch', {
+      method: 'POST',
+      body: { upserts, deletes }
+    })
+    patrimony.value = response.patrimony
+  }
+
+  const saveGoals = async (upserts: Partial<FinanceGoal>[], deletes: string[]) => {
+    const response = await fetchApi<{ goals: FinanceGoal[] }>('/api/goals/batch', {
+      method: 'POST',
+      body: { upserts, deletes }
+    })
+    goals.value = response.goals
+  }
+
+  const saveBudgets = async (upserts: Partial<Budget>[], deletes: string[]) => {
+    const response = await fetchApi<{ budgets: Budget[] }>('/api/budgets/batch', {
+      method: 'POST',
+      body: { upserts, deletes }
+    })
+    budgets.value = response.budgets
+  }
+
+  const saveRules = async (upserts: Partial<FinanceRule>[], deletes: string[]) => {
+    const response = await fetchApi<{ rules: FinanceRule[] }>('/api/rules/batch', {
+      method: 'POST',
+      body: { upserts, deletes }
+    })
+    rules.value = response.rules
+  }
+
   const importCsv = async (csvText: string, accountId: string | null) => {
     await fetchApi('/api/import/csv', {
       method: 'POST',
@@ -323,6 +364,9 @@ export const useFinanceStore = defineStore('finance', () => {
     categories,
     rules,
     entries,
+    budgets,
+    patrimony,
+    goals,
     warnings,
     kpis,
     filters,
@@ -335,6 +379,10 @@ export const useFinanceStore = defineStore('finance', () => {
     bootstrap,
     boot,
     saveEntriesBatch,
+    saveBudgets,
+    saveRules,
+    savePatrimony,
+    saveGoals,
     rebuildRules,
     saveTheme,
     saveDashboard,
