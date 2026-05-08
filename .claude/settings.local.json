@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx nuxt *)",
+      "Bash(npx vitest *)",
+      "Bash(node_modules\\\\.bin\\\\nuxt prepare *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(curl -s \"http://localhost:3000/api/entries?key=demo-finance-key\")",
+      "Bash(curl *)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); entries=d.get\\('entries',[]\\); print\\(f'Total entries: {len\\(entries\\)}'\\); [print\\(e.get\\('date',''\\)[:7], e.get\\('description',''\\)[:40]\\) for e in entries[:20]]\")",
+      "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\)\\); const entries=d.entries||[]; console.log\\('Total entries:',entries.length\\); entries.slice\\(0,20\\).forEach\\(e=>console.log\\(e.date?.slice\\(0,7\\), e.description?.slice\\(0,40\\)\\)\\)\")",
+      "PowerShell(Stop-Process *)",
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(gunzip -c \"/c/Users/PedroVictordeOliveir/.claude/projects/C--dev-Planilha/5ea9321f-9107-43a7-bb34-a9968a47eb13/tool-results/webfetch-1778174233995-1cft77.bin\")",
+      "Bash(tar -t)",
+      "Bash(tar -x -O -f - \"teste-planilha/chats/chat1.md\")",
+      "Bash(tar -x -O -f - \"teste-planilha/project/Financeiro Familiar.html\")",
+      "Bash(cp \"C:/Users/PedroVictordeOliveir/.claude/projects/C--dev-Planilha/5ea9321f-9107-43a7-bb34-a9968a47eb13/tool-results/webfetch-1778174233995-1cft77.bin\" \"/tmp/design.tar.gz\")",
+      "Bash(cd /tmp)",
+      "Bash(tar xzf *)",
+      "Bash(ls /tmp/*.html)",
+      "Bash(ls /tmp/Financeiro*)",
+      "Bash(gunzip -c \"/tmp/design.tar.gz\")",
+      "Bash(gunzip -c design.tar.gz)",
+      "Bash(tar -x)",
+      "Bash(cp \"/tmp/teste-planilha/project/Financeiro Familiar.html\" \"/tmp/financeiro.html\")",
+      "Read(//tmp/**)",
+      "Bash(npx nuxi *)",
+      "Bash(npx eslint *)",
+      "Bash(NUXT_IGNORE_LOCK=1 npx nuxt build)",
+      "Bash(git commit *)"
+    ]
+  }
+}

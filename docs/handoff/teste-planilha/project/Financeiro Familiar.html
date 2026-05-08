@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Financeiro Familiar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+  /* ── Themes ─────────────────────────────────────────────── */
+  :root {
+    --bg: oklch(97% 0.008 220);
+    --bg2: oklch(93% 0.012 220);
+    --surface: #ffffff;
+    --surface2: oklch(96% 0.006 220);
+    --border: oklch(88% 0.01 220);
+    --border-strong: oklch(80% 0.015 220);
+    --text: oklch(18% 0.02 255);
+    --text2: oklch(45% 0.02 255);
+    --text3: oklch(60% 0.01 255);
+    --primary: oklch(55% 0.18 185);
+    --primary-light: oklch(94% 0.06 185);
+    --primary-dim: oklch(55% 0.18 185 / 0.15);
+    --accent: oklch(72% 0.18 75);
+    --accent-light: oklch(96% 0.06 75);
+    --success: oklch(58% 0.18 145);
+    --success-light: oklch(94% 0.06 145);
+    --danger: oklch(55% 0.22 25);
+    --danger-light: oklch(95% 0.06 25);
+    --warning: oklch(72% 0.18 75);
+    --warning-light: oklch(96% 0.06 75);
+    --shadow-sm: 0 1px 4px oklch(0% 0 0 / 0.06), 0 0 0 1px oklch(0% 0 0 / 0.04);
+    --shadow-md: 0 4px 16px oklch(0% 0 0 / 0.08), 0 0 0 1px oklch(0% 0 0 / 0.04);
+    --shadow-lg: 0 8px 32px oklch(0% 0 0 / 0.12);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+  }
+  [data-theme="dark"] {
+    --bg: oklch(13% 0.02 260);
+    --bg2: oklch(17% 0.025 260);
+    --surface: oklch(19% 0.025 260);
+    --surface2: oklch(22% 0.022 260);
+    --border: oklch(28% 0.025 260);
+    --border-strong: oklch(36% 0.025 260);
+    --text: oklch(93% 0.01 260);
+    --text2: oklch(70% 0.015 260);
+    --text3: oklch(52% 0.012 260);
+    --primary: oklch(65% 0.18 185);
+    --primary-light: oklch(30% 0.08 185);
+    --primary-dim: oklch(65% 0.18 185 / 0.18);
+    --accent: oklch(78% 0.18 75);
+    --accent-light: oklch(28% 0.08 75);
+    --success: oklch(65% 0.18 145);
+    --success-light: oklch(25% 0.08 145);
+    --danger: oklch(65% 0.22 25);
+    --danger-light: oklch(25% 0.08 25);
+    --warning: oklch(78% 0.18 75);
+    --warning-light: oklch(28% 0.08 75);
+    --shadow-sm: 0 1px 4px oklch(0% 0 0 / 0.3);
+    --shadow-md: 0 4px 16px oklch(0% 0 0 / 0.35);
+    --shadow-lg: 0 8px 32px oklch(0% 0 0 / 0.4);
+  }
+  [data-theme="eva"] {
+    --bg: oklch(10% 0.04 295);
+    --bg2: oklch(14% 0.05 295);
+    --surface: oklch(17% 0.06 295);
+    --surface2: oklch(21% 0.055 295);
+    --border: oklch(30% 0.06 295);
+    --border-strong: oklch(40% 0.07 295);
+    --text: oklch(92% 0.02 295);
+    --text2: oklch(72% 0.04 295);
+    --text3: oklch(55% 0.03 295);
+    --primary: oklch(60% 0.22 295);
+    --primary-light: oklch(25% 0.1 295);
+    --primary-dim: oklch(60% 0.22 295 / 0.18);
+    --accent: oklch(80% 0.25 135);
+    --accent-light: oklch(22% 0.1 135);
+    --success: oklch(72% 0.25 135);
+    --success-light: oklch(22% 0.1 135);
+    --danger: oklch(62% 0.24 20);
+    --danger-light: oklch(22% 0.08 20);
+    --warning: oklch(80% 0.25 135);
+    --warning-light: oklch(22% 0.1 135);
+    --shadow-sm: 0 1px 4px oklch(0% 0 0 / 0.4);
+    --shadow-md: 0 4px 16px oklch(0% 0 0 / 0.45), 0 0 0 1px var(--border);
+    --shadow-lg: 0 8px 32px oklch(0% 0 0 / 0.5);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+  #root { min-height: 100vh; }
+  ::selection { background: var(--primary-dim); }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+  @keyframes slideInDrawer {
+    from { transform: translateX(-100%); opacity: 0.5; }
+    to   { transform: translateX(0);     opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ── Mock data ────────────────────────────────────────────────
+const ACCOUNTS = [
+  { id: 'a1', name: 'Conta Pedro', owner: 'Pedro', type: 'bank', limit: null },
+  { id: 'a2', name: 'Conta Juli', owner: 'Juli', type: 'bank', limit: null },
+  { id: 'a3', name: 'Flash VR', owner: 'Pedro', type: 'benefit', limit: null },
+  { id: 'a4', name: 'Sicredi Pedro', owner: 'Pedro', type: 'credit_card', limit: 1050, dueDay: 25 },
+  { id: 'a5', name: 'Itaú Pedro', owner: 'Pedro', type: 'credit_card', limit: 2819, dueDay: 3 },
+  { id: 'a6', name: 'Nubank Pedro', owner: 'Pedro', type: 'credit_card', limit: 3200, dueDay: 5 },
+  { id: 'a7', name: 'Mercado Livre', owner: 'Pedro', type: 'credit_card', limit: 2000, dueDay: 18 },
+  { id: 'a8', name: 'Will Pedro', owner: 'Pedro', type: 'credit_card', limit: null, active: false },
+  { id: 'a9', name: 'Will Juli', owner: 'Juli', type: 'credit_card', limit: null, active: false },
+  { id: 'a10', name: 'Itaú Juli', owner: 'Juli', type: 'credit_card', limit: 800, dueDay: 18 },
+];
+
+const CATEGORIES = [
+  { id: 'c1', name: 'Receitas', kind: 'income', color: '#16a34a' },
+  { id: 'c2', name: 'Moradia', kind: 'expense', color: '#dc2626' },
+  { id: 'c3', name: 'Serviços', kind: 'expense', color: '#f97316' },
+  { id: 'c4', name: 'Energia', kind: 'expense', color: '#eab308' },
+  { id: 'c5', name: 'Cartões', kind: 'expense', color: '#0ea5e9' },
+  { id: 'c6', name: 'Educação', kind: 'expense', color: '#8b5cf6' },
+  { id: 'c7', name: 'Parcela externa', kind: 'expense', color: '#ef4444' },
+];
+
+const fmt = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+const fmtDate = (d) => new Date(d + 'T00:00:00').toLocaleDateString('pt-BR');
+
+// Generate entries for current + next months
+const now = new Date();
+const Y = now.getFullYear();
+const M = now.getMonth(); // 0-indexed
+
+const mkEntry = (id, title, amount, kind, day, month, year, accountId, categoryId, status = 'pending', inst = null, instTotal = null) => ({
+  id, title, amount, kind,
+  dueDate: `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`,
+  accountId, categoryId, status,
+  installmentIndex: inst, installmentTotal: instTotal,
+  description: ''
+});
+
+const ENTRIES_RAW = [
+  // RECEITAS
+  mkEntry('e01','Salário Pedro (1ª parcela)',1000,'income',15,M,Y,'a1','c1','paid'),
+  mkEntry('e02','Salário Pedro (2ª parcela)',1000,'income',30,M,Y,'a1','c1','pending'),
+  mkEntry('e03','Salário Juli',1100,'income',5,M,Y,'a2','c1','paid'),
+  mkEntry('e04','Flash VR',800,'income',1,M,Y,'a3','c1','paid'),
+  mkEntry('e05','Salário Pedro (1ª parcela)',1000,'income',15,M+1,Y,'a1','c1','pending'),
+  mkEntry('e06','Salário Pedro (2ª parcela)',1000,'income',30,M+1,Y,'a1','c1','pending'),
+  mkEntry('e07','Salário Juli',1100,'income',5,M+1,Y,'a2','c1','pending'),
+  mkEntry('e08','Flash VR',800,'income',1,M+1,Y,'a3','c1','pending'),
+  // FIXAS
+  mkEntry('e09','Aluguel + Água + Condomínio',1700,'expense',5,M,Y,null,'c2','paid'),
+  mkEntry('e10','Aluguel + Água + Condomínio',1700,'expense',5,M+1,Y,null,'c2','pending'),
+  mkEntry('e11','Internet',99,'expense',10,M,Y,null,'c3','paid'),
+  mkEntry('e12','Internet',99,'expense',10,M+1,Y,null,'c3','pending'),
+  mkEntry('e13','Energia',260,'expense',15,M,Y,null,'c4','paid'),
+  mkEntry('e14','Energia',260,'expense',15,M+1,Y,null,'c4','pending'),
+  mkEntry('e15','Faculdade Juli',170.73,'expense',8,M,Y,'a2','c6','paid'),
+  mkEntry('e16','Faculdade Juli',170.73,'expense',8,M+1,Y,'a2','c6','pending'),
+  // CARTÕES maio
+  mkEntry('e17','Sicredi Pedro - fatura',484.75,'expense',25,M,Y,'a4','c5','pending',1,6),
+  mkEntry('e18','Itaú Pedro - fatura',297.54,'expense',3,M+1,Y,'a5','c5','pending',1,9),
+  mkEntry('e19','Nubank Pedro - fatura',589.90,'expense',5,M+1,Y,'a6','c5','pending',1,12),
+  mkEntry('e20','Mercado Livre - fatura',480.87,'expense',18,M,Y,'a7','c5','pending',1,17),
+  mkEntry('e21','Will Pedro - fatura',281.89,'expense',15,M,Y,'a8','c5','review',1,7),
+  mkEntry('e22','Will Juli - fatura',52.68,'expense',7,M+1,Y,'a9','c5','pending',1,7),
+  mkEntry('e23','Itaú Juli - fatura',392.84,'expense',18,M,Y,'a10','c5','pending',1,5),
+  // CARTÕES junho
+  mkEntry('e24','Sicredi Pedro - fatura',47.82,'expense',25,M+1,Y,'a4','c5','pending',2,6),
+  mkEntry('e25','Itaú Pedro - fatura',231.18,'expense',3,M+2,Y,'a5','c5','pending',2,9),
+  mkEntry('e26','Nubank Pedro - fatura',102.60,'expense',5,M+2,Y,'a6','c5','pending',2,12),
+  mkEntry('e27','Mercado Livre - fatura',138.28,'expense',18,M+1,Y,'a7','c5','pending',2,17),
+  mkEntry('e28','Will Pedro - fatura',281.89,'expense',15,M+1,Y,'a8','c5','pending',2,7),
+  mkEntry('e29','Itaú Juli - fatura',215.29,'expense',18,M+1,Y,'a10','c5','pending',2,5),
+  // BICICLETA
+  mkEntry('e30','Bicicleta - tia',206,'expense',10,M,Y,null,'c7','pending',1,10),
+  mkEntry('e31','Bicicleta - tia',206,'expense',10,M+1,Y,null,'c7','pending',2,10),
+  mkEntry('e32','Bicicleta - tia',206,'expense',10,M+2,Y,null,'c7','pending',3,10),
+];
+
+// KPIs
+const currentEntries = ENTRIES_RAW.filter(e => {
+  const d = new Date(e.dueDate + 'T00:00:00');
+  return d.getMonth() === M && d.getFullYear() === Y;
+});
+const totalIncome = currentEntries.filter(e=>e.kind==='income').reduce((s,e)=>s+e.amount,0);
+const totalExpense = currentEntries.filter(e=>e.kind==='expense').reduce((s,e)=>s+e.amount,0);
+const pendingAmt = currentEntries.filter(e=>e.status==='pending'&&e.kind==='expense').reduce((s,e)=>s+e.amount,0);
+const todayStr = new Date().toISOString().slice(0,10);
+const in7 = new Date(); in7.setDate(in7.getDate()+7);
+const upcoming7 = ENTRIES_RAW.filter(e=>e.kind==='expense'&&e.status!=='paid'&&new Date(e.dueDate)<=in7&&new Date(e.dueDate)>=new Date()).reduce((s,e)=>s+e.amount,0);
+const totalCardLimit = ACCOUNTS.filter(a=>a.type==='credit_card'&&a.limit).reduce((s,a)=>s+a.limit,0);
+const cardSpend = currentEntries.filter(e=>e.kind==='expense'&&ACCOUNTS.find(a=>a.id===e.accountId&&a.type==='credit_card')).reduce((s,e)=>s+e.amount,0);
+const cardUsed = totalCardLimit > 0 ? (cardSpend/totalCardLimit)*100 : 0;
+
+const KPIS = { totalIncome, totalExpense, net: totalIncome-totalExpense, pendingAmt, upcoming7, cardUsed };
+
+// Cashflow chart data (last 4 months + next 2)
+const CASHFLOW = [
+  { month: 'Fev', income: 3900, expense: 2800 },
+  { month: 'Mar', income: 3900, expense: 3100 },
+  { month: 'Abr', income: 3900, expense: 2600 },
+  { month: 'Mai', income: totalIncome, expense: totalExpense },
+  { month: 'Jun', income: 3900, expense: 3000 },
+  { month: 'Jul', income: 3900, expense: 2900 },
+];
+
+// Category breakdown
+const catBreakdown = {};
+currentEntries.filter(e=>e.kind==='expense').forEach(e=>{
+  const cat = CATEGORIES.find(c=>c.id===e.categoryId);
+  const name = cat?.name || 'Outros';
+  catBreakdown[name] = (catBreakdown[name]||0) + e.amount;
+});
+
+// ── Utility components ───────────────────────────────────────
+const Icon = ({ name, size=18, style={} }) => {
+  const icons = {
+    income: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>,
+    expense: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+    balance: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+    pending: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+    upcoming: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+    card: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+    dashboard: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
+    grid: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+    calendar: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+    settings: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+    close: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+    plus: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+    trash: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>,
+    check: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+    chevron: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>,
+    refresh: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>,
+    warning: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  };
+  return <span style={{ display:'inline-flex', alignItems:'center', ...style }}>{icons[name]}</span>;
+};
+
+// ── Cashflow Mini Bar Chart ──────────────────────────────────
+const CashflowChart = ({ data }) => {
+  const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense)));
+  return (
+    <div style={{ display:'flex', alignItems:'flex-end', gap:8, height:120, padding:'0 4px' }}>
+      {data.map((d,i) => {
+        const incH = Math.round((d.income/maxVal)*100);
+        const expH = Math.round((d.expense/maxVal)*100);
+        const isCurrent = i === 3;
+        return (
+          <div key={i} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+            <div style={{ display:'flex', alignItems:'flex-end', gap:2, height:100 }}>
+              <div title={`Receitas: ${fmt(d.income)}`} style={{
+                width:10, height:`${incH}%`, borderRadius:'3px 3px 0 0',
+                background:'var(--success)', opacity: isCurrent?1:0.55,
+                transition:'height 0.5s ease',
+                boxShadow: isCurrent ? '0 0 8px var(--success)' : 'none'
+              }} />
+              <div title={`Despesas: ${fmt(d.expense)}`} style={{
+                width:10, height:`${expH}%`, borderRadius:'3px 3px 0 0',
+                background:'var(--danger)', opacity: isCurrent?1:0.55,
+                transition:'height 0.5s ease',
+                boxShadow: isCurrent ? '0 0 8px var(--danger)' : 'none'
+              }} />
+            </div>
+            <span style={{ fontSize:10, color:'var(--text3)', fontWeight: isCurrent?700:400 }}>{d.month}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ── Donut Chart ──────────────────────────────────────────────
+const DonutChart = ({ data }) => {
+  const total = data.reduce((s,d)=>s+d.value,0);
+  const colors = ['#0ea5e9','#dc2626','#f97316','#8b5cf6','#eab308','#ef4444','#16a34a'];
+  let cumAngle = -90;
+  const radius = 70, cx = 90, cy = 90, stroke = 24;
+  const segments = data.map((d, i) => {
+    const pct = d.value / total;
+    const angle = pct * 360;
+    const start = cumAngle;
+    cumAngle += angle;
+    const r = radius;
+    const startRad = (start * Math.PI) / 180;
+    const endRad = ((start + angle) * Math.PI) / 180;
+    const x1 = cx + r * Math.cos(startRad);
+    const y1 = cy + r * Math.sin(startRad);
+    const x2 = cx + r * Math.cos(endRad);
+    const y2 = cy + r * Math.sin(endRad);
+    const large = angle > 180 ? 1 : 0;
+    return { d: `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`, color: colors[i % colors.length], label: d.name, value: d.value, pct };
+  });
+  return (
+    <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+      <svg width={180} height={180} viewBox="0 0 180 180">
+        {segments.map((s, i) => (
+          <path key={i} d={s.d} fill="none" stroke={s.color} strokeWidth={stroke} strokeLinecap="butt" opacity={0.9}>
+            <title>{s.label}: {fmt(s.value)}</title>
+          </path>
+        ))}
+        <circle cx={cx} cy={cy} r={radius - stroke/2 - 2} fill="var(--surface)" />
+        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="11" fill="var(--text3)" fontFamily="Plus Jakarta Sans">Total</text>
+        <text x={cx} y={cy + 12} textAnchor="middle" fontSize="13" fontWeight="700" fill="var(--text)" fontFamily="Plus Jakarta Sans">{fmt(total).replace('R$','R$\n')}</text>
+      </svg>
+      <div style={{ display:'flex', flexDirection:'column', gap:6, flex:1, minWidth:120 }}>
+        {segments.map((s, i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ width:10, height:10, borderRadius:3, background:s.color, flexShrink:0 }} />
+            <span style={{ fontSize:12, color:'var(--text2)', flex:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{s.label}</span>
+            <span style={{ fontSize:12, fontWeight:600, color:'var(--text)', whiteSpace:'nowrap' }}>{Math.round(s.pct*100)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ── Card Limits Bar ──────────────────────────────────────────
+const CardLimits = () => {
+  const cards = ACCOUNTS.filter(a => a.type === 'credit_card' && a.limit);
+  const spendByCard = {};
+  ENTRIES_RAW.filter(e => e.kind === 'expense').forEach(e => {
+    if (e.accountId) spendByCard[e.accountId] = (spendByCard[e.accountId] || 0) + e.amount;
+  });
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+      {cards.map(card => {
+        const spent = spendByCard[card.id] || 0;
+        const pct = Math.min(100, (spent / card.limit) * 100);
+        const color = pct > 80 ? 'var(--danger)' : pct > 60 ? 'var(--warning)' : 'var(--primary)';
+        return (
+          <div key={card.id}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+              <span style={{ fontSize:13, fontWeight:600, color:'var(--text)' }}>{card.name}</span>
+              <span style={{ fontSize:12, color:'var(--text3)' }}>{fmt(spent)} / {fmt(card.limit)}</span>
+            </div>
+            <div style={{ height:8, background:'var(--bg2)', borderRadius:99, overflow:'hidden' }}>
+              <div style={{ width:`${pct}%`, height:'100%', background:color, borderRadius:99, transition:'width 0.6s ease', boxShadow: pct>80 ? `0 0 8px ${color}` : 'none' }} />
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', marginTop:3 }}>
+              <span style={{ fontSize:11, color:'var(--text3)' }}>Vence dia {card.dueDay}</span>
+              <span style={{ fontSize:11, fontWeight:700, color }}>{pct.toFixed(1)}%</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ── Upcoming Table ───────────────────────────────────────────
+const UpcomingTable = () => {
+  const upcoming = [...ENTRIES_RAW]
+    .filter(e => e.kind === 'expense' && e.status !== 'paid' && new Date(e.dueDate) >= new Date())
+    .sort((a,b) => a.dueDate.localeCompare(b.dueDate))
+    .slice(0, 8);
+  const daysUntil = (d) => Math.ceil((new Date(d+'T00:00:00') - new Date()) / 86400000);
+  return (
+    <div style={{ overflowX:'auto' }}>
+      <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+        <thead>
+          <tr style={{ borderBottom:'1px solid var(--border)' }}>
+            {['Vencimento','Descrição','Conta','Valor','Urgência'].map(h => (
+              <th key={h} style={{ padding:'8px 10px', textAlign:'left', color:'var(--text3)', fontWeight:600, fontSize:11, textTransform:'uppercase', letterSpacing:'0.05em', whiteSpace:'nowrap' }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {upcoming.map(e => {
+            const days = daysUntil(e.dueDate);
+            const urgency = days <= 3 ? { label:'Urgente', bg:'var(--danger-light)', color:'var(--danger)' }
+              : days <= 7 ? { label:'Esta semana', bg:'var(--warning-light)', color:'var(--warning)' }
+              : { label:'OK', bg:'var(--primary-light)', color:'var(--primary)' };
+            const acc = ACCOUNTS.find(a => a.id === e.accountId);
+            return (
+              <tr key={e.id} style={{ borderBottom:'1px solid var(--border)', transition:'background 0.15s' }}
+                onMouseEnter={ev => ev.currentTarget.style.background='var(--surface2)'}
+                onMouseLeave={ev => ev.currentTarget.style.background='transparent'}>
+                <td style={{ padding:'10px', fontWeight:600, color:'var(--text)', whiteSpace:'nowrap' }}>{fmtDate(e.dueDate)}</td>
+                <td style={{ padding:'10px', color:'var(--text)' }}>
+                  {e.title}
+                  {e.installmentIndex && <span style={{ fontSize:11, color:'var(--text3)', marginLeft:6 }}>{e.installmentIndex}/{e.installmentTotal}</span>}
+                </td>
+                <td style={{ padding:'10px', color:'var(--text2)', whiteSpace:'nowrap' }}>{acc?.name || '—'}</td>
+                <td style={{ padding:'10px', fontWeight:700, color:'var(--danger)', whiteSpace:'nowrap' }}>{fmt(e.amount)}</td>
+                <td style={{ padding:'10px' }}>
+                  <span style={{ background:urgency.bg, color:urgency.color, borderRadius:99, padding:'2px 10px', fontSize:11, fontWeight:700, whiteSpace:'nowrap' }}>{urgency.label}</span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+// ── KPI Card ─────────────────────────────────────────────────
+const KpiCard = ({ icon, label, value, sub, color, bg, trend }) => (
+  <div style={{
+    background: bg || 'var(--surface)',
+    borderRadius: 'var(--radius)',
+    padding: '18px 20px',
+    border: '1px solid var(--border)',
+    boxShadow: 'var(--shadow-sm)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+    position: 'relative',
+    overflow: 'hidden',
+    transition: 'transform 0.15s, box-shadow 0.15s',
+    cursor: 'default',
+  }}
+    onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='var(--shadow-md)'; }}
+    onMouseLeave={e => { e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow='var(--shadow-sm)'; }}
+  >
+    <div style={{ position:'absolute', right:-12, top:-12, width:80, height:80, borderRadius:'50%', background: color+'22', pointerEvents:'none' }} />
+    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
+      <div style={{ width:36, height:36, borderRadius:10, background: color+'20', display:'flex', alignItems:'center', justifyContent:'center', color }}>
+        <Icon name={icon} size={18} />
+      </div>
+      {trend !== undefined && (
+        <span style={{ fontSize:11, fontWeight:700, color: trend >= 0 ? 'var(--success)' : 'var(--danger)', background: trend >= 0 ? 'var(--success-light)' : 'var(--danger-light)', borderRadius:99, padding:'2px 8px' }}>
+          {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
+        </span>
+      )}
+    </div>
+    <div>
+      <p style={{ fontSize:11, color:'var(--text3)', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>{label}</p>
+      <p style={{ fontSize:22, fontWeight:800, color: color || 'var(--text)', lineHeight:1.1 }}>{value}</p>
+      {sub && <p style={{ fontSize:12, color:'var(--text3)', marginTop:4 }}>{sub}</p>}
+    </div>
+  </div>
+);
+
+// ── Panel ────────────────────────────────────────────────────
+const Panel = ({ title, subtitle, children, action, style={} }) => (
+  <div style={{
+    background: 'var(--surface)',
+    borderRadius: 'var(--radius)',
+    border: '1px solid var(--border)',
+    boxShadow: 'var(--shadow-sm)',
+    overflow: 'hidden',
+    ...style,
+  }}>
+    {(title || action) && (
+      <div style={{ padding:'16px 20px 0', display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+        <div>
+          {title && <h3 style={{ fontSize:14, fontWeight:700, color:'var(--text)' }}>{title}</h3>}
+          {subtitle && <p style={{ fontSize:12, color:'var(--text3)', marginTop:2 }}>{subtitle}</p>}
+        </div>
+        {action}
+      </div>
+    )}
+    <div style={{ padding:'16px 20px' }}>{children}</div>
+  </div>
+);
+
+// ── Btn ──────────────────────────────────────────────────────
+const Btn = ({ children, onClick, variant='secondary', size='md', style={} }) => {
+  const base = {
+    display:'inline-flex', alignItems:'center', gap:6, border:'none', borderRadius:'var(--radius-sm)',
+    cursor:'pointer', fontFamily:'Plus Jakarta Sans', fontWeight:600, transition:'all 0.15s',
+  };
+  const sz = size==='sm' ? { padding:'6px 12px', fontSize:12 } : { padding:'9px 16px', fontSize:13 };
+  const vr = variant === 'primary'
+    ? { background:'var(--primary)', color:'#fff' }
+    : variant === 'danger'
+    ? { background:'var(--danger)', color:'#fff' }
+    : variant === 'ghost'
+    ? { background:'transparent', color:'var(--text2)', border:'1px solid var(--border)' }
+    : { background:'var(--surface2)', color:'var(--text)', border:'1px solid var(--border)' };
+  return (
+    <button style={{ ...base, ...sz, ...vr, ...style }} onClick={onClick}
+      onMouseEnter={e => { e.currentTarget.style.filter='brightness(1.1)'; e.currentTarget.style.transform='translateY(-1px)'; }}
+      onMouseLeave={e => { e.currentTarget.style.filter=''; e.currentTarget.style.transform=''; }}>
+      {children}
+    </button>
+  );
+};
+
+// ── Badge ────────────────────────────────────────────────────
+const Badge = ({ status }) => {
+  const map = {
+    paid: { label:'Pago', bg:'var(--success-light)', color:'var(--success)' },
+    pending: { label:'Pendente', bg:'var(--warning-light)', color:'var(--warning)' },
+    review: { label:'Revisar', bg:'var(--danger-light)', color:'var(--danger)' },
+  };
+  const s = map[status] || map.pending;
+  return <span style={{ background:s.bg, color:s.color, borderRadius:99, padding:'2px 10px', fontSize:11, fontWeight:700, whiteSpace:'nowrap' }}>{s.label}</span>;
+};
+
+// ── Custom Textarea ──────────────────────────────────────────
+const Textarea = ({ value, onChange, placeholder, rows=3 }) => {
+  const [focused, setFocused] = useState(false);
+  return (
+    <textarea
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      rows={rows}
+      style={{
+        background:'var(--surface2)',
+        border:`1.5px solid ${focused ? 'var(--primary)' : 'var(--border)'}`,
+        borderRadius:'var(--radius-xs)',
+        padding:'9px 12px',
+        fontSize:13,
+        color:'var(--text)',
+        fontFamily:'Plus Jakarta Sans',
+        outline:'none',
+        resize:'vertical',
+        transition:'border-color 0.15s, box-shadow 0.15s',
+        boxShadow: focused ? '0 0 0 3px var(--primary-dim)' : 'none',
+        width:'100%',
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+    />
+  );
+};
+
+// ── Custom Checkbox ──────────────────────────────────────────
+const Checkbox = ({ checked, onChange, label }) => (
+  <label style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer' }}>
+    <div
+      onClick={() => onChange({ target: { checked: !checked } })}
+      style={{
+        width:18, height:18, borderRadius:5, flexShrink:0,
+        border:`2px solid ${checked ? 'var(--primary)' : 'var(--border-strong)'}`,
+        background: checked ? 'var(--primary)' : 'var(--surface2)',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        transition:'all 0.15s', cursor:'pointer',
+      }}
+    >
+      {checked && (
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      )}
+    </div>
+    {label && <span style={{ fontSize:13, color:'var(--text)' }}>{label}</span>}
+  </label>
+);
+
+// ── Modal ────────────────────────────────────────────────────
+const Modal = ({ open, onClose, title, children }) => {
+  useEffect(() => {
+    if (open) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+  if (!open) return null;
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:16, background:'oklch(0% 0 0 / 0.55)', backdropFilter:'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background:'var(--surface)', borderRadius:20, width:'100%', maxWidth:580, maxHeight:'90dvh', overflowY:'auto', boxShadow:'var(--shadow-lg)', border:'1px solid var(--border)' }}>
+        <div style={{ padding:'20px 24px 16px', display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid var(--border)' }}>
+          <h2 style={{ fontSize:16, fontWeight:700, color:'var(--text)' }}>{title}</h2>
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--text3)', display:'flex', alignItems:'center', borderRadius:8, padding:4 }}
+            onMouseEnter={e=>e.currentTarget.style.background='var(--surface2)'}
+            onMouseLeave={e=>e.currentTarget.style.background='none'}>
+            <Icon name="close" size={20} />
+          </button>
+        </div>
+        <div style={{ padding:'20px 24px' }}>{children}</div>
+      </div>
+    </div>
+  );
+};
+
+// ── Field ────────────────────────────────────────────────────
+const Field = ({ label, children, style={} }) => (
+  <div style={{ display:'flex', flexDirection:'column', gap:5, ...style }}>
+    <label style={{ fontSize:11, fontWeight:700, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.07em' }}>{label}</label>
+    {children}
+  </div>
+);
+
+// ── Custom Input ─────────────────────────────────────────────
+const Input = ({ value, onChange, type='text', placeholder, prefix, suffix }) => {
+  const [focused, setFocused] = useState(false);
+  const inputStyle = {
+    flex:1, background:'transparent', border:'none', outline:'none',
+    fontSize:13, color:'var(--text)', fontFamily:'Plus Jakarta Sans',
+    padding: prefix ? '0' : '0',
+    minWidth:0,
+  };
+  return (
+    <div style={{
+      display:'flex', alignItems:'center', gap:6,
+      background:'var(--surface2)',
+      border:`1.5px solid ${focused ? 'var(--primary)' : 'var(--border)'}`,
+      borderRadius:'var(--radius-xs)',
+      padding:'0 12px',
+      height:38,
+      transition:'border-color 0.15s, box-shadow 0.15s',
+      boxShadow: focused ? '0 0 0 3px var(--primary-dim)' : 'none',
+    }}>
+      {prefix && <span style={{ fontSize:12, color:'var(--text3)', flexShrink:0 }}>{prefix}</span>}
+      <input
+        value={value}
+        onChange={onChange}
+        type={type}
+        placeholder={placeholder}
+        style={inputStyle}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+      />
+      {suffix && <span style={{ fontSize:12, color:'var(--text3)', flexShrink:0 }}>{suffix}</span>}
+    </div>
+  );
+};
+
+// ── Custom Select (fully custom dropdown) ────────────────────
+const Select = ({ value, onChange, children, placeholder='Selecionar...' }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  // Parse children (option elements) into { value, label } list
+  const options = React.Children.toArray(children)
+    .filter(c => c.type === 'option')
+    .map(c => ({ value: String(c.props.value ?? ''), label: String(c.props.children) }));
+
+  const selected = options.find(o => String(o.value) === String(value));
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleSelect = (val) => {
+    onChange({ target: { value: val } });
+    setOpen(false);
+  };
+
+  return (
+    <div ref={ref} style={{ position:'relative', userSelect:'none' }}>
+      {/* Trigger */}
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display:'flex', alignItems:'center', justifyContent:'space-between', gap:8,
+          background:'var(--surface2)',
+          border:`1.5px solid ${open ? 'var(--primary)' : 'var(--border)'}`,
+          borderRadius: open ? 'var(--radius-xs) var(--radius-xs) 0 0' : 'var(--radius-xs)',
+          padding:'0 12px', height:38, cursor:'pointer',
+          transition:'border-color 0.15s, box-shadow 0.15s',
+          boxShadow: open ? '0 0 0 3px var(--primary-dim)' : 'none',
+        }}
+      >
+        <span style={{ fontSize:13, color: selected ? 'var(--text)' : 'var(--text3)', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <span style={{ color:'var(--text3)', transition:'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none', flexShrink:0, display:'flex' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div style={{
+          position:'absolute', top:'100%', left:0, right:0, zIndex:500,
+          background:'var(--surface)',
+          border:'1.5px solid var(--primary)',
+          borderTop:'none',
+          borderRadius:'0 0 var(--radius-xs) var(--radius-xs)',
+          boxShadow:'var(--shadow-md)',
+          maxHeight:220, overflowY:'auto',
+        }}>
+          {options.map((opt, i) => {
+            const isSelected = String(opt.value) === String(value);
+            return (
+              <div
+                key={i}
+                onMouseDown={e => { e.preventDefault(); handleSelect(opt.value); }}
+                style={{
+                  padding:'9px 12px', fontSize:13, cursor:'pointer',
+                  color: isSelected ? 'var(--primary)' : 'var(--text)',
+                  background: isSelected ? 'var(--primary-dim)' : 'transparent',
+                  display:'flex', alignItems:'center', justifyContent:'space-between',
+                  gap:8, transition:'background 0.1s',
+                }}
+                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--surface2)'; }}
+                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+              >
+                <span>{opt.label}</span>
+                {isSelected && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ── Entry Editor Modal ───────────────────────────────────────
+const EntryModal = ({ entry, onClose, onSave, onDelete }) => {
+  const [draft, setDraft] = useState(() => entry ? {
+    title: entry.title, amount: String(entry.amount), kind: entry.kind,
+    status: entry.status, dueDate: entry.dueDate, accountId: entry.accountId || '',
+    categoryId: entry.categoryId || '', description: entry.description || '',
+  } : { title:'', amount:'0', kind:'expense', status:'pending', dueDate: new Date().toISOString().slice(0,10), accountId:'', categoryId:'', description:'' });
+  const set = (k, v) => setDraft(d => ({ ...d, [k]: v }));
+  const grid = { display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 };
+  return (
+    <div>
+      <div style={grid}>
+        <Field label="Descrição"><Input value={draft.title} onChange={e=>set('title',e.target.value)} placeholder="Ex.: Supermercado" /></Field>
+        <Field label="Tipo">
+          <Select value={draft.kind} onChange={e=>set('kind',e.target.value)}>
+            <option value="expense">Despesa</option>
+            <option value="income">Receita</option>
+          </Select>
+        </Field>
+        <Field label="Valor (R$)"><Input value={draft.amount} onChange={e=>set('amount',e.target.value)} type="number" placeholder="0.00" /></Field>
+        <Field label="Status">
+          <Select value={draft.status} onChange={e=>set('status',e.target.value)}>
+            <option value="pending">Pendente</option>
+            <option value="paid">Pago</option>
+            <option value="review">Revisar</option>
+          </Select>
+        </Field>
+        <Field label="Vencimento"><Input value={draft.dueDate} onChange={e=>set('dueDate',e.target.value)} type="date" /></Field>
+        <Field label="Conta">
+          <Select value={draft.accountId} onChange={e=>set('accountId',e.target.value)}>
+            <option value="">Sem conta</option>
+            {ACCOUNTS.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}
+          </Select>
+        </Field>
+        <Field label="Categoria" style={{ gridColumn:'span 2' }}>
+          <Select value={draft.categoryId} onChange={e=>set('categoryId',e.target.value)}>
+            <option value="">Sem categoria</option>
+            {CATEGORIES.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+          </Select>
+        </Field>
+      </div>
+      <div style={{ marginTop:16 }}>
+        <Field label="Observações">
+          <Textarea value={draft.description} onChange={e=>set('description',e.target.value)} rows={3} placeholder="Notas opcionais..." />
+        </Field>
+      </div>
+      <div style={{ display:'flex', justifyContent:'space-between', marginTop:20, gap:8 }}>
+        <div>{entry && <Btn variant="danger" onClick={()=>onDelete(entry.id)}><Icon name="trash" size={14} />Excluir</Btn>}</div>
+        <div style={{ display:'flex', gap:8 }}>
+          <Btn variant="ghost" onClick={onClose}>Cancelar</Btn>
+          <Btn variant="primary" onClick={()=>onSave(draft)}><Icon name="check" size={14} />Salvar</Btn>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Spreadsheet Tab ──────────────────────────────────────────
+const SpreadsheetTab = ({ entries, setEntries }) => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [filter, setFilter] = useState('');
+  const [kindFilter, setKindFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const filtered = entries.filter(e => {
+    const matchText = e.title.toLowerCase().includes(filter.toLowerCase());
+    const matchKind = kindFilter === 'all' || e.kind === kindFilter;
+    const matchStatus = statusFilter === 'all' || e.status === statusFilter;
+    return matchText && matchKind && matchStatus;
+  });
+
+  const totals = { income: filtered.filter(e=>e.kind==='income').reduce((s,e)=>s+e.amount,0), expense: filtered.filter(e=>e.kind==='expense').reduce((s,e)=>s+e.amount,0) };
+
+  const openNew = () => { setSelectedEntry(null); setModalOpen(true); };
+  const openEdit = (e) => { setSelectedEntry(e); setModalOpen(true); };
+  const handleSave = (draft) => {
+    const upd = { ...draft, amount: Number(draft.amount), id: selectedEntry?.id || 'e'+Date.now() };
+    setEntries(prev => selectedEntry ? prev.map(e => e.id===selectedEntry.id ? {...e,...upd} : e) : [...prev, upd]);
+    setModalOpen(false);
+  };
+  const handleDelete = (id) => { setEntries(prev => prev.filter(e=>e.id!==id)); setModalOpen(false); };
+  const quickPay = (id) => setEntries(prev => prev.map(e => e.id===id ? {...e, status:'paid'} : e));
+
+  const rowBg = (e) => {
+    if (e.status === 'paid') return 'var(--success-light)';
+    if (e.status === 'review') return 'var(--danger-light)';
+    if (e.kind === 'income') return 'var(--primary-light)';
+    return 'transparent';
+  };
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+      {/* Toolbar */}
+      <div style={{ display:'flex', flexWrap:'wrap', gap:10, alignItems:'center' }}>
+        <div style={{ flex:1, minWidth:180 }}>
+          <Input value={filter} onChange={e=>setFilter(e.target.value)} placeholder="Buscar lançamentos..." prefix={
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          } />
+        </div>
+        <Select value={kindFilter} onChange={e=>setKindFilter(e.target.value)}>
+          <option value="all">Todos</option>
+          <option value="income">Receitas</option>
+          <option value="expense">Despesas</option>
+        </Select>
+        <Select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>
+          <option value="all">Todos os status</option>
+          <option value="pending">Pendente</option>
+          <option value="paid">Pago</option>
+          <option value="review">Revisar</option>
+        </Select>
+        <Btn variant="primary" onClick={openNew}><Icon name="plus" size={14} />Novo lançamento</Btn>
+      </div>
+
+      {/* Summary strip */}
+      <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+        <div style={{ background:'var(--success-light)', borderRadius:'var(--radius-sm)', padding:'8px 16px', border:'1px solid var(--success)' }}>
+          <span style={{ fontSize:11, color:'var(--success)', fontWeight:600, display:'block' }}>RECEITAS</span>
+          <span style={{ fontSize:16, fontWeight:800, color:'var(--success)' }}>{fmt(totals.income)}</span>
+        </div>
+        <div style={{ background:'var(--danger-light)', borderRadius:'var(--radius-sm)', padding:'8px 16px', border:'1px solid var(--danger)' }}>
+          <span style={{ fontSize:11, color:'var(--danger)', fontWeight:600, display:'block' }}>DESPESAS</span>
+          <span style={{ fontSize:16, fontWeight:800, color:'var(--danger)' }}>{fmt(totals.expense)}</span>
+        </div>
+        <div style={{ background: totals.income-totals.expense>=0 ? 'var(--success-light)':'var(--danger-light)', borderRadius:'var(--radius-sm)', padding:'8px 16px', border:`1px solid ${totals.income-totals.expense>=0?'var(--success)':'var(--danger)'}` }}>
+          <span style={{ fontSize:11, color:'var(--text3)', fontWeight:600, display:'block' }}>SALDO</span>
+          <span style={{ fontSize:16, fontWeight:800, color: totals.income-totals.expense>=0?'var(--success)':'var(--danger)' }}>{fmt(totals.income-totals.expense)}</span>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div style={{ background:'var(--surface)', borderRadius:'var(--radius)', border:'1px solid var(--border)', overflow:'hidden', boxShadow:'var(--shadow-sm)' }}>
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
+            <thead>
+              <tr style={{ background:'var(--surface2)', borderBottom:'1px solid var(--border)' }}>
+                {['Vencimento','Descrição','Tipo','Conta','Categoria','Valor','Status','Ações'].map(h=>(
+                  <th key={h} style={{ padding:'10px 12px', textAlign:'left', color:'var(--text3)', fontWeight:700, fontSize:11, textTransform:'uppercase', letterSpacing:'0.06em', whiteSpace:'nowrap' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((e, i) => {
+                const acc = ACCOUNTS.find(a=>a.id===e.accountId);
+                const cat = CATEGORIES.find(c=>c.id===e.categoryId);
+                return (
+                  <tr key={e.id} style={{ borderBottom:'1px solid var(--border)', background: rowBg(e), cursor:'pointer', transition:'filter 0.1s' }}
+                    onMouseEnter={ev=>ev.currentTarget.style.filter='brightness(0.97)'}
+                    onMouseLeave={ev=>ev.currentTarget.style.filter=''}>
+                    <td style={{ padding:'10px 12px', fontWeight:600, color:'var(--text)', whiteSpace:'nowrap' }} onClick={()=>openEdit(e)}>{fmtDate(e.dueDate)}</td>
+                    <td style={{ padding:'10px 12px', color:'var(--text)' }} onClick={()=>openEdit(e)}>
+                      {e.title}
+                      {e.installmentIndex && <span style={{ fontSize:10, color:'var(--text3)', marginLeft:6, background:'var(--border)', borderRadius:4, padding:'1px 5px' }}>{e.installmentIndex}/{e.installmentTotal}</span>}
+                    </td>
+                    <td style={{ padding:'10px 12px' }} onClick={()=>openEdit(e)}>
+                      <span style={{ background: e.kind==='income'?'var(--success-light)':'var(--danger-light)', color: e.kind==='income'?'var(--success)':'var(--danger)', borderRadius:99, padding:'2px 10px', fontSize:11, fontWeight:700 }}>{e.kind==='income'?'Receita':'Despesa'}</span>
+                    </td>
+                    <td style={{ padding:'10px 12px', color:'var(--text2)', whiteSpace:'nowrap' }} onClick={()=>openEdit(e)}>{acc?.name||'—'}</td>
+                    <td style={{ padding:'10px 12px' }} onClick={()=>openEdit(e)}>
+                      {cat && <span style={{ display:'inline-flex', alignItems:'center', gap:5 }}>
+                        <span style={{ width:8, height:8, borderRadius:2, background:cat.color, display:'inline-block' }} />
+                        <span style={{ color:'var(--text2)', fontSize:12 }}>{cat.name}</span>
+                      </span>}
+                    </td>
+                    <td style={{ padding:'10px 12px', fontWeight:700, color: e.kind==='income'?'var(--success)':'var(--danger)', whiteSpace:'nowrap' }} onClick={()=>openEdit(e)}>{fmt(e.amount)}</td>
+                    <td style={{ padding:'10px 12px' }} onClick={()=>openEdit(e)}><Badge status={e.status} /></td>
+                    <td style={{ padding:'10px 12px' }}>
+                      {e.status !== 'paid' && e.kind === 'expense' && (
+                        <button onClick={()=>quickPay(e.id)} title="Marcar como pago" style={{
+                          background:'var(--success-light)', color:'var(--success)', border:'none', borderRadius:6,
+                          padding:'4px 8px', cursor:'pointer', fontSize:11, fontWeight:700, display:'flex', alignItems:'center', gap:4,
+                        }}>
+                          <Icon name="check" size={12} /> Pagar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr><td colSpan={8} style={{ padding:32, textAlign:'center', color:'var(--text3)' }}>Nenhum lançamento encontrado</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <div style={{ padding:'10px 16px', borderTop:'1px solid var(--border)', background:'var(--surface2)', display:'flex', gap:16, flexWrap:'wrap' }}>
+          <span style={{ fontSize:12, color:'var(--text3)' }}>{filtered.length} lançamento(s) exibido(s)</span>
+        </div>
+      </div>
+
+      <Modal open={modalOpen} onClose={()=>setModalOpen(false)} title={selectedEntry ? 'Editar lançamento' : 'Novo lançamento'}>
+        <EntryModal entry={selectedEntry} onClose={()=>setModalOpen(false)} onSave={handleSave} onDelete={handleDelete} />
+      </Modal>
+    </div>
+  );
+};
+
+// ── Calendar Tab ─────────────────────────────────────────────
+const CalendarTab = ({ entries }) => {
+  const today = new Date();
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [selected, setSelected] = useState(null);
+  const [modalEntry, setModalEntry] = useState(null);
+
+  const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const DAYS_SHORT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  const getDaysInMonth = (y, m) => new Date(y, m+1, 0).getDate();
+  const getFirstDay = (y, m) => new Date(y, m, 1).getDay();
+
+  const entriesForDay = (day) => {
+    const ds = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    return entries.filter(e => e.dueDate === ds);
+  };
+
+  const prev = () => { if(viewMonth===0){setViewMonth(11);setViewYear(v=>v-1);}else setViewMonth(m=>m-1); };
+  const next = () => { if(viewMonth===11){setViewMonth(0);setViewYear(v=>v+1);}else setViewMonth(m=>m+1); };
+
+  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+  const firstDay = getFirstDay(viewYear, viewMonth);
+  const cells = Array.from({length: firstDay + daysInMonth}, (_,i) => i < firstDay ? null : i - firstDay + 1);
+
+  const monthTotal = entries.filter(e=>{
+    const d=new Date(e.dueDate+'T00:00:00');
+    return d.getMonth()===viewMonth&&d.getFullYear()===viewYear;
+  });
+  const mIncome = monthTotal.filter(e=>e.kind==='income').reduce((s,e)=>s+e.amount,0);
+  const mExpense = monthTotal.filter(e=>e.kind==='expense').reduce((s,e)=>s+e.amount,0);
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+      {/* Header */}
+      <div style={{ background:'var(--surface)', borderRadius:'var(--radius)', border:'1px solid var(--border)', padding:'16px 20px', display:'flex', alignItems:'center', gap:16, flexWrap:'wrap', boxShadow:'var(--shadow-sm)' }}>
+        <button onClick={prev} style={{ background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:8, padding:'6px 12px', cursor:'pointer', color:'var(--text)' }}>‹</button>
+        <h2 style={{ fontSize:18, fontWeight:800, color:'var(--text)', flex:1, textAlign:'center' }}>{MONTHS[viewMonth]} {viewYear}</h2>
+        <button onClick={next} style={{ background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:8, padding:'6px 12px', cursor:'pointer', color:'var(--text)' }}>›</button>
+        <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
+          <span style={{ fontSize:13, color:'var(--success)', fontWeight:700 }}>↑ {fmt(mIncome)}</span>
+          <span style={{ fontSize:13, color:'var(--danger)', fontWeight:700 }}>↓ {fmt(mExpense)}</span>
+          <span style={{ fontSize:13, fontWeight:700, color: mIncome-mExpense>=0?'var(--success)':'var(--danger)' }}>= {fmt(mIncome-mExpense)}</span>
+        </div>
+      </div>
+
+      {/* Calendar grid */}
+      <div style={{ background:'var(--surface)', borderRadius:'var(--radius)', border:'1px solid var(--border)', overflow:'hidden', boxShadow:'var(--shadow-sm)' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', borderBottom:'1px solid var(--border)' }}>
+          {DAYS_SHORT.map(d=>(
+            <div key={d} style={{ padding:'10px 4px', textAlign:'center', fontSize:11, fontWeight:700, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.06em' }}>{d}</div>
+          ))}
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)' }}>
+          {cells.map((day, i) => {
+            if (!day) return <div key={i} style={{ minHeight:90, borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background:'var(--bg)' }} />;
+            const dayEntries = entriesForDay(day);
+            const isToday = day===today.getDate()&&viewMonth===today.getMonth()&&viewYear===today.getFullYear();
+            const isSelected = selected===day;
+            const hasPending = dayEntries.some(e=>e.status==='pending'&&e.kind==='expense');
+            const hasPaid = dayEntries.some(e=>e.status==='paid');
+            return (
+              <div key={i} onClick={()=>setSelected(isSelected?null:day)} style={{
+                minHeight:90, borderRight:'1px solid var(--border)', borderBottom:'1px solid var(--border)',
+                padding:6, cursor: dayEntries.length?'pointer':'default',
+                background: isSelected?'var(--primary-dim)': isToday?'var(--accent-light)':'transparent',
+                transition:'background 0.15s',
+              }}
+                onMouseEnter={e=>{ if(!isSelected) e.currentTarget.style.background='var(--surface2)'; }}
+                onMouseLeave={e=>{ if(!isSelected) e.currentTarget.style.background=isToday?'var(--accent-light)':'transparent'; }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4 }}>
+                  <span style={{
+                    fontSize:13, fontWeight: isToday?800:500, color: isToday?'var(--accent)':'var(--text)',
+                    width:24, height:24, display:'flex', alignItems:'center', justifyContent:'center',
+                    borderRadius:'50%', background: isToday?'var(--accent)':'transparent', color: isToday?'#fff':'var(--text)',
+                  }}>{day}</span>
+                  <div style={{ display:'flex', gap:2 }}>
+                    {hasPending && <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--danger)' }} />}
+                    {hasPaid && <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--success)' }} />}
+                  </div>
+                </div>
+                <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+                  {dayEntries.slice(0,3).map(e=>(
+                    <div key={e.id} onClick={ev=>{ev.stopPropagation();setModalEntry(e);}} style={{
+                      fontSize:10, borderRadius:4, padding:'1px 5px', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
+                      background: e.kind==='income'?'var(--success-light)':e.status==='paid'?'var(--border)':'var(--danger-light)',
+                      color: e.kind==='income'?'var(--success)':e.status==='paid'?'var(--text3)':'var(--danger)',
+                      fontWeight:600, cursor:'pointer',
+                    }} title={e.title}>{e.title.slice(0,18)}</div>
+                  ))}
+                  {dayEntries.length>3 && <span style={{ fontSize:10, color:'var(--text3)' }}>+{dayEntries.length-3} mais</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {modalEntry && (
+        <Modal open={true} onClose={()=>setModalEntry(null)} title="Detalhes do lançamento">
+          <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+              {[
+                ['Descrição', modalEntry.title],
+                ['Vencimento', fmtDate(modalEntry.dueDate)],
+                ['Valor', fmt(modalEntry.amount)],
+                ['Status', <Badge status={modalEntry.status} />],
+                ['Tipo', modalEntry.kind==='income'?'Receita':'Despesa'],
+                ['Conta', ACCOUNTS.find(a=>a.id===modalEntry.accountId)?.name||'—'],
+              ].map(([k,v])=>(
+                <div key={k}>
+                  <p style={{ fontSize:11, color:'var(--text3)', fontWeight:600, textTransform:'uppercase', marginBottom:2 }}>{k}</p>
+                  <p style={{ fontSize:14, fontWeight:600, color:'var(--text)' }}>{v}</p>
+                </div>
+              ))}
+            </div>
+            <Btn variant="ghost" onClick={()=>setModalEntry(null)} style={{ alignSelf:'flex-end' }}>Fechar</Btn>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+// ── Settings Tab ─────────────────────────────────────────────
+const SettingsTab = ({ theme, setTheme }) => {
+  const THEMES = [
+    { id:'light', name:'Light Clean', desc:'Claro e minimalista, ideal para o dia a dia', icon:'☀️' },
+    { id:'dark', name:'Dark Premium', desc:'Escuro profissional, confortável à noite', icon:'🌙' },
+    { id:'eva', name:'EVA-01', desc:'Temática especial, roxa e neon', icon:'⚡' },
+  ];
+  const WIDGETS = [
+    {id:'kpis', label:'Cards de KPI'}, {id:'cashflow', label:'Fluxo de caixa'},
+    {id:'projection', label:'Projeção de saldo'}, {id:'category', label:'Categorias'},
+    {id:'cards', label:'Limites de cartões'}, {id:'upcoming', label:'Próximos vencimentos'},
+  ];
+  const [widgets, setWidgets] = useState(WIDGETS.map(w=>w.id));
+  const [period, setPeriod] = useState('due_date');
+  const [density, setDensity] = useState('compact');
+
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(320px, 1fr))', gap:16 }}>
+      <Panel title="Tema visual">
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {THEMES.map(t=>(
+            <button key={t.id} onClick={()=>setTheme(t.id)} style={{
+              display:'flex', alignItems:'center', gap:12, padding:'12px 16px', borderRadius:'var(--radius-sm)',
+              border:`2px solid ${theme===t.id?'var(--primary)':'var(--border)'}`,
+              background: theme===t.id?'var(--primary-dim)':'var(--surface2)',
+              cursor:'pointer', transition:'all 0.2s', textAlign:'left', width:'100%',
+            }}>
+              <span style={{ fontSize:24 }}>{t.icon}</span>
+              <div>
+                <p style={{ fontSize:13, fontWeight:700, color:'var(--text)' }}>{t.name}</p>
+                <p style={{ fontSize:11, color:'var(--text3)' }}>{t.desc}</p>
+              </div>
+              {theme===t.id && <span style={{ marginLeft:'auto', color:'var(--primary)' }}><Icon name="check" size={16} /></span>}
+            </button>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel title="Configurações do dashboard">
+        <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+          <Field label="Regra de período">
+            <Select value={period} onChange={e=>setPeriod(e.target.value)}>
+              <option value="due_date">Por vencimento</option>
+              <option value="competence">Por competência</option>
+            </Select>
+          </Field>
+          <Field label="Densidade">
+            <Select value={density} onChange={e=>setDensity(e.target.value)}>
+              <option value="compact">Compacta</option>
+              <option value="comfortable">Confortável</option>
+            </Select>
+          </Field>
+          <div>
+            <p style={{ fontSize:12, fontWeight:600, color:'var(--text2)', marginBottom:8 }}>Widgets visíveis</p>
+            <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+              {WIDGETS.map(w=>(
+                <div key={w.id} style={{ padding:'8px 12px', background:'var(--surface2)', borderRadius:'var(--radius-xs)', border:'1px solid var(--border)' }}>
+                  <Checkbox
+                    checked={widgets.includes(w.id)}
+                    onChange={e => setWidgets(prev => e.target.checked ? [...prev,w.id] : prev.filter(id=>id!==w.id))}
+                    label={w.label}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          <Btn variant="primary">Salvar configurações</Btn>
+        </div>
+      </Panel>
+
+      <Panel title="Importar CSV" subtitle="Cabeçalhos aceitos: date, amount, title">
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          <Textarea placeholder={`date,amount,title\n2026-05-25,120.50,Supermercado`} rows={5} />
+          <Field label="Conta destino">
+            <Select value="">
+              <option value="">Sem conta</option>
+              {ACCOUNTS.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}
+            </Select>
+          </Field>
+          <Btn variant="primary">Importar CSV</Btn>
+        </div>
+      </Panel>
+
+      <Panel title="Contas cadastradas">
+        <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+          {ACCOUNTS.map(a=>(
+            <div key={a.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 12px', background:'var(--surface2)', borderRadius:'var(--radius-xs)', border:'1px solid var(--border)' }}>
+              <div style={{ width:8, height:8, borderRadius:'50%', background: a.type==='bank'?'var(--primary)':a.type==='credit_card'?'var(--danger)':'var(--warning)', flexShrink:0 }} />
+              <div style={{ flex:1 }}>
+                <p style={{ fontSize:13, fontWeight:600, color: a.active===false?'var(--text3)':'var(--text)' }}>{a.name}</p>
+                <p style={{ fontSize:11, color:'var(--text3)' }}>{a.type==='bank'?'Conta bancária':a.type==='credit_card'?'Cartão de crédito':'Benefício'}{a.limit?` · Limite ${fmt(a.limit)}`:''}</p>
+              </div>
+              {a.active===false && <span style={{ fontSize:10, color:'var(--danger)', background:'var(--danger-light)', borderRadius:99, padding:'1px 8px', fontWeight:700 }}>Inativo</span>}
+            </div>
+          ))}
+        </div>
+      </Panel>
+    </div>
+  );
+};
+
+// ── Dashboard Tab ────────────────────────────────────────────
+const DashboardTab = () => {
+  const catData = Object.entries(catBreakdown).map(([name, value])=>({ name, value }));
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+      {/* KPIs */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:12 }}>
+        <KpiCard icon="income" label="Receitas do mês" value={fmt(KPIS.totalIncome)} color="var(--success)" trend={3} sub="vs. mês anterior" />
+        <KpiCard icon="expense" label="Despesas do mês" value={fmt(KPIS.totalExpense)} color="var(--danger)" trend={-8} sub="vs. mês anterior" />
+        <KpiCard icon="balance" label="Saldo líquido" value={fmt(KPIS.net)} color={KPIS.net>=0?"var(--success)":"var(--danger)"} sub={KPIS.net>=0?"Positivo este mês":"Negativo este mês"} />
+        <KpiCard icon="pending" label="Em aberto" value={fmt(KPIS.pendingAmt)} color="var(--warning)" sub="Despesas pendentes" />
+        <KpiCard icon="upcoming" label="Próximos 7 dias" value={fmt(KPIS.upcoming7)} color="var(--accent)" sub="Vencimentos próximos" />
+        <KpiCard icon="card" label="Uso dos cartões" value={`${KPIS.cardUsed.toFixed(1)}%`} color={KPIS.cardUsed>80?"var(--danger)":KPIS.cardUsed>60?"var(--warning)":"var(--primary)"} sub={`${fmt(cardSpend)} de ${fmt(totalCardLimit)}`} />
+      </div>
+
+      {/* Charts row */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(300px, 1fr))', gap:16 }}>
+        <Panel title="Fluxo de caixa" subtitle="Últimos 4 meses + próximos 2" action={
+          <div style={{ display:'flex', gap:8 }}>
+            <span style={{ fontSize:11, color:'var(--success)', display:'flex', alignItems:'center', gap:4 }}><span style={{ width:8, height:8, background:'var(--success)', borderRadius:2, display:'inline-block' }}/> Receita</span>
+            <span style={{ fontSize:11, color:'var(--danger)', display:'flex', alignItems:'center', gap:4 }}><span style={{ width:8, height:8, background:'var(--danger)', borderRadius:2, display:'inline-block' }}/> Despesa</span>
+          </div>
+        }>
+          <CashflowChart data={CASHFLOW} />
+          <div style={{ marginTop:12, padding:'10px 14px', background:'var(--surface2)', borderRadius:'var(--radius-xs)', display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
+            {CASHFLOW.map((d,i)=>(
+              <div key={i} style={{ textAlign:'center' }}>
+                <p style={{ fontSize:10, color:'var(--text3)', fontWeight:600 }}>{d.month}</p>
+                <p style={{ fontSize:12, fontWeight:700, color: d.income-d.expense>=0?'var(--success)':'var(--danger)' }}>{fmt(d.income-d.expense)}</p>
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="Despesas por categoria" subtitle={`Total: ${fmt(KPIS.totalExpense)}`}>
+          {catData.length > 0 ? <DonutChart data={catData} /> : <p style={{color:'var(--text3)',fontSize:13}}>Sem dados de despesas</p>}
+        </Panel>
+      </div>
+
+      {/* Card limits */}
+      <Panel title="Utilização dos cartões de crédito" subtitle="Limite total disponível vs. utilizado">
+        <CardLimits />
+      </Panel>
+
+      {/* Upcoming */}
+      <Panel title="Próximos vencimentos" subtitle="Despesas pendentes ordenadas por data" action={
+        <span style={{ fontSize:11, color:'var(--text3)' }}>{ENTRIES_RAW.filter(e=>e.kind==='expense'&&e.status!=='paid'&&new Date(e.dueDate)>=new Date()).length} pendente(s)</span>
+      }>
+        <UpcomingTable />
+      </Panel>
+    </div>
+  );
+};
+
+// ── Main App ─────────────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "eva",
+  "density": "compact"
+}/*EDITMODE-END*/;
+
+const App = () => {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [entries, setEntries] = useState(ENTRIES_RAW);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
+  const SIDEBAR_W = sidebarCollapsed ? 68 : 224;
+
+  const theme = t.theme;
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Close drawer on tab change
+  const goTo = (tab) => { setActiveTab(tab); setDrawerOpen(false); };
+
+  const TABS = [
+    { id:'dashboard', label:'Dashboard', icon:'dashboard' },
+    { id:'planilha', label:'Planilha', icon:'grid' },
+    { id:'calendario', label:'Calendário', icon:'calendar' },
+    { id:'config', label:'Configurações', icon:'settings' },
+  ];
+  const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  // ── Sidebar (shared between desktop sidebar and mobile drawer) ──
+  const SidebarContent = ({ onNav }) => (
+    <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+      {/* Logo */}
+      <div style={{ display:'flex', alignItems:'center', gap:12, padding:'0 16px', borderBottom:'1px solid var(--border)', height:56, flexShrink:0 }}>
+        <div style={{ width:32, height:32, borderRadius:9, background:'var(--primary)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div>
+          <p style={{ fontSize:10, color:'var(--text3)', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', lineHeight:1 }}>Financeiro</p>
+          <p style={{ fontSize:15, fontWeight:800, color:'var(--text)', lineHeight:1.3 }}>Familiar</p>
+        </div>
+      </div>
+
+      {/* Nav items */}
+      <nav style={{ flex:1, padding:'10px 8px', display:'flex', flexDirection:'column', gap:2 }}>
+        {TABS.map(tab => {
+          const active = activeTab === tab.id;
+          return (
+            <button key={tab.id} onClick={() => onNav(tab.id)} style={{
+              display:'flex', alignItems:'center', gap:10, padding:'11px 12px',
+              borderRadius:'var(--radius-sm)', border:'none', cursor:'pointer',
+              fontFamily:'Plus Jakarta Sans', fontWeight:600, fontSize:14,
+              background: active ? 'var(--primary-dim)' : 'transparent',
+              color: active ? 'var(--primary)' : 'var(--text2)',
+              transition:'background 0.15s, color 0.15s',
+              width:'100%', position:'relative', textAlign:'left',
+            }}
+              onMouseEnter={e=>{ if(!active) e.currentTarget.style.background='var(--surface2)'; }}
+              onMouseLeave={e=>{ if(!active) e.currentTarget.style.background='transparent'; }}
+            >
+              {active && <span style={{ position:'absolute', left:0, top:'18%', bottom:'18%', width:3, borderRadius:99, background:'var(--primary)' }} />}
+              <Icon name={tab.icon} size={18} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Saldo */}
+      <div style={{ borderTop:'1px solid var(--border)', padding:'12px 8px', display:'flex', flexDirection:'column', gap:6 }}>
+        <div style={{ padding:'10px 12px', borderRadius:'var(--radius-sm)', background: KPIS.net>=0?'var(--success-light)':'var(--danger-light)', border:`1px solid ${KPIS.net>=0?'var(--success)':'var(--danger)'}` }}>
+          <p style={{ fontSize:10, fontWeight:700, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:2 }}>{monthNames[M]} {Y}</p>
+          <p style={{ fontSize:15, fontWeight:800, color: KPIS.net>=0?'var(--success)':'var(--danger)' }}>{fmt(KPIS.net)}</p>
+          <p style={{ fontSize:10, color:'var(--text3)', marginTop:1 }}>Saldo líquido</p>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:6, padding:'4px 12px' }}>
+          <span style={{ width:7, height:7, borderRadius:'50%', background:'var(--success)', flexShrink:0 }} />
+          <span style={{ fontSize:11, color:'var(--text3)', fontWeight:600 }}>Online</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ minHeight:'100vh', background:'var(--bg)', color:'var(--text)', display:'flex' }}>
+
+      {/* ── DESKTOP SIDEBAR ──────────────────────────────────── */}
+      {!isMobile && (
+        <aside style={{
+          width: SIDEBAR_W, minHeight:'100vh', position:'sticky', top:0,
+          flexShrink:0, display:'flex', flexDirection:'column',
+          background:'var(--surface)', borderRight:'1px solid var(--border)',
+          boxShadow:'var(--shadow-sm)',
+          transition:'width 0.25s cubic-bezier(.4,0,.2,1)',
+          overflow:'hidden', zIndex:100,
+        }}>
+          {/* Logo */}
+          <div style={{ display:'flex', alignItems:'center', gap:12, padding:'0 14px', borderBottom:'1px solid var(--border)', height:56, flexShrink:0, overflow:'hidden' }}>
+            <div style={{ width:32, height:32, borderRadius:9, background:'var(--primary)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <div style={{ overflow:'hidden', whiteSpace:'nowrap', opacity: sidebarCollapsed?0:1, transition:'opacity 0.15s ease', pointerEvents: sidebarCollapsed?'none':'auto' }}>
+              <p style={{ fontSize:10, color:'var(--text3)', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', lineHeight:1 }}>Financeiro</p>
+              <p style={{ fontSize:15, fontWeight:800, color:'var(--text)', lineHeight:1.3 }}>Familiar</p>
+            </div>
+          </div>
+
+          {/* Nav */}
+          <nav style={{ flex:1, padding:'10px 8px', display:'flex', flexDirection:'column', gap:2 }}>
+            {TABS.map(tab => {
+              const active = activeTab === tab.id;
+              return (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  title={sidebarCollapsed ? tab.label : ''}
+                  style={{
+                    display:'flex', alignItems:'center', gap:10, padding:'10px 10px',
+                    justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+                    borderRadius:'var(--radius-sm)', border:'none', cursor:'pointer',
+                    fontFamily:'Plus Jakarta Sans', fontWeight:600, fontSize:13,
+                    background: active ? 'var(--primary-dim)' : 'transparent',
+                    color: active ? 'var(--primary)' : 'var(--text2)',
+                    transition:'background 0.15s, color 0.15s',
+                    width:'100%', overflow:'hidden', position:'relative', flexShrink:0,
+                  }}
+                  onMouseEnter={e=>{ if(!active) e.currentTarget.style.background='var(--surface2)'; }}
+                  onMouseLeave={e=>{ if(!active) e.currentTarget.style.background='transparent'; }}
+                >
+                  {active && <span style={{ position:'absolute', left:0, top:'18%', bottom:'18%', width:3, borderRadius:99, background:'var(--primary)' }} />}
+                  <span style={{ flexShrink:0, display:'flex' }}><Icon name={tab.icon} size={17} /></span>
+                  <span style={{ whiteSpace:'nowrap', overflow:'hidden', opacity: sidebarCollapsed?0:1, maxWidth: sidebarCollapsed?0:140, transition:'opacity 0.15s ease, max-width 0.25s cubic-bezier(.4,0,.2,1)' }}>
+                    {tab.label}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Bottom */}
+          <div style={{ borderTop:'1px solid var(--border)', padding:'10px 8px', display:'flex', flexDirection:'column', gap:6 }}>
+            <div style={{ padding:'10px 10px', borderRadius:'var(--radius-sm)', background: KPIS.net>=0?'var(--success-light)':'var(--danger-light)', border:`1px solid ${KPIS.net>=0?'var(--success)':'var(--danger)'}`, overflow:'hidden', opacity: sidebarCollapsed?0:1, maxHeight: sidebarCollapsed?0:80, transition:'opacity 0.15s ease, max-height 0.25s cubic-bezier(.4,0,.2,1), padding 0.25s ease' }}>
+              <p style={{ fontSize:10, fontWeight:700, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:2, whiteSpace:'nowrap' }}>{monthNames[M]} {Y}</p>
+              <p style={{ fontSize:15, fontWeight:800, color: KPIS.net>=0?'var(--success)':'var(--danger)', whiteSpace:'nowrap' }}>{fmt(KPIS.net)}</p>
+              <p style={{ fontSize:10, color:'var(--text3)', marginTop:1, whiteSpace:'nowrap' }}>Saldo líquido</p>
+            </div>
+            <div style={{ display:'flex', alignItems:'center', gap:8, padding:'4px 10px', overflow:'hidden' }}>
+              <span style={{ width:7, height:7, borderRadius:'50%', background:'var(--success)', flexShrink:0 }} />
+              <span style={{ fontSize:11, color:'var(--text3)', fontWeight:600, whiteSpace:'nowrap', opacity: sidebarCollapsed?0:1, transition:'opacity 0.15s ease' }}>Online</span>
+            </div>
+            <button onClick={() => setSidebarCollapsed(c=>!c)} style={{
+              display:'flex', alignItems:'center', gap:8,
+              justifyContent: sidebarCollapsed?'center':'flex-start',
+              padding:'9px 10px', borderRadius:'var(--radius-sm)', border:'none', cursor:'pointer',
+              background:'transparent', color:'var(--text3)', fontFamily:'Plus Jakarta Sans',
+              fontSize:12, fontWeight:600, width:'100%', transition:'background 0.15s',
+            }}
+              onMouseEnter={e=>e.currentTarget.style.background='var(--surface2)'}
+              onMouseLeave={e=>e.currentTarget.style.background='transparent'}
+            >
+              <span style={{ display:'flex', flexShrink:0, transition:'transform 0.25s cubic-bezier(.4,0,.2,1)', transform: sidebarCollapsed?'rotate(180deg)':'rotate(0deg)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </span>
+              <span style={{ whiteSpace:'nowrap', overflow:'hidden', opacity: sidebarCollapsed?0:1, maxWidth: sidebarCollapsed?0:120, transition:'opacity 0.15s ease, max-width 0.25s cubic-bezier(.4,0,.2,1)' }}>Recolher menu</span>
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {/* ── MOBILE DRAWER OVERLAY ────────────────────────────── */}
+      {isMobile && drawerOpen && (
+        <div style={{ position:'fixed', inset:0, zIndex:200, display:'flex' }}
+          onClick={() => setDrawerOpen(false)}>
+          {/* Backdrop */}
+          <div style={{ position:'absolute', inset:0, background:'oklch(0% 0 0 / 0.45)', backdropFilter:'blur(2px)' }} />
+          {/* Drawer */}
+          <div style={{
+            position:'relative', width:280, height:'100%',
+            background:'var(--surface)', borderRight:'1px solid var(--border)',
+            boxShadow:'var(--shadow-lg)', zIndex:1,
+            display:'flex', flexDirection:'column',
+            animation:'slideInDrawer 0.25s cubic-bezier(.4,0,.2,1)',
+          }} onClick={e=>e.stopPropagation()}>
+            <SidebarContent onNav={goTo} />
+          </div>
+        </div>
+      )}
+
+      {/* ── MAIN AREA ─────────────────────────────────────────── */}
+      <div style={{ flex:1, minWidth:0, display:'flex', flexDirection:'column' }}>
+
+        {/* Top bar */}
+        <div style={{
+          height:56, display:'flex', alignItems:'center', justifyContent:'space-between',
+          padding:'0 16px', borderBottom:'1px solid var(--border)',
+          background:'var(--surface)', boxShadow:'var(--shadow-sm)',
+          position:'sticky', top:0, zIndex:90, gap:12,
+        }}>
+          {/* Left: hamburger (mobile) or title */}
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            {isMobile && (
+              <button onClick={()=>setDrawerOpen(o=>!o)} style={{
+                background:'none', border:'none', cursor:'pointer', color:'var(--text)',
+                display:'flex', alignItems:'center', padding:6, borderRadius:8,
+              }}
+                onMouseEnter={e=>e.currentTarget.style.background='var(--surface2)'}
+                onMouseLeave={e=>e.currentTarget.style.background='none'}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+              </button>
+            )}
+            <div>
+              <h1 style={{ fontSize:15, fontWeight:800, color:'var(--text)', lineHeight:1.2 }}>
+                {TABS.find(t=>t.id===activeTab)?.label}
+              </h1>
+              {!isMobile && <p style={{ fontSize:11, color:'var(--text3)' }}>{monthNames[M]} de {Y}</p>}
+            </div>
+          </div>
+
+          {/* Right: resumo */}
+          <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0 }}>
+            {!isMobile && (
+              <div style={{ fontSize:12, color:'var(--text3)', fontWeight:600 }}>
+                ↑ <span style={{ color:'var(--success)' }}>{fmt(KPIS.totalIncome)}</span>
+                &nbsp;&nbsp;↓ <span style={{ color:'var(--danger)' }}>{fmt(KPIS.totalExpense)}</span>
+              </div>
+            )}
+            <div style={{ padding:'4px 10px', borderRadius:99, background: KPIS.net>=0?'var(--success-light)':'var(--danger-light)', border:`1px solid ${KPIS.net>=0?'var(--success)':'var(--danger)'}` }}>
+              <span style={{ fontSize:12, fontWeight:800, color: KPIS.net>=0?'var(--success)':'var(--danger)' }}>{fmt(KPIS.net)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Page content */}
+        <main style={{ flex:1, padding: isMobile ? '16px 12px 80px' : '24px', maxWidth:1200, width:'100%', margin:'0 auto' }}>
+          {activeTab === 'dashboard' && <DashboardTab />}
+          {activeTab === 'planilha' && <SpreadsheetTab entries={entries} setEntries={setEntries} />}
+          {activeTab === 'calendario' && <CalendarTab entries={entries} />}
+          {activeTab === 'config' && <SettingsTab theme={theme} setTheme={v=>setTweak('theme',v)} />}
+        </main>
+      </div>
+
+      {/* ── MOBILE BOTTOM NAV ─────────────────────────────────── */}
+      {isMobile && (
+        <nav style={{
+          position:'fixed', bottom:0, left:0, right:0, zIndex:150,
+          background:'var(--surface)', borderTop:'1px solid var(--border)',
+          boxShadow:'0 -4px 20px oklch(0% 0 0 / 0.1)',
+          display:'flex', alignItems:'stretch',
+          paddingBottom:'env(safe-area-inset-bottom, 0px)',
+        }}>
+          {TABS.map(tab => {
+            const active = activeTab === tab.id;
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+                flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+                gap:4, padding:'10px 4px 8px', border:'none', cursor:'pointer',
+                background:'transparent', color: active ? 'var(--primary)' : 'var(--text3)',
+                fontFamily:'Plus Jakarta Sans', fontSize:10, fontWeight:700,
+                transition:'color 0.15s',
+                position:'relative',
+              }}>
+                {active && (
+                  <span style={{ position:'absolute', top:0, left:'25%', right:'25%', height:2, borderRadius:99, background:'var(--primary)' }} />
+                )}
+                <Icon name={tab.icon} size={20} />
+                <span style={{ letterSpacing:'0.01em' }}>{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
+
+      {/* Tweaks */}
+      <TweaksPanel>
+        <TweakSection label="Tema" />
+        <TweakRadio label="Visual" value={t.theme}
+          options={['light','dark','eva']}
+          onChange={v => setTweak('theme', v)} />
+        <TweakSection label="Densidade" />
+        <TweakRadio label="Densidade" value={t.density}
+          options={['compact','comfortable']}
+          onChange={v => setTweak('density', v)} />
+      </TweaksPanel>
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
