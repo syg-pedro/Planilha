@@ -119,6 +119,30 @@
               </div>
             </div>
 
+            <!-- Parcelas (exibido apenas para lançamentos parcelados) -->
+            <div v-if="isInstallment" class="field-row">
+              <div class="field-group">
+                <label class="field-label">Parcela nº</label>
+                <input
+                  v-model.number="draft.installmentIndex"
+                  type="number"
+                  class="field-input"
+                  placeholder="Ex.: 3"
+                  min="1"
+                />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Total de parcelas</label>
+                <input
+                  v-model.number="draft.installmentTotal"
+                  type="number"
+                  class="field-input"
+                  placeholder="Ex.: 12"
+                  min="1"
+                />
+              </div>
+            </div>
+
             <!-- Observações -->
             <div class="field-group">
               <label class="field-label">Observações</label>
@@ -151,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import type { Account, Category, FinanceEntry } from '#shared/types'
 
 const props = defineProps<{
@@ -179,8 +203,14 @@ const draft = reactive({
   dueDate: '',
   competenceDate: '',
   accountId: '',
-  categoryId: ''
+  categoryId: '',
+  installmentIndex: null as number | null,
+  installmentTotal: null as number | null,
 })
+
+const isInstallment = computed(() =>
+  draft.installmentIndex != null || draft.installmentTotal != null
+)
 
 watch(
   () => props.entry,
@@ -196,6 +226,8 @@ watch(
     draft.competenceDate = formatDate(entry.competenceDate)
     draft.accountId = entry.accountId ?? ''
     draft.categoryId = entry.categoryId ?? ''
+    draft.installmentIndex = entry.installmentIndex ?? null
+    draft.installmentTotal = entry.installmentTotal ?? null
   },
   { immediate: true }
 )
@@ -217,7 +249,9 @@ const onSave = () => {
     dueDate,
     competenceDate,
     accountId: draft.accountId || null,
-    categoryId: draft.categoryId || null
+    categoryId: draft.categoryId || null,
+    installmentIndex: draft.installmentIndex,
+    installmentTotal: draft.installmentTotal,
   })
 }
 

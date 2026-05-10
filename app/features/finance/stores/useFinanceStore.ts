@@ -284,6 +284,14 @@ export const useFinanceStore = defineStore('finance', () => {
     settings.value = response.settings
   }
 
+  const saveAccount = async (account: Partial<Account>) => {
+    const response = await fetchApi<{ accounts: Account[] }>('/api/accounts/batch', {
+      method: 'POST',
+      body: { upserts: [account], deletes: [] }
+    })
+    accounts.value = response.accounts
+  }
+
   const saveRules = async (upserts: Partial<FinanceRule>[], deletes: string[]) => {
     const response = await fetchApi<{ rules: FinanceRule[] }>('/api/rules/batch', {
       method: 'POST',
@@ -367,6 +375,7 @@ export const useFinanceStore = defineStore('finance', () => {
     bootstrap,
     boot,
     saveEntriesBatch,
+    saveAccount,
     saveRules,
     rebuildRules,
     reseedEntries,

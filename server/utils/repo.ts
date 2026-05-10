@@ -27,6 +27,7 @@ interface Repository {
   saveDashboard: (payload: DashboardSettingsRequest) => Promise<HouseholdSettings>
   importCsv: (csvText: string, accountId: string | null) => Promise<{ inserted: number; warnings: string[] }>
   saveRules: (upserts: Partial<FinanceRule>[], deletes: string[]) => Promise<FinanceRule[]>
+  saveAccounts: (upserts: Partial<Account>[], deletes: string[]) => Promise<Account[]>
 }
 
 interface MemoryState {
@@ -320,6 +321,33 @@ const makeMemoryRepo = (): Repository => ({
     }
     state.rules = [...index.values()]
     return state.rules
+  },
+
+  async saveAccounts(upserts, deletes) {
+    const state = await getMemoryState()
+    const index = new Map(state.accounts.map(a => [a.id, a]))
+    for (const id of deletes) index.delete(id)
+    for (const patch of upserts) {
+      const id = patch.id ?? makeId('account')
+      const existing = index.get(id)
+      if (existing) {
+        index.set(id, { ...existing, ...patch, id })
+      } else {
+        index.set(id, {
+          id,
+          householdId: DEFAULT_HOUSEHOLD_ID,
+          name:        patch.name       ?? 'Nova conta',
+          owner:       patch.owner      ?? '',
+          type:        patch.type       ?? 'bank',
+          limitTotal:  patch.limitTotal ?? null,
+          closingDay:  patch.closingDay ?? null,
+          dueDay:      patch.dueDay     ?? null,
+          active:      patch.active     ?? true,
+        })
+      }
+    }
+    state.accounts = [...index.values()]
+    return state.accounts
   },
 
 })
@@ -766,6 +794,32 @@ const makeSupabaseRepo = (): Repository => ({
     const { data, error } = await client.from('rules').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
     if (error) throw error
     return (data ?? []).map(mapRuleFromRow)
+  },
+
+  async saveAccounts(upserts, deletes) {
+    const client = getSupabaseClient()
+    if (deletes.length > 0) {
+      const { error } = await client.from('accounts').delete().in('id', deletes)
+      if (error) throw error
+    }
+    if (upserts.length > 0) {
+      const payload = upserts.map(a => mapAccountToRow({
+        id:          a.id          ?? makeId('account'),
+        householdId: DEFAULT_HOUSEHOLD_ID,
+        name:        a.name        ?? 'Nova conta',
+        owner:       a.owner       ?? '',
+        type:        a.type        ?? 'bank',
+        limitTotal:  a.limitTotal  ?? null,
+        closingDay:  a.closingDay  ?? null,
+        dueDay:      a.dueDay      ?? null,
+        active:      a.active      ?? true,
+      }))
+      const { error } = await client.from('accounts').upsert(payload)
+      if (error) throw error
+    }
+    const { data, error } = await client.from('accounts').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    if (error) throw error
+    return (data ?? []).map(mapAccountFromRow)
   }
 })
 
