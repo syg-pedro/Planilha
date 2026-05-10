@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection } from '#shared/finance'
+import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection, computeKpis } from '#shared/finance'
 import { DEFAULT_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
 import type {
   Account,
@@ -70,6 +70,8 @@ export const useFinanceStore = defineStore('finance', () => {
   const offlineQueue = ref<EntryBatchRequest[]>([])
 
   const filteredEntries = computed(() => applyFilters(entries.value, filters.value))
+
+  const monthlyKpis = computed(() => computeKpis(filteredEntries.value, accounts.value))
 
   const categoryMap = computed(() => {
     const map = new Map<string, Category>()
@@ -403,6 +405,7 @@ export const useFinanceStore = defineStore('finance', () => {
     importCsv,
     requestNotifications,
     notifyUpcoming,
+    monthlyKpis,
     applyTheme,
     setThemeMode,
     flushOfflineQueue

@@ -130,7 +130,7 @@
           style="margin: 4px 4px 0; padding: 9px 10px; border-radius: var(--radius-xs); background: var(--primary-dim); border: 1px solid var(--primary)"
         >
           <p style="font-size: 9px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px">{{ currentMonthName }}</p>
-          <p style="font-size: 14px; font-weight: 800; color: var(--primary)">{{ currency.format(store.kpis.net) }}</p>
+          <p style="font-size: 14px; font-weight: 800; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</p>
           <p style="font-size: 9px; color: var(--primary); opacity: 0.7">saldo líquido</p>
         </div>
 
@@ -250,8 +250,8 @@
         <!-- Right: income/expense summary + alerts + balance -->
         <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
           <span v-if="!isMobile" style="font-size: 12px; color: var(--text3); font-weight: 600">
-            ↑ <span style="color: var(--success)">{{ currency.format(store.kpis.totalIncome) }}</span>
-            &nbsp;↓ <span style="color: var(--danger)">{{ currency.format(store.kpis.totalExpense) }}</span>
+            ↑ <span style="color: var(--success)">{{ currency.format(store.monthlyKpis.totalIncome) }}</span>
+            &nbsp;↓ <span style="color: var(--danger)">{{ currency.format(store.monthlyKpis.totalExpense) }}</span>
           </span>
           <button
             style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; padding: 6px; border-radius: 8px; position: relative"
@@ -263,7 +263,7 @@
             <span v-if="alertCount > 0" style="position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff">{{ alertCount }}</span>
           </button>
           <div style="padding: 4px 10px; border-radius: 99px; background: var(--primary-dim); border: 1px solid var(--primary)">
-            <span style="font-size: 12px; font-weight: 800; color: var(--primary)">{{ currency.format(store.kpis.net) }}</span>
+            <span style="font-size: 12px; font-weight: 800; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</span>
           </div>
         </div>
       </div>

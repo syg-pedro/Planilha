@@ -157,9 +157,9 @@ const fmt      = (v: number) => currency.format(v)
 const sim = ref({ income: 3900, expense: 3200, savings: 400, months: 24 })
 
 const loadFromCurrent = () => {
-  sim.value.income  = Math.round(store.kpis.totalIncome)
-  sim.value.expense = Math.round(store.kpis.totalExpense)
-  sim.value.savings = Math.max(0, Math.round(store.kpis.net))
+  sim.value.income  = Math.round(store.monthlyKpis.totalIncome)
+  sim.value.expense = Math.round(store.monthlyKpis.totalExpense)
+  sim.value.savings = Math.max(0, Math.round(store.monthlyKpis.net))
 }
 
 const simResult = computed(() => {

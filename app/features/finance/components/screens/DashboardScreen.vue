@@ -4,12 +4,12 @@
 
     <!-- KPI row -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px">
-      <BaseKpiCard icon="income"    label="Receitas"           :value="fmt(store.kpis.totalIncome)"   color="var(--success)"  :sub="currentMonthLabel" />
-      <BaseKpiCard icon="expense"   label="Despesas"           :value="fmt(store.kpis.totalExpense)"  color="var(--danger)"   :sub="currentMonthLabel" />
-      <BaseKpiCard icon="balance"   label="Saldo líquido"      :value="fmt(store.kpis.net)"           :color="store.kpis.net >= 0 ? 'var(--success)' : 'var(--danger)'" :sub="store.kpis.net >= 0 ? 'Positivo' : 'Negativo'" />
-      <BaseKpiCard icon="pending"   label="Em aberto"          :value="fmt(store.kpis.pendingAmount)" color="var(--warning)"  sub="Pendências" />
-      <BaseKpiCard icon="calendar"  label="Próximos 7 dias"    :value="fmt(store.kpis.upcoming7Days)" color="var(--accent)"   sub="Vencimentos" />
-      <BaseKpiCard icon="card"      label="Uso dos cartões"    :value="`${store.kpis.cardsUsedPercent.toFixed(1)}%`" :color="store.kpis.cardsUsedPercent > 80 ? 'var(--danger)' : 'var(--primary)'" sub="do limite total" />
+      <BaseKpiCard icon="income"    label="Receitas"           :value="fmt(store.monthlyKpis.totalIncome)"   color="var(--success)"  :sub="currentMonthLabel" />
+      <BaseKpiCard icon="expense"   label="Despesas"           :value="fmt(store.monthlyKpis.totalExpense)"  color="var(--danger)"   :sub="currentMonthLabel" />
+      <BaseKpiCard icon="balance"   label="Saldo líquido"      :value="fmt(store.monthlyKpis.net)"           :color="store.monthlyKpis.net >= 0 ? 'var(--success)' : 'var(--danger)'" :sub="store.monthlyKpis.net >= 0 ? 'Positivo' : 'Negativo'" />
+      <BaseKpiCard icon="pending"   label="Em aberto"          :value="fmt(store.monthlyKpis.pendingAmount)" color="var(--warning)"  sub="Pendências" />
+      <BaseKpiCard icon="calendar"  label="Próximos 7 dias"    :value="fmt(store.monthlyKpis.upcoming7Days)" color="var(--accent)"   sub="Vencimentos" />
+      <BaseKpiCard icon="card"      label="Uso dos cartões"    :value="`${store.monthlyKpis.cardsUsedPercent.toFixed(1)}%`" :color="store.monthlyKpis.cardsUsedPercent > 80 ? 'var(--danger)' : 'var(--primary)'" sub="do limite total" />
       <BaseKpiCard icon="patrimony" label="Patrimônio líq."    :value="fmt(netWorth)" color="var(--primary)" sub="Ativos - Passivos" @click="$emit('navigate', 'patrimony')" style="cursor: pointer" />
     </div>
 
@@ -172,10 +172,10 @@
         <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Recomendado: ≥ 20%</p>
       </div>
       <div style="flex: 2; min-width: 200px">
-        <BaseProgressBar :value="store.kpis.net" :max="store.kpis.totalIncome" color="var(--primary)" :height="10" />
+        <BaseProgressBar :value="store.monthlyKpis.net" :max="store.monthlyKpis.totalIncome" color="var(--primary)" :height="10" />
         <div style="display: flex; justify-content: space-between; margin-top: 4px">
-          <span style="font-size: 11px; color: var(--text3)">Economizado: {{ fmt(store.kpis.net) }}</span>
-          <span style="font-size: 11px; color: var(--text3)">Receita: {{ fmt(store.kpis.totalIncome) }}</span>
+          <span style="font-size: 11px; color: var(--text3)">Economizado: {{ fmt(store.monthlyKpis.net) }}</span>
+          <span style="font-size: 11px; color: var(--text3)">Receita: {{ fmt(store.monthlyKpis.totalIncome) }}</span>
         </div>
       </div>
       <div style="display: flex; gap: 10px">
@@ -238,7 +238,7 @@ const smartAlerts = computed(() => {
     if (pct >= 100) alerts.push({ tone: 'danger', title: `Orçamento "${cat?.name ?? ''}" ultrapassado`, body: `${fmt(spent)} de ${fmt(b.amount)}` })
     else if (pct >= 80) alerts.push({ tone: 'warning', title: `Orçamento "${cat?.name ?? ''}" em ${pct.toFixed(0)}%`, body: `Restam ${fmt(b.amount - spent)}` })
   }
-  if (store.kpis.cardsUsedPercent >= 80) alerts.push({ tone: 'warning', title: `Cartões em ${store.kpis.cardsUsedPercent.toFixed(0)}%`, body: 'Atenção ao limite disponível.' })
+  if (store.monthlyKpis.cardsUsedPercent >= 80) alerts.push({ tone: 'warning', title: `Cartões em ${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`, body: 'Atenção ao limite disponível.' })
   return alerts.slice(0, 4)
 })
 
@@ -300,8 +300,8 @@ const accountName = (id: string | null) =>
   id ? (store.accountMap.get(id)?.name ?? '—') : '—'
 
 const savingsRateLabel = computed(() =>
-  store.kpis.totalIncome > 0
-    ? `${((store.kpis.net / store.kpis.totalIncome) * 100).toFixed(1)}%`
+  store.monthlyKpis.totalIncome > 0
+    ? `${((store.monthlyKpis.net / store.monthlyKpis.totalIncome) * 100).toFixed(1)}%`
     : '0.0%'
 )
 </script>

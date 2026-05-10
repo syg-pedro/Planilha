@@ -212,18 +212,18 @@ const generatedAlerts = computed((): SmartAlert[] => {
   }
 
   // Uso alto de cartão de crédito
-  if (store.kpis.cardsUsedPercent >= 90) {
+  if (store.monthlyKpis.cardsUsedPercent >= 90) {
     alerts.push({
       id:    'card-critical',
       tone:  'danger',
-      title: `Limite do cartão em ${store.kpis.cardsUsedPercent.toFixed(0)}%`,
+      title: `Limite do cartão em ${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`,
       body:  'Uso crítico do limite de crédito. Evite novas compras parceladas.',
     })
-  } else if (store.kpis.cardsUsedPercent >= 70) {
+  } else if (store.monthlyKpis.cardsUsedPercent >= 70) {
     alerts.push({
       id:    'card-warn',
       tone:  'warning',
-      title: `Uso do cartão em ${store.kpis.cardsUsedPercent.toFixed(0)}%`,
+      title: `Uso do cartão em ${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`,
       body:  'Atenção ao limite disponível nos cartões de crédito.',
     })
   }
