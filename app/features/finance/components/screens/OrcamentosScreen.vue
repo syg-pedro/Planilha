@@ -46,7 +46,7 @@
     </BaseEmptyState>
 
     <!-- Budget cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px">
+    <div class="budget-grid">
       <div
         v-for="row in budgetRows"
         :key="row.budget.id"
@@ -71,16 +71,20 @@
           </div>
           <div style="display: flex; gap: 4px">
             <button
-              style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px"
+              style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 8px; border-radius: 8px; display: flex; min-width: 36px; min-height: 36px; align-items: center; justify-content: center; touch-action: manipulation"
               title="Editar"
               @click="openModal(row.budget)"
+              @mouseenter="($event.currentTarget as HTMLElement).style.background='var(--surface2)'"
+              @mouseleave="($event.currentTarget as HTMLElement).style.background='none'"
             >
               <BaseIcon name="settings" :size="14" />
             </button>
             <button
-              style="background: none; border: none; cursor: pointer; color: var(--danger); padding: 4px"
+              style="background: none; border: none; cursor: pointer; color: var(--danger); padding: 8px; border-radius: 8px; display: flex; min-width: 36px; min-height: 36px; align-items: center; justify-content: center; touch-action: manipulation"
               title="Excluir"
               @click="deleteBudget(row.budget.id)"
+              @mouseenter="($event.currentTarget as HTMLElement).style.background='var(--surface2)'"
+              @mouseleave="($event.currentTarget as HTMLElement).style.background='none'"
             >
               <BaseIcon name="close" :size="14" />
             </button>
@@ -272,3 +276,17 @@ const deleteBudget = async (id: string) => {
   await store.saveBudgets([], [id])
 }
 </script>
+
+<style scoped>
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .budget-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

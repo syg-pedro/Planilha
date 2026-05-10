@@ -9,7 +9,7 @@
       </div>
       <button
         v-if="activeAlerts.length > 0"
-        style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border)"
+        style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border); min-height: 44px; touch-action: manipulation"
         @click="dismissAll"
       >
         <BaseIcon name="close" :size="13" />
@@ -65,8 +65,10 @@
       </div>
       <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0">
         <button
-          style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 2px; display: flex; align-items: center"
+          style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 8px; display: flex; align-items: center; border-radius: 8px; min-width: 36px; min-height: 36px; touch-action: manipulation"
           @click.stop="dismiss(alert.id)"
+          @mouseenter="($event.currentTarget as HTMLElement).style.background='var(--surface2)'"
+          @mouseleave="($event.currentTarget as HTMLElement).style.background='none'"
         >
           <BaseIcon name="close" :size="14" />
         </button>

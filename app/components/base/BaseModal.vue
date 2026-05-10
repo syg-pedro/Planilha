@@ -23,7 +23,7 @@
             <p v-if="subtitle" style="font-size: 12px; color: var(--text3); margin-top: 3px">{{ subtitle }}</p>
           </div>
           <button
-            style="background: none; border: none; cursor: pointer; color: var(--text3); display: flex; padding: 4px; border-radius: 8px"
+            style="background: none; border: none; cursor: pointer; color: var(--text3); display: flex; align-items: center; justify-content: center; min-width: 36px; min-height: 36px; padding: 4px; border-radius: 8px; flex-shrink: 0; touch-action: manipulation"
             @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
             @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
             @click="$emit('close')"

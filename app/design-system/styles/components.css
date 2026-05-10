@@ -7,6 +7,26 @@
   color: var(--ds-color-text-primary);
 }
 
+/* Previne zoom automático do iOS Safari em inputs com font-size < 16px */
+@media (max-width: 767px) {
+  .ds-field,
+  .ds-select,
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="date"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+    height: 44px;
+  }
+  textarea {
+    height: auto;
+    min-height: 88px;
+  }
+}
+
 .ds-field::placeholder {
   color: var(--ds-color-text-muted);
   opacity: 0.8;
@@ -61,6 +81,12 @@
 .ds-kpi-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 640px) {
+  .ds-kpi-card {
+    padding: 14px 14px;
+  }
 }
 
 .ds-text-muted {

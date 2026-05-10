@@ -1,8 +1,8 @@
 <template>
   <div style="display:flex;flex-direction:column;gap:16px">
     <!-- Toolbar -->
-    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-      <div style="flex:1;min-width:180px">
+    <div class="toolbar">
+      <div class="search-box">
         <div
           style="display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:var(--radius-xs);padding:0 12px;height:38px;transition:border-color 0.15s,box-shadow 0.15s"
           :style="searchFocused ? { border:'1.5px solid var(--primary)', boxShadow:'0 0 0 3px var(--primary-dim)' } : { border:'1.5px solid var(--border)' }"
@@ -20,19 +20,19 @@
           />
         </div>
       </div>
-      <BaseSelect v-model="kindFilter" style="min-width:130px">
+      <BaseSelect v-model="kindFilter" class="filter-select">
         <option value="all">Todos</option>
         <option value="income">Receitas</option>
         <option value="expense">Despesas</option>
       </BaseSelect>
-      <BaseSelect v-model="statusFilter" style="min-width:160px">
+      <BaseSelect v-model="statusFilter" class="filter-select">
         <option value="all">Todos os status</option>
         <option value="pending">Pendente</option>
         <option value="paid">Pago</option>
         <option value="review">Revisar</option>
       </BaseSelect>
       <button
-        style="display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-xs);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;transition:all 0.15s"
+        class="new-btn"
         @click="openNew"
         @mouseenter="($event.currentTarget as HTMLElement).style.filter='brightness(1.1)'"
         @mouseleave="($event.currentTarget as HTMLElement).style.filter=''"
@@ -67,18 +67,19 @@
     </div>
 
     <!-- Table -->
-    <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm)">
-      <div style="overflow-x:auto">
+    <div class="table-wrap">
+      <div class="table-scroll">
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead>
             <tr style="background:var(--surface2);border-bottom:1px solid var(--border)">
-              <th
-                v-for="h in ['Vencimento','Descrição','Tipo','Conta','Categoria','Valor','Status','Ações']"
-                :key="h"
-                style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap"
-              >
-                {{ h }}
-              </th>
+              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Vencimento</th>
+              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Descrição</th>
+              <th class="col-hide-sm" style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Tipo</th>
+              <th class="col-hide-sm" style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Conta</th>
+              <th class="col-hide-md" style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Categoria</th>
+              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Valor</th>
+              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Status</th>
+              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -91,13 +92,24 @@
             >
               <td style="padding:10px 12px;font-weight:600;color:var(--text);white-space:nowrap" @click="openEdit(e)">{{ fmtDate(e.dueDate) }}</td>
               <td style="padding:10px 12px;color:var(--text)" @click="openEdit(e)">
-                {{ e.title }}
-                <span
-                  v-if="e.installmentIndex"
-                  style="font-size:10px;color:var(--text3);margin-left:6px;background:var(--border);border-radius:4px;padding:1px 5px"
-                >{{ e.installmentIndex }}/{{ e.installmentTotal }}</span>
+                <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  {{ e.title }}
+                  <span
+                    v-if="e.installmentIndex"
+                    style="font-size:10px;color:var(--text3);background:var(--border);border-radius:4px;padding:1px 5px"
+                  >{{ e.installmentIndex }}/{{ e.installmentTotal }}</span>
+                  <!-- Tipo badge visível apenas no mobile (quando a coluna está oculta) -->
+                  <span
+                    class="col-show-sm"
+                    :style="{
+                      background: e.kind==='income'?'var(--success-light)':'var(--danger-light)',
+                      color: e.kind==='income'?'var(--success)':'var(--danger)',
+                      borderRadius:'99px', padding:'1px 7px', fontSize:'10px', fontWeight:700
+                    }"
+                  >{{ e.kind==='income'?'Rec':'Desp' }}</span>
+                </span>
               </td>
-              <td style="padding:10px 12px" @click="openEdit(e)">
+              <td class="col-hide-sm" style="padding:10px 12px" @click="openEdit(e)">
                 <span
                   :style="{
                     background: e.kind==='income'?'var(--success-light)':'var(--danger-light)',
@@ -106,10 +118,10 @@
                   }"
                 >{{ e.kind==='income'?'Receita':'Despesa' }}</span>
               </td>
-              <td style="padding:10px 12px;color:var(--text2);white-space:nowrap" @click="openEdit(e)">
+              <td class="col-hide-sm" style="padding:10px 12px;color:var(--text2);white-space:nowrap" @click="openEdit(e)">
                 {{ store.accountMap.get(e.accountId ?? '')?.name || '—' }}
               </td>
-              <td style="padding:10px 12px" @click="openEdit(e)">
+              <td class="col-hide-md" style="padding:10px 12px" @click="openEdit(e)">
                 <span v-if="store.categoryMap.get(e.categoryId ?? '')" style="display:inline-flex;align-items:center;gap:5px">
                   <span
                     :style="{
@@ -131,7 +143,7 @@
               <td style="padding:10px 12px">
                 <button
                   v-if="e.status !== 'paid' && e.kind === 'expense'"
-                  style="background:var(--success-light);color:var(--success);border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:4px;font-family:inherit"
+                  class="action-btn"
                   @click.stop="quickPay(e.id)"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -271,3 +283,119 @@ const quickPay = async (id: string) => {
   await store.saveEntriesBatch({ upserts: [{ ...entry, status: 'paid' }], deletes: [] })
 }
 </script>
+
+<style scoped>
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 160px;
+}
+
+.filter-select {
+  min-width: 130px;
+}
+
+.new-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-xs);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.table-wrap {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.action-btn {
+  background: var(--success-light);
+  color: var(--success);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+  min-height: 32px;
+  touch-action: manipulation;
+}
+
+/* Mostrar apenas em mobile (quando colunas estão ocultas) */
+.col-show-sm {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .toolbar {
+    gap: 8px;
+  }
+
+  .search-box {
+    min-width: 0;
+    width: 100%;
+    flex: none;
+  }
+
+  .filter-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .new-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Oculta colunas: Tipo, Conta em telas pequenas */
+  .col-hide-sm {
+    display: none;
+  }
+
+  /* Mostra badge compacto de tipo inline na coluna Descrição */
+  .col-show-sm {
+    display: inline-flex;
+  }
+
+  .action-btn {
+    padding: 8px 12px;
+    min-height: 38px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Oculta também a coluna Categoria em telas muito pequenas */
+  .col-hide-md {
+    display: none;
+  }
+}
+</style>

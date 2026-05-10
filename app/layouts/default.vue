@@ -232,13 +232,13 @@
         <!-- Mobile: hamburger -->
         <button
           v-if="isMobile"
-          style="background: none; border: none; cursor: pointer; color: var(--text); display: flex; padding: 6px; border-radius: 8px; position: relative"
+          style="background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
           @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
           @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
           @click="drawerOpen = !drawerOpen"
         >
           <BaseIcon name="menu" :size="20" />
-          <span v-if="alertCount > 0" style="position: absolute; top: 2px; right: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface)" />
+          <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface)" />
         </button>
 
         <!-- Title -->
@@ -254,13 +254,13 @@
             &nbsp;↓ <span style="color: var(--danger)">{{ currency.format(store.monthlyKpis.totalExpense) }}</span>
           </span>
           <button
-            style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; padding: 6px; border-radius: 8px; position: relative"
+            style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
             @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
             @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
             @click="goTo('alerts')"
           >
             <BaseIcon name="alerts" :size="20" />
-            <span v-if="alertCount > 0" style="position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff">{{ alertCount }}</span>
+            <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff">{{ alertCount }}</span>
           </button>
           <div style="padding: 4px 10px; border-radius: 99px; background: var(--primary-dim); border: 1px solid var(--primary)">
             <span style="font-size: 12px; font-weight: 800; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</span>
@@ -305,10 +305,12 @@
           background: 'transparent',
           color: activeScreen === item.id ? 'var(--primary)' : 'var(--text3)',
           fontFamily: 'inherit',
-          fontSize: '9px',
+          fontSize: '10px',
           fontWeight: 700,
           transition: 'color .12s',
           position: 'relative',
+          touchAction: 'manipulation',
+          minHeight: '56px',
         }"
         @click="goTo(item.id)"
       >
@@ -320,7 +322,7 @@
         {{ item.label }}
       </button>
       <button
-        style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px 4px 8px; border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 9px; font-weight: 700"
+        style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px 4px 8px; border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 10px; font-weight: 700; touch-action: manipulation; min-height: 56px"
         @click="drawerOpen = true"
       >
         <BaseIcon name="menu" :size="22" />Mais

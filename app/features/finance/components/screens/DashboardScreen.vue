@@ -3,7 +3,7 @@
     <BaseAlertBanner :alerts="smartAlerts" />
 
     <!-- KPI row -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px">
+    <div class="kpi-grid">
       <BaseKpiCard icon="income"    label="Receitas"           :value="fmt(store.monthlyKpis.totalIncome)"   color="var(--success)"  :sub="currentMonthLabel" />
       <BaseKpiCard icon="expense"   label="Despesas"           :value="fmt(store.monthlyKpis.totalExpense)"  color="var(--danger)"   :sub="currentMonthLabel" />
       <BaseKpiCard icon="balance"   label="Saldo líquido"      :value="fmt(store.monthlyKpis.net)"           :color="store.monthlyKpis.net >= 0 ? 'var(--success)' : 'var(--danger)'" :sub="store.monthlyKpis.net >= 0 ? 'Positivo' : 'Negativo'" />
@@ -14,16 +14,16 @@
     </div>
 
     <!-- Charts row -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px">
+    <div class="charts-grid">
 
       <!-- Cashflow chart -->
       <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden">
-        <div style="padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border)">
+        <div class="chart-header">
           <div>
             <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Fluxo de caixa</h3>
             <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Últimos 6 meses</p>
           </div>
-          <div style="display: flex; gap: 8px">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
             <span style="display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success)">
               <span style="width: 6px; height: 6px; border-radius: 50%; background: currentColor" />Receita
             </span>
@@ -36,7 +36,7 @@
           <BaseEmptyState v-if="cashflowData.length === 0" icon="reports" title="Sem dados" body="Sem lançamentos nos últimos 6 meses." />
           <template v-else>
             <BaseBarChart :data="cashflowData" :height="130" />
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px">
+            <div class="cashflow-months">
               <div
                 v-for="d in cashflowData.slice(-3)"
                 :key="d.month"
@@ -83,7 +83,7 @@
     </div>
 
     <!-- Budget + Goals + Upcoming -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px">
+    <div class="cards-grid">
 
       <!-- Budgets mini -->
       <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden">
@@ -165,7 +165,7 @@
     </div>
 
     <!-- Savings rate strip -->
-    <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px 18px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center">
+    <div class="savings-strip">
       <div style="flex: 1; min-width: 160px">
         <p style="font-size: 11px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em">Taxa de poupança</p>
         <p style="font-size: 22px; font-weight: 800; color: var(--primary); margin-top: 2px">{{ savingsRateLabel }}</p>
@@ -178,7 +178,7 @@
           <span style="font-size: 11px; color: var(--text3)">Receita: {{ fmt(store.monthlyKpis.totalIncome) }}</span>
         </div>
       </div>
-      <div style="display: flex; gap: 10px">
+      <div class="savings-cta">
         <button
           style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); border: none; cursor: pointer; background: var(--primary); color: #fff"
           @click="$emit('navigate', 'reports')"
@@ -305,3 +305,91 @@ const savingsRateLabel = computed(() =>
     : '0.0%'
 )
 </script>
+
+<style scoped>
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.chart-header {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.cashflow-months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.savings-strip {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 14px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+
+.savings-cta {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .charts-grid,
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-header {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
+  .cashflow-months {
+    display: none;
+  }
+
+  .savings-strip {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .savings-cta {
+    width: 100%;
+  }
+
+  .savings-cta button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+</style>
