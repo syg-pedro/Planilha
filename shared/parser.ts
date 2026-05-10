@@ -169,7 +169,8 @@ const parseInstallmentTokens = (line: string, dueDay: number, nowYear: number): 
 
     // Strip trailing alphabetic words after the last number (e.g. "ago 56,88 assinaturas mensais" → "ago 56,88")
     const cleanedChunk = chunk.replace(/([\d,]+)\s+[a-zA-ZÀ-ú][a-zA-ZÀ-ú\s]*$/, '$1')
-    const match = cleanedChunk.match(/(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s*(\d{2,4})?.*?([\d.,]+)$/i)
+    // Year group: 4-digit year OR 2-3 digit year followed by whitespace (so "47,82" is NOT parsed as year 2047)
+    const match = cleanedChunk.match(/(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s*(\d{4}|\d{2,3}(?=\s))?.*?([\d.,]+)$/i)
     if (!match) {
       continue
     }
