@@ -1,6 +1,29 @@
 <template>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
 
+    <!-- Instalar App -->
+    <div v-if="!$pwaInstalled" class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Instalar aplicativo</h3>
+      </div>
+      <div class="panel-body">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+          <img src="/icon-192.png" alt="" style="width:52px;height:52px;border-radius:12px;flex-shrink:0" />
+          <div>
+            <p style="font-size:13px;font-weight:700;color:var(--text)">Financeiro Familiar</p>
+            <p style="font-size:12px;color:var(--text3);margin-top:2px">Acesso rápido, funciona offline</p>
+          </div>
+        </div>
+        <button
+          style="width:100%;padding:10px 16px;font-size:13px;font-weight:700;border-radius:var(--radius-sm);border:none;cursor:pointer;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px"
+          @click="installPwa"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/><path d="M20 20H4"/></svg>
+          {{ $pwaPrompt ? 'Instalar agora' : 'Como instalar' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Tema visual -->
     <div class="panel">
       <div class="panel-header">
@@ -161,6 +184,17 @@ const store = useFinanceStore()
 const currency = useCurrency()
 const csvText = ref('')
 const importAccountId = ref('')
+
+const { $pwaPrompt, $pwaInstalled } = useNuxtApp()
+const showPwaManual = useState('pwa-show-manual', () => false)
+
+const installPwa = async () => {
+  if ($pwaPrompt.value) {
+    await $pwaPrompt.value.prompt()
+  } else {
+    showPwaManual.value = true
+  }
+}
 
 const THEMES = [
   { id: 'system', name: 'Sistema', desc: 'Segue automaticamente o tema do dispositivo', icon: '🖥️' },
