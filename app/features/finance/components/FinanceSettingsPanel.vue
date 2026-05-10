@@ -162,6 +162,25 @@
       </div>
     </div>
 
+    <!-- Sair da conta -->
+    <div v-if="isSupabaseConfigured" class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Conta</h3>
+        <p class="panel-sub">{{ authUser?.email }}</p>
+      </div>
+      <div class="panel-body">
+        <button
+          class="btn-danger"
+          :disabled="signingOut"
+          @click="doSignOut"
+        >
+          <svg v-if="signingOut" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          {{ signingOut ? 'Saindo...' : 'Sair da conta' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Contas cadastradas -->
     <div class="panel">
       <div class="panel-header">
@@ -200,13 +219,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { WIDGET_OPTIONS } from '#shared/constants'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import type { ThemeMode, Account } from '#shared/types'
 
 const store = useFinanceStore()
 const currency = useCurrency()
+const { user: authUser, signOut } = useAuth()
+
+const config = useRuntimeConfig()
+const isSupabaseConfigured = computed(() => !!(config.public.supabaseUrl && config.public.supabaseAnonKey))
+
+const signingOut = ref(false)
+const doSignOut = async () => {
+  signingOut.value = true
+  try {
+    await signOut()
+    await navigateTo('/login')
+  } finally {
+    signingOut.value = false
+  }
+}
 const csvText = ref('')
 const importAccountId = ref('')
 const reseedBusy = ref(false)

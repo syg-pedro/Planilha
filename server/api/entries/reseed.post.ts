@@ -3,7 +3,7 @@ import { assertEditKey } from '../../utils/auth'
 import { getRepository } from '../../utils/repo'
 
 export default defineEventHandler(async (event) => {
-  assertEditKey(event)
+  await assertEditKey(event)
   const repo = getRepository()
   try {
     const count = await repo.reseedEntries()

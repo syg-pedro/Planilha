@@ -13,7 +13,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  assertEditKey(event)
+  await assertEditKey(event)
   const body = await readBody(event)
   const parsed = schema.safeParse(body)
 
