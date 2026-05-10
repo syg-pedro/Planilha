@@ -54,9 +54,10 @@ export default defineNuxtConfig({
   },
   pwa: {
     registerType: 'autoUpdate',
+    injectRegister: 'auto',
+    strategies: 'generateSW',
     devOptions: {
       enabled: true,
-      type: 'module'
     },
     manifest: {
       name: 'Financeiro Familiar',
@@ -87,11 +88,14 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      navigateFallback: '/',
-      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      // navigateFallback null = não intercepta navegação SSR (Vercel/Nitro serve o HTML)
+      navigateFallback: null,
+      skipWaiting: true,
+      clientsClaim: true,
+      globPatterns: ['**/*.{js,css,png,svg,ico,webmanifest}'],
       runtimeCaching: [
         {
-          urlPattern: '/api/.*',
+          urlPattern: /^https:\/\/planilha-cyan\.vercel\.app\/api\/.*/i,
           handler: 'NetworkFirst',
           options: {
             cacheName: 'api-cache',
