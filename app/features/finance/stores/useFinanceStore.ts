@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection, computeKpis } from '#shared/finance'
+import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection, computeKpis, excludeBenefitEntries } from '#shared/finance'
 import { DEFAULT_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
 import type {
   Account,
@@ -65,6 +65,8 @@ export const useFinanceStore = defineStore('finance', () => {
 
   const filteredEntries = computed(() => applyFilters(entries.value, filters.value))
 
+  const cashableEntries = computed(() => excludeBenefitEntries(filteredEntries.value, accounts.value))
+
   const monthlyKpis = computed(() => computeKpis(filteredEntries.value, accounts.value))
 
   const categoryMap = computed(() => {
@@ -84,11 +86,11 @@ export const useFinanceStore = defineStore('finance', () => {
   })
 
   const chartData = computed(() => ({
-    cashflow: buildCashflowSeries(filteredEntries.value, filters.value.periodMode),
-    projection: buildProjection(filteredEntries.value, filters.value.periodMode),
-    category: buildCategoryBreakdown(filteredEntries.value),
-    cards: buildCardBreakdown(filteredEntries.value),
-    heatmap: buildHeatmap(filteredEntries.value)
+    cashflow: buildCashflowSeries(cashableEntries.value, filters.value.periodMode),
+    projection: buildProjection(cashableEntries.value, filters.value.periodMode),
+    category: buildCategoryBreakdown(cashableEntries.value),
+    cards: buildCardBreakdown(cashableEntries.value),
+    heatmap: buildHeatmap(cashableEntries.value)
   }))
 
   const fetchApi = async <T>(
@@ -357,6 +359,7 @@ export const useFinanceStore = defineStore('finance', () => {
     filters,
     chartData,
     filteredEntries,
+    cashableEntries,
     categoryMap,
     accountMap,
     offlineQueue,

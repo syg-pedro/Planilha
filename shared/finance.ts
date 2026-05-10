@@ -23,20 +23,27 @@ export const applyFilters = (entries: FinanceEntry[], filters: DashboardFilters)
   })
 }
 
+export const excludeBenefitEntries = (entries: FinanceEntry[], accounts: Account[]): FinanceEntry[] => {
+  const benefitIds = new Set(accounts.filter(a => a.type === 'benefit').map(a => a.id))
+  return entries.filter(e => !e.accountId || !benefitIds.has(e.accountId))
+}
+
 export const computeKpis = (entries: FinanceEntry[], accounts: Account[]): FinanceKpis => {
   const now = new Date()
   const seven = new Date(now)
   seven.setUTCDate(now.getUTCDate() + 7)
 
-  const totalIncome = entries
+  const cashEntries = excludeBenefitEntries(entries, accounts)
+
+  const totalIncome = cashEntries
     .filter((entry) => entry.kind === 'income')
     .reduce((sum, entry) => sum + entry.amount, 0)
 
-  const totalExpense = entries
+  const totalExpense = cashEntries
     .filter((entry) => entry.kind === 'expense')
     .reduce((sum, entry) => sum + entry.amount, 0)
 
-  const pendingAmount = entries
+  const pendingAmount = cashEntries
     .filter((entry) => entry.status !== 'paid')
     .reduce((sum, entry) => sum + (entry.kind === 'expense' ? entry.amount : -entry.amount), 0)
 

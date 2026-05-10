@@ -266,8 +266,8 @@ const generatedAlerts = computed((): SmartAlert[] => {
 
   // Taxa de poupança baixa
   const currentMonthKey = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}`
-  const monthIncome  = store.entries.filter(e => e.kind === 'income'  && e.dueDate.startsWith(currentMonthKey)).reduce((s, e) => s + e.amount, 0)
-  const monthExpense = store.entries.filter(e => e.kind === 'expense' && e.dueDate.startsWith(currentMonthKey)).reduce((s, e) => s + e.amount, 0)
+  const monthIncome  = store.cashableEntries.filter(e => e.kind === 'income'  && e.dueDate.startsWith(currentMonthKey)).reduce((s, e) => s + e.amount, 0)
+  const monthExpense = store.cashableEntries.filter(e => e.kind === 'expense' && e.dueDate.startsWith(currentMonthKey)).reduce((s, e) => s + e.amount, 0)
   if (monthIncome > 0) {
     const savingsRate = ((monthIncome - monthExpense) / monthIncome) * 100
     if (savingsRate < 0) {
