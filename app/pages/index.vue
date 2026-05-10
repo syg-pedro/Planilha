@@ -23,7 +23,7 @@
       <CenariosScreen     v-else-if="activeScreen === 'scenarios'"     key="scenarios"    />
       <RelatoriosScreen   v-else-if="activeScreen === 'reports'"       key="reports"      />
       <ConciliacaoScreen  v-else-if="activeScreen === 'reconcile'"     key="reconcile"    />
-      <AlertasScreen      v-else-if="activeScreen === 'alerts'"        key="alerts"       />
+      <AlertasScreen      v-else-if="activeScreen === 'alerts'"        key="alerts"        @navigate="goTo" />
       <DesignSystemScreen v-else-if="activeScreen === 'design-system'" key="design-system"/>
       <ConfiguracoesScreen v-else-if="activeScreen === 'config'"       key="config"       />
       <div v-else key="empty" style="text-align: center; padding: 60px 20px">

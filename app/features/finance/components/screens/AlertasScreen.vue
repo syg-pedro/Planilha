@@ -38,8 +38,13 @@
         display: 'flex',
         alignItems: 'flex-start',
         gap: '12px',
-        boxShadow: 'var(--shadow-sm)'
+        boxShadow: 'var(--shadow-sm)',
+        cursor: isClickable(alert) ? 'pointer' : 'default',
+        transition: 'opacity 0.15s',
       }"
+      @click="onAlertClick(alert)"
+      @mouseenter="(e) => { if (isClickable(alert)) (e.currentTarget as HTMLElement).style.opacity = '0.85' }"
+      @mouseleave="(e) => (e.currentTarget as HTMLElement).style.opacity = '1'"
     >
       <div
         :style="{
@@ -54,13 +59,18 @@
         <p style="font-size: 13px; font-weight: 700; color: var(--text)">{{ alert.title }}</p>
         <p style="font-size: 12px; color: var(--text3); margin-top: 3px">{{ alert.body }}</p>
         <p v-if="alert.sub" style="font-size: 11px; color: var(--text3); margin-top: 4px; font-style: italic">{{ alert.sub }}</p>
+        <p v-if="isClickable(alert)" style="font-size: 11px; color: var(--primary); margin-top: 6px; font-weight: 600">
+          {{ alert.entryId ? 'Clique para ver detalhes e opções →' : 'Clique para ir à tela →' }}
+        </p>
       </div>
-      <button
-        style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 2px; flex-shrink: 0; display: flex; align-items: center"
-        @click="dismiss(alert.id)"
-      >
-        <BaseIcon name="close" :size="14" />
-      </button>
+      <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0">
+        <button
+          style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 2px; display: flex; align-items: center"
+          @click.stop="dismiss(alert.id)"
+        >
+          <BaseIcon name="close" :size="14" />
+        </button>
+      </div>
     </div>
 
     <!-- Dismissed section -->
@@ -73,30 +83,78 @@
       </button>
     </div>
 
+    <!-- Entry editor modal -->
+    <FinanceEntryEditorModal
+      :open="editorOpen"
+      :entry="selectedEntry"
+      :accounts="store.accounts"
+      :categories="store.categories"
+      @close="closeEditor"
+      @save="saveFromEditor"
+      @delete="deleteFromEditor"
+    />
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { useDateFormat } from '~/composables/useDateFormat'
-import BaseIcon       from '~/components/base/BaseIcon.vue'
-import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
+import BaseIcon                from '~/components/base/BaseIcon.vue'
+import BaseEmptyState          from '~/components/base/BaseEmptyState.vue'
+import FinanceEntryEditorModal from '~/features/finance/components/FinanceEntryEditorModal.vue'
+import type { FinanceEntry } from '#shared/types'
 
 type AlertTone = 'danger' | 'warning' | 'info' | 'success'
 
 interface SmartAlert {
-  id:    string
-  tone:  AlertTone
-  title: string
-  body:  string
-  sub?:  string
+  id:          string
+  tone:        AlertTone
+  title:       string
+  body:        string
+  sub?:        string
+  entryId?:    string
+  navigateTo?: string
 }
+
+const emit = defineEmits<{ (e: 'navigate', screen: string): void }>()
 
 const store    = useFinanceStore()
 const currency = useCurrency()
 const { formatDate } = useDateFormat()
 const fmt      = (v: number) => currency.format(v)
+
+const editorOpen    = ref(false)
+const selectedEntry = ref<FinanceEntry | null>(null)
+
+const closeEditor = () => { editorOpen.value = false; selectedEntry.value = null }
+
+const saveFromEditor = async (value: Partial<FinanceEntry>) => {
+  await store.saveEntriesBatch({ upserts: [value as FinanceEntry], deletes: [] })
+  closeEditor()
+}
+
+const deleteFromEditor = async (id: string) => {
+  await store.saveEntriesBatch({ upserts: [], deletes: [id] })
+  closeEditor()
+}
+
+const isClickable = (alert: SmartAlert) => !!(alert.entryId || alert.navigateTo)
+
+const onAlertClick = (alert: SmartAlert) => {
+  if (alert.entryId) {
+    const entry = store.entries.find(e => e.id === alert.entryId) ?? null
+    if (entry) {
+      selectedEntry.value = entry
+      editorOpen.value = true
+    }
+    return
+  }
+  if (alert.navigateTo) {
+    emit('navigate', alert.navigateTo)
+  }
+}
 
 const TONE_COLORS: Record<AlertTone, { accent: string; bg: string; border: string }> = {
   danger:  { accent: 'var(--danger)',  bg: 'color-mix(in srgb, var(--danger)  12%, transparent)', border: 'color-mix(in srgb, var(--danger)  25%, transparent)' },
@@ -121,17 +179,18 @@ const generatedAlerts = computed((): SmartAlert[] => {
   const in7      = new Date(today); in7.setDate(in7.getDate() + 7)
   const in7Str   = in7.toISOString().slice(0, 10)
 
-  // Vencimentos urgentes (≤ 3 dias)
+  // Vencimentos urgentes (≤ 3 dias) — alerta por entrada individual
   const urgent = store.entries.filter(
     e => e.kind === 'expense' && e.status !== 'paid' && e.dueDate >= todayStr && e.dueDate <= in3Str
   )
   for (const e of urgent) {
     const account = e.accountId ? store.accountMap.get(e.accountId) : null
     alerts.push({
-      id:    `urgent-${e.id}`,
-      tone:  'danger',
-      title: `${e.title} vence em breve`,
-      body:  `${fmt(e.amount)} — vencimento ${formatDate(e.dueDate)}${account ? ` via ${account.name}` : ''}`,
+      id:      `urgent-${e.id}`,
+      tone:    'danger',
+      title:   `${e.title} vence em breve`,
+      body:    `${fmt(e.amount)} — vencimento ${formatDate(e.dueDate)}${account ? ` via ${account.name}` : ''}`,
+      entryId: e.id,
     })
   }
 
@@ -142,10 +201,11 @@ const generatedAlerts = computed((): SmartAlert[] => {
   if (upcoming.length > 0) {
     const total = upcoming.reduce((s, e) => s + e.amount, 0)
     alerts.push({
-      id:    'upcoming-week',
-      tone:  'warning',
-      title: `${upcoming.length} vencimento(s) esta semana`,
-      body:  `Total de ${fmt(total)} vence nos próximos 7 dias.`,
+      id:         'upcoming-week',
+      tone:       'warning',
+      title:      `${upcoming.length} vencimento(s) esta semana`,
+      body:       `Total de ${fmt(total)} vence nos próximos 7 dias.`,
+      navigateTo: 'planilha',
     })
   }
 
@@ -156,10 +216,11 @@ const generatedAlerts = computed((): SmartAlert[] => {
   if (overdue.length > 0) {
     const total = overdue.reduce((s, e) => s + e.amount, 0)
     alerts.push({
-      id:    'overdue',
-      tone:  'danger',
-      title: `${overdue.length} lançamento(s) vencido(s)`,
-      body:  `${fmt(total)} em despesas vencidas sem confirmação de pagamento.`,
+      id:         'overdue',
+      tone:       'danger',
+      title:      `${overdue.length} lançamento(s) vencido(s)`,
+      body:       `${fmt(total)} em despesas vencidas sem confirmação de pagamento.`,
+      navigateTo: 'planilha',
     })
   }
 
@@ -174,17 +235,19 @@ const generatedAlerts = computed((): SmartAlert[] => {
     const cat = store.categoryMap.get(budget.categoryId)
     if (pct >= 100) {
       alerts.push({
-        id:    `budget-over-${budget.id}`,
-        tone:  'danger',
-        title: `Orçamento de "${cat?.name ?? 'categoria'}" ultrapassado`,
-        body:  `Gasto: ${fmt(spent)} de ${fmt(budget.amount)} (${pct.toFixed(0)}%)`,
+        id:         `budget-over-${budget.id}`,
+        tone:       'danger',
+        title:      `Orçamento de "${cat?.name ?? 'categoria'}" ultrapassado`,
+        body:       `Gasto: ${fmt(spent)} de ${fmt(budget.amount)} (${pct.toFixed(0)}%)`,
+        navigateTo: 'budget',
       })
     } else if (pct >= 80) {
       alerts.push({
-        id:    `budget-warn-${budget.id}`,
-        tone:  'warning',
-        title: `Orçamento de "${cat?.name ?? 'categoria'}" em ${pct.toFixed(0)}%`,
-        body:  `Restam apenas ${fmt(budget.amount - spent)} do limite de ${fmt(budget.amount)}.`,
+        id:         `budget-warn-${budget.id}`,
+        tone:       'warning',
+        title:      `Orçamento de "${cat?.name ?? 'categoria'}" em ${pct.toFixed(0)}%`,
+        body:       `Restam apenas ${fmt(budget.amount - spent)} do limite de ${fmt(budget.amount)}.`,
+        navigateTo: 'budget',
       })
     }
   }
@@ -196,17 +259,19 @@ const generatedAlerts = computed((): SmartAlert[] => {
     const savingsRate = ((monthIncome - monthExpense) / monthIncome) * 100
     if (savingsRate < 0) {
       alerts.push({
-        id:    'savings-negative',
-        tone:  'danger',
-        title: 'Despesas superam receitas este mês',
-        body:  `Déficit de ${fmt(monthExpense - monthIncome)}. Revise seus gastos.`,
+        id:         'savings-negative',
+        tone:       'danger',
+        title:      'Despesas superam receitas este mês',
+        body:       `Déficit de ${fmt(monthExpense - monthIncome)}. Revise seus gastos.`,
+        navigateTo: 'planilha',
       })
     } else if (savingsRate < 10) {
       alerts.push({
-        id:    'savings-low',
-        tone:  'warning',
-        title: `Taxa de poupança baixa: ${savingsRate.toFixed(1)}%`,
-        body:  'Recomendado manter pelo menos 20% de poupança mensal.',
+        id:         'savings-low',
+        tone:       'warning',
+        title:      `Taxa de poupança baixa: ${savingsRate.toFixed(1)}%`,
+        body:       'Recomendado manter pelo menos 20% de poupança mensal.',
+        navigateTo: 'planilha',
       })
     }
   }
@@ -214,17 +279,19 @@ const generatedAlerts = computed((): SmartAlert[] => {
   // Uso alto de cartão de crédito
   if (store.monthlyKpis.cardsUsedPercent >= 90) {
     alerts.push({
-      id:    'card-critical',
-      tone:  'danger',
-      title: `Limite do cartão em ${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`,
-      body:  'Uso crítico do limite de crédito. Evite novas compras parceladas.',
+      id:         'card-critical',
+      tone:       'danger',
+      title:      `Limite do cartão em ${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`,
+      body:       'Uso crítico do limite de crédito. Evite novas compras parceladas.',
+      navigateTo: 'planilha',
     })
   } else if (store.monthlyKpis.cardsUsedPercent >= 70) {
     alerts.push({
-      id:    'card-warn',
-      tone:  'warning',
-      title: `Uso do cartão em ${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`,
-      body:  'Atenção ao limite disponível nos cartões de crédito.',
+      id:         'card-warn',
+      tone:       'warning',
+      title:      `Uso do cartão em ${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`,
+      body:       'Atenção ao limite disponível nos cartões de crédito.',
+      navigateTo: 'planilha',
     })
   }
 
@@ -242,7 +309,6 @@ const dismiss    = (id: string) => { if (!dismissedIds.value.includes(id)) dismi
 const dismissAll = () => { dismissedIds.value = generatedAlerts.value.map(a => a.id) }
 const restoreAll = () => { dismissedIds.value = [] }
 
-// useLocalStorage — small inline implementation to avoid extra deps
 function useLocalStorage<T>(key: string, defaultValue: T) {
   const data = ref<T>(defaultValue)
   if (process.client) {
