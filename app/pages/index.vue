@@ -13,7 +13,7 @@
 
     <transition v-else name="fade-slide" mode="out-in">
       <DashboardScreen    v-if="activeScreen === 'dashboard'"    key="dashboard"    @navigate="goTo" />
-      <FinanceEntryGrid   v-else-if="activeScreen === 'planilha'"      key="planilha"     />
+      <MatrizScreen       v-else-if="activeScreen === 'planilha'"      key="planilha"     />
       <OrcamentosScreen   v-else-if="activeScreen === 'budget'"        key="budget"       />
       <MetasScreen        v-else-if="activeScreen === 'goals'"         key="goals"        />
       <AssinaturasScreen  v-else-if="activeScreen === 'subscriptions'" key="subscriptions"/>
@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import FinanceEntryGrid    from '~/features/finance/components/FinanceEntryGrid.vue'
+import MatrizScreen        from '~/features/finance/components/screens/MatrizScreen.vue'
 import DashboardScreen     from '~/features/finance/components/screens/DashboardScreen.vue'
 import OrcamentosScreen    from '~/features/finance/components/screens/OrcamentosScreen.vue'
 import MetasScreen         from '~/features/finance/components/screens/MetasScreen.vue'
