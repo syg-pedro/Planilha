@@ -93,35 +93,6 @@ export interface FinanceEntry {
   updatedAt: string
 }
 
-export interface Budget {
-  id: string
-  householdId: string
-  categoryId: string
-  monthRef: string
-  amount: number
-}
-
-export interface PatrimonyItem {
-  id: string
-  householdId: string
-  name: string
-  kind: 'asset' | 'liability'
-  value: number
-  category: string
-  updatedAt: string
-}
-
-export interface FinanceGoal {
-  id: string
-  householdId: string
-  name: string
-  targetAmount: number
-  currentAmount: number
-  deadline: string | null
-  color: string
-  createdAt: string
-  updatedAt: string
-}
 
 export interface DashboardFilters {
   range: 'month' | 'quarter' | 'year'
@@ -145,9 +116,6 @@ export interface BootstrapResponse {
   categories: Category[]
   rules: FinanceRule[]
   entries: FinanceEntry[]
-  budgets: Budget[]
-  patrimony: PatrimonyItem[]
-  goals: FinanceGoal[]
   kpis: FinanceKpis
   warnings: string[]
 }

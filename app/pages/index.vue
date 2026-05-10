@@ -14,15 +14,10 @@
     <transition v-else name="fade-slide" mode="out-in">
       <DashboardScreen    v-if="activeScreen === 'dashboard'"    key="dashboard"    @navigate="goTo" />
       <MatrizScreen       v-else-if="activeScreen === 'planilha'"      key="planilha"     />
-      <OrcamentosScreen   v-else-if="activeScreen === 'budget'"        key="budget"       />
-      <MetasScreen        v-else-if="activeScreen === 'goals'"         key="goals"        />
       <AssinaturasScreen  v-else-if="activeScreen === 'subscriptions'" key="subscriptions"/>
       <DividasScreen      v-else-if="activeScreen === 'debts'"         key="debts"        />
-      <PatrimonioScreen   v-else-if="activeScreen === 'patrimony'"     key="patrimony"    />
       <PlanejamentoScreen v-else-if="activeScreen === 'planning'"      key="planning"     />
-      <CenariosScreen     v-else-if="activeScreen === 'scenarios'"     key="scenarios"    />
       <RelatoriosScreen   v-else-if="activeScreen === 'reports'"       key="reports"      />
-      <ConciliacaoScreen  v-else-if="activeScreen === 'reconcile'"     key="reconcile"    />
       <AlertasScreen      v-else-if="activeScreen === 'alerts'"        key="alerts"        @navigate="goTo" />
       <DesignSystemScreen v-else-if="activeScreen === 'design-system'" key="design-system"/>
       <ConfiguracoesScreen v-else-if="activeScreen === 'config'"       key="config"       />
@@ -38,15 +33,10 @@
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import MatrizScreen        from '~/features/finance/components/screens/MatrizScreen.vue'
 import DashboardScreen     from '~/features/finance/components/screens/DashboardScreen.vue'
-import OrcamentosScreen    from '~/features/finance/components/screens/OrcamentosScreen.vue'
-import MetasScreen         from '~/features/finance/components/screens/MetasScreen.vue'
 import AssinaturasScreen   from '~/features/finance/components/screens/AssinaturasScreen.vue'
 import DividasScreen       from '~/features/finance/components/screens/DividasScreen.vue'
-import PatrimonioScreen    from '~/features/finance/components/screens/PatrimonioScreen.vue'
 import PlanejamentoScreen  from '~/features/finance/components/screens/PlanejamentoScreen.vue'
-import CenariosScreen      from '~/features/finance/components/screens/CenariosScreen.vue'
 import RelatoriosScreen    from '~/features/finance/components/screens/RelatoriosScreen.vue'
-import ConciliacaoScreen   from '~/features/finance/components/screens/ConciliacaoScreen.vue'
 import AlertasScreen       from '~/features/finance/components/screens/AlertasScreen.vue'
 import DesignSystemScreen  from '~/features/finance/components/screens/DesignSystemScreen.vue'
 import ConfiguracoesScreen from '~/features/finance/components/screens/ConfiguracoesScreen.vue'

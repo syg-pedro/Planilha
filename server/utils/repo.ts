@@ -10,14 +10,11 @@ import { makeId } from '../../shared/id'
 import type {
   Account,
   BootstrapResponse,
-  Budget,
   Category,
   DashboardSettingsRequest,
   FinanceEntry,
-  FinanceGoal,
   FinanceRule,
   HouseholdSettings,
-  PatrimonyItem,
   ThemeSettingsRequest
 } from '../../shared/types'
 
@@ -29,10 +26,7 @@ interface Repository {
   saveTheme: (payload: ThemeSettingsRequest) => Promise<HouseholdSettings>
   saveDashboard: (payload: DashboardSettingsRequest) => Promise<HouseholdSettings>
   importCsv: (csvText: string, accountId: string | null) => Promise<{ inserted: number; warnings: string[] }>
-  saveBudgets: (upserts: Partial<Budget>[], deletes: string[]) => Promise<Budget[]>
   saveRules: (upserts: Partial<FinanceRule>[], deletes: string[]) => Promise<FinanceRule[]>
-  savePatrimony: (upserts: Partial<PatrimonyItem>[], deletes: string[]) => Promise<PatrimonyItem[]>
-  saveGoals: (upserts: Partial<FinanceGoal>[], deletes: string[]) => Promise<FinanceGoal[]>
 }
 
 interface MemoryState {
@@ -41,9 +35,6 @@ interface MemoryState {
   categories: Category[]
   rules: FinanceRule[]
   entries: FinanceEntry[]
-  budgets: Budget[]
-  patrimony: PatrimonyItem[]
-  goals: FinanceGoal[]
   warnings: string[]
 }
 
@@ -131,9 +122,6 @@ const createMemoryState = async (): Promise<MemoryState> => {
     categories: seed.categories,
     rules: seed.rules,
     entries: seed.entries,
-    budgets: [],
-    patrimony: [],
-    goals: [],
     warnings: [...seed.warnings]
   }
 }
@@ -151,9 +139,6 @@ const buildBootstrap = (state: MemoryState): BootstrapResponse => ({
   categories: state.categories,
   rules: state.rules,
   entries: state.entries,
-  budgets: state.budgets,
-  patrimony: state.patrimony,
-  goals: state.goals,
   kpis: computeKpis(state.entries, state.accounts),
   warnings: state.warnings
 })
@@ -304,29 +289,6 @@ const makeMemoryRepo = (): Repository => ({
     return { inserted, warnings }
   },
 
-  async saveBudgets(upserts, deletes) {
-    const state = await getMemoryState()
-    const index = new Map(state.budgets.map(b => [b.id, b]))
-    for (const id of deletes) index.delete(id)
-    for (const patch of upserts) {
-      const id = patch.id ?? makeId('budget')
-      const existing = index.get(id)
-      if (existing) {
-        index.set(id, { ...existing, ...patch, id })
-      } else {
-        index.set(id, {
-          id,
-          householdId: DEFAULT_HOUSEHOLD_ID,
-          categoryId:  patch.categoryId ?? '',
-          monthRef:    patch.monthRef   ?? new Date().toISOString().slice(0, 7),
-          amount:      toNumber(patch.amount ?? 0)
-        })
-      }
-    }
-    state.budgets = [...index.values()]
-    return state.budgets
-  },
-
   async saveRules(upserts, deletes) {
     const state = await getMemoryState()
     const index = new Map(state.rules.map(r => [r.id, r]))
@@ -360,59 +322,6 @@ const makeMemoryRepo = (): Repository => ({
     return state.rules
   },
 
-  async savePatrimony(upserts, deletes) {
-    const state = await getMemoryState()
-    const index = new Map(state.patrimony.map(p => [p.id, p]))
-    for (const id of deletes) index.delete(id)
-    for (const patch of upserts) {
-      const now = new Date().toISOString()
-      const id  = patch.id ?? makeId('patrimony')
-      const existing = index.get(id)
-      if (existing) {
-        index.set(id, { ...existing, ...patch, id, updatedAt: now })
-      } else {
-        index.set(id, {
-          id,
-          householdId: DEFAULT_HOUSEHOLD_ID,
-          name:        patch.name     ?? 'Novo item',
-          kind:        patch.kind     === 'liability' ? 'liability' : 'asset',
-          value:       toNumber(patch.value ?? 0),
-          category:    patch.category ?? '',
-          updatedAt:   now
-        })
-      }
-    }
-    state.patrimony = [...index.values()]
-    return state.patrimony
-  },
-
-  async saveGoals(upserts, deletes) {
-    const state = await getMemoryState()
-    const index = new Map(state.goals.map(g => [g.id, g]))
-    for (const id of deletes) index.delete(id)
-    for (const patch of upserts) {
-      const now = new Date().toISOString()
-      const id  = patch.id ?? makeId('goal')
-      const existing = index.get(id)
-      if (existing) {
-        index.set(id, { ...existing, ...patch, id, updatedAt: now })
-      } else {
-        index.set(id, {
-          id,
-          householdId:   DEFAULT_HOUSEHOLD_ID,
-          name:          patch.name          ?? 'Nova meta',
-          targetAmount:  toNumber(patch.targetAmount  ?? 0),
-          currentAmount: toNumber(patch.currentAmount ?? 0),
-          deadline:      patch.deadline      ?? null,
-          color:         patch.color         ?? 'var(--primary)',
-          createdAt:     now,
-          updatedAt:     now
-        })
-      }
-    }
-    state.goals = [...index.values()]
-    return state.goals
-  }
 })
 
 const mapSettingToRow = (settings: HouseholdSettings) => ({
@@ -597,15 +506,12 @@ const makeSupabaseRepo = (): Repository => ({
     const client = getSupabaseClient()
     await ensureSupabaseSeed(client)
 
-    const [settingsRes, accountsRes, categoriesRes, rulesRes, entriesRes, budgetsRes, patrimonyRes, goalsRes] = await Promise.all([
+    const [settingsRes, accountsRes, categoriesRes, rulesRes, entriesRes] = await Promise.all([
       client.from('household_settings').select('*').eq('id', DEFAULT_HOUSEHOLD_ID).single(),
       client.from('accounts').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
       client.from('categories').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
       client.from('rules').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
       client.from('entries').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
-      client.from('budgets').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
-      client.from('patrimony').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
-      client.from('goals').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
     ])
 
     if (settingsRes.error) throw settingsRes.error
@@ -613,32 +519,15 @@ const makeSupabaseRepo = (): Repository => ({
     if (categoriesRes.error) throw categoriesRes.error
     if (rulesRes.error) throw rulesRes.error
     if (entriesRes.error) throw entriesRes.error
-    if (budgetsRes.error) throw budgetsRes.error
 
     const settings   = mapSettingFromRow(settingsRes.data)
     const accounts   = (accountsRes.data ?? []).map(mapAccountFromRow)
     const categories = (categoriesRes.data ?? []).map(mapCategoryFromRow)
     const rules      = (rulesRes.data ?? []).map(mapRuleFromRow)
     const entries    = (entriesRes.data ?? []).map(mapEntryFromRow)
-    const budgets    = (budgetsRes.data ?? []).map((row: any) => ({
-      id: row.id, householdId: row.household_id,
-      categoryId: row.category_id, monthRef: row.month_ref, amount: toNumber(row.amount)
-    }))
-    const patrimony = (patrimonyRes?.data ?? []).map((row: any): PatrimonyItem => ({
-      id: row.id, householdId: row.household_id,
-      name: row.name, kind: row.kind, value: toNumber(row.value),
-      category: row.category ?? '', updatedAt: row.updated_at
-    }))
-    const goals = (goalsRes?.data ?? []).map((row: any): FinanceGoal => ({
-      id: row.id, householdId: row.household_id,
-      name: row.name, targetAmount: toNumber(row.target_amount),
-      currentAmount: toNumber(row.current_amount),
-      deadline: row.deadline ?? null, color: row.color ?? 'var(--primary)',
-      createdAt: row.created_at, updatedAt: row.updated_at
-    }))
 
     return {
-      settings, accounts, categories, rules, entries, budgets, patrimony, goals,
+      settings, accounts, categories, rules, entries,
       kpis: computeKpis(entries, accounts),
       warnings: []
     }
@@ -727,9 +616,15 @@ const makeSupabaseRepo = (): Repository => ({
     }
     const seed = parseDadosText(raw)
 
-    // Delete in FK order: entries first, then accounts/categories
+    // Delete in FK order
     const { error: delEntries } = await client.from('entries').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
     if (delEntries) throw delEntries
+
+    const { error: delBudgets } = await client.from('budgets').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    if (delBudgets) throw delBudgets
+
+    const { error: delRules } = await client.from('rules').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    if (delRules) throw delRules
 
     const { error: delAccounts } = await client.from('accounts').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
     if (delAccounts) throw delAccounts
@@ -737,13 +632,17 @@ const makeSupabaseRepo = (): Repository => ({
     const { error: delCategories } = await client.from('categories').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
     if (delCategories) throw delCategories
 
-    // Re-insert in reverse order so FKs are satisfied
+    // Re-insert in FK-safe order
     if (seed.accounts.length > 0) {
       const { error } = await client.from('accounts').insert(seed.accounts.map(mapAccountToRow))
       if (error) throw error
     }
     if (seed.categories.length > 0) {
       const { error } = await client.from('categories').insert(seed.categories.map(mapCategoryToRow))
+      if (error) throw error
+    }
+    if (seed.rules.length > 0) {
+      const { error } = await client.from('rules').insert(seed.rules.map(mapRuleToRow))
       if (error) throw error
     }
     if (seed.entries.length > 0) {
@@ -836,93 +735,6 @@ const makeSupabaseRepo = (): Repository => ({
     }
 
     return { inserted: rows.length, warnings }
-  },
-
-  async savePatrimony(upserts, deletes) {
-    const client = getSupabaseClient()
-    if (deletes.length > 0) {
-      const { error } = await client.from('patrimony').delete().in('id', deletes)
-      if (error) throw error
-    }
-    if (upserts.length > 0) {
-      const now  = new Date().toISOString()
-      const payload = upserts.map(p => ({
-        id:           p.id ?? makeId('patrimony'),
-        household_id: DEFAULT_HOUSEHOLD_ID,
-        name:         p.name     ?? 'Novo item',
-        kind:         p.kind     === 'liability' ? 'liability' : 'asset',
-        value:        toNumber(p.value ?? 0),
-        category:     p.category ?? '',
-        updated_at:   now
-      }))
-      const { error } = await client.from('patrimony').upsert(payload)
-      if (error) throw error
-    }
-    const { data, error } = await client.from('patrimony').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
-    if (error) throw error
-    return (data ?? []).map((row: any): PatrimonyItem => ({
-      id: row.id, householdId: row.household_id,
-      name: row.name, kind: row.kind, value: toNumber(row.value),
-      category: row.category ?? '', updatedAt: row.updated_at
-    }))
-  },
-
-  async saveGoals(upserts, deletes) {
-    const client = getSupabaseClient()
-    if (deletes.length > 0) {
-      const { error } = await client.from('goals').delete().in('id', deletes)
-      if (error) throw error
-    }
-    if (upserts.length > 0) {
-      const now = new Date().toISOString()
-      const payload = upserts.map(g => ({
-        id:             g.id ?? makeId('goal'),
-        household_id:   DEFAULT_HOUSEHOLD_ID,
-        name:           g.name          ?? 'Nova meta',
-        target_amount:  toNumber(g.targetAmount  ?? 0),
-        current_amount: toNumber(g.currentAmount ?? 0),
-        deadline:       g.deadline      ?? null,
-        color:          g.color         ?? 'var(--primary)',
-        created_at:     g.createdAt     ?? now,
-        updated_at:     now
-      }))
-      const { error } = await client.from('goals').upsert(payload)
-      if (error) throw error
-    }
-    const { data, error } = await client.from('goals').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
-    if (error) throw error
-    return (data ?? []).map((row: any): FinanceGoal => ({
-      id: row.id, householdId: row.household_id,
-      name: row.name, targetAmount: toNumber(row.target_amount),
-      currentAmount: toNumber(row.current_amount),
-      deadline: row.deadline ?? null, color: row.color ?? 'var(--primary)',
-      createdAt: row.created_at, updatedAt: row.updated_at
-    }))
-  },
-
-  async saveBudgets(upserts, deletes) {
-    const client = getSupabaseClient()
-    if (deletes.length > 0) {
-      const { error } = await client.from('budgets').delete().in('id', deletes)
-      if (error) throw error
-    }
-    if (upserts.length > 0) {
-      const payload = upserts.map(b => ({
-        id:           b.id ?? makeId('budget'),
-        household_id: DEFAULT_HOUSEHOLD_ID,
-        category_id:  b.categoryId ?? '',
-        month_ref:    b.monthRef   ?? new Date().toISOString().slice(0, 7),
-        amount:       toNumber(b.amount ?? 0)
-      }))
-      const { error } = await client.from('budgets').upsert(payload)
-      if (error) throw error
-    }
-    const { data, error } = await client.from('budgets').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
-    if (error) throw error
-    return (data ?? []).map((row: any) => ({
-      id: row.id, householdId: row.household_id,
-      categoryId: row.category_id, monthRef: row.month_ref, amount: toNumber(row.amount)
-    }))
   },
 
   async saveRules(upserts, deletes) {

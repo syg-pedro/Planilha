@@ -264,35 +264,8 @@ const generatedAlerts = computed((): SmartAlert[] => {
     })
   }
 
-  // Orçamentos: consumo > 80% e > 100%
-  const currentMonthKey = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}`
-  for (const budget of store.budgets) {
-    if (!budget.monthRef.startsWith(currentMonthKey)) continue
-    const spent = store.entries
-      .filter(e => e.kind === 'expense' && e.categoryId === budget.categoryId && e.dueDate.startsWith(currentMonthKey))
-      .reduce((s, e) => s + e.amount, 0)
-    const pct = budget.amount > 0 ? (spent / budget.amount) * 100 : 0
-    const cat = store.categoryMap.get(budget.categoryId)
-    if (pct >= 100) {
-      alerts.push({
-        id:         `budget-over-${budget.id}`,
-        tone:       'danger',
-        title:      `Orçamento de "${cat?.name ?? 'categoria'}" ultrapassado`,
-        body:       `Gasto: ${fmt(spent)} de ${fmt(budget.amount)} (${pct.toFixed(0)}%)`,
-        navigateTo: 'budget',
-      })
-    } else if (pct >= 80) {
-      alerts.push({
-        id:         `budget-warn-${budget.id}`,
-        tone:       'warning',
-        title:      `Orçamento de "${cat?.name ?? 'categoria'}" em ${pct.toFixed(0)}%`,
-        body:       `Restam apenas ${fmt(budget.amount - spent)} do limite de ${fmt(budget.amount)}.`,
-        navigateTo: 'budget',
-      })
-    }
-  }
-
   // Taxa de poupança baixa
+  const currentMonthKey = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}`
   const monthIncome  = store.entries.filter(e => e.kind === 'income'  && e.dueDate.startsWith(currentMonthKey)).reduce((s, e) => s + e.amount, 0)
   const monthExpense = store.entries.filter(e => e.kind === 'expense' && e.dueDate.startsWith(currentMonthKey)).reduce((s, e) => s + e.amount, 0)
   if (monthIncome > 0) {
