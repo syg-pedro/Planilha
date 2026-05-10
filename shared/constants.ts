@@ -35,7 +35,8 @@ export const EVA_COLORS: ColorTokens = {
 export const THEME_PRESETS: Record<ThemeMode, ColorTokens> = {
   light: DEFAULT_COLORS,
   dark: DARK_COLORS,
-  eva: EVA_COLORS
+  eva: EVA_COLORS,
+  system: DEFAULT_COLORS
 }
 
 export const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {

@@ -163,6 +163,7 @@ const csvText = ref('')
 const importAccountId = ref('')
 
 const THEMES = [
+  { id: 'system', name: 'Sistema', desc: 'Segue automaticamente o tema do dispositivo', icon: '🖥️' },
   { id: 'light', name: 'Light Clean', desc: 'Claro e minimalista, ideal para o dia a dia', icon: '☀️' },
   { id: 'dark', name: 'Dark Premium', desc: 'Escuro profissional, confortável à noite', icon: '🌙' },
   { id: 'eva', name: 'EVA-01', desc: 'Temática especial, roxa e neon', icon: '⚡' },
@@ -173,7 +174,7 @@ const WIDGETS = WIDGET_OPTIONS
 const isWidgetOn = (id: string) => store.settings.dashboardConfig.visibleWidgets.includes(id)
 
 const onThemeModeChange = (value: string) => {
-  if (value === 'light' || value === 'dark' || value === 'eva') {
+  if (value === 'light' || value === 'dark' || value === 'eva' || value === 'system') {
     store.setThemeMode(value as ThemeMode)
   }
 }

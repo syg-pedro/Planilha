@@ -107,19 +107,33 @@ export const useFinanceStore = defineStore('finance', () => {
     return response as T
   }
 
+  const resolveEffectiveTheme = (): 'light' | 'dark' | 'eva' => {
+    if (settings.value.themeMode !== 'system') {
+      return settings.value.themeMode
+    }
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    return prefersDark ? 'dark' : 'light'
+  }
+
   const applyTheme = () => {
     if (!process.client) {
       return
     }
 
+    const effective = resolveEffectiveTheme()
     const root = document.documentElement
-    root.dataset.theme = settings.value.themeMode
-    root.classList.toggle('dark', settings.value.themeMode === 'dark')
+    root.dataset.theme = effective
+    root.classList.toggle('dark', effective === 'dark')
   }
 
   const setThemeMode = (mode: ThemeMode) => {
     settings.value.themeMode = mode
-    settings.value.colorTokens = { ...THEME_PRESETS[mode] }
+    if (mode === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      settings.value.colorTokens = { ...THEME_PRESETS[prefersDark ? 'dark' : 'light'] }
+    } else {
+      settings.value.colorTokens = { ...THEME_PRESETS[mode] }
+    }
     applyTheme()
   }
 

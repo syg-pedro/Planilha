@@ -2,6 +2,7 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <PwaInstallBanner />
 </template>
 
 <script setup lang="ts">
@@ -15,5 +16,12 @@ onMounted(async () => {
     await store.requestNotifications()
     store.notifyUpcoming()
   }
+
+  const mq = window.matchMedia('(prefers-color-scheme: dark)')
+  mq.addEventListener('change', () => {
+    if (store.settings.themeMode === 'system') {
+      store.applyTheme()
+    }
+  })
 })
 </script>
