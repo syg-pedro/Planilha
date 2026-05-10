@@ -727,12 +727,28 @@ const makeSupabaseRepo = (): Repository => ({
     }
     const seed = parseDadosText(raw)
 
-    const { error: deleteError } = await client.from('entries').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
-    if (deleteError) throw deleteError
+    // Delete in FK order: entries first, then accounts/categories
+    const { error: delEntries } = await client.from('entries').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    if (delEntries) throw delEntries
 
+    const { error: delAccounts } = await client.from('accounts').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    if (delAccounts) throw delAccounts
+
+    const { error: delCategories } = await client.from('categories').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    if (delCategories) throw delCategories
+
+    // Re-insert in reverse order so FKs are satisfied
+    if (seed.accounts.length > 0) {
+      const { error } = await client.from('accounts').insert(seed.accounts.map(mapAccountToRow))
+      if (error) throw error
+    }
+    if (seed.categories.length > 0) {
+      const { error } = await client.from('categories').insert(seed.categories.map(mapCategoryToRow))
+      if (error) throw error
+    }
     if (seed.entries.length > 0) {
-      const { error: insertError } = await client.from('entries').insert(seed.entries.map(mapEntryToRow))
-      if (insertError) throw insertError
+      const { error } = await client.from('entries').insert(seed.entries.map(mapEntryToRow))
+      if (error) throw error
     }
 
     return seed.entries.length
