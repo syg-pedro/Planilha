@@ -45,9 +45,8 @@ export const NAV_GROUPS = [
 
 export const BOTTOM_NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { id: 'budget', label: 'Orçamentos', icon: 'budget' },
-  { id: 'goals', label: 'Metas', icon: 'goal' },
-  { id: 'alerts', label: 'Alertas', icon: 'alerts' },
+  { id: 'planilha', label: 'Planilha', icon: 'grid' },
+  { id: 'reconcile', label: 'Conciliação', icon: 'reconcile' },
 ] as const
 
 export const SETTINGS_ITEM = { id: 'config', label: 'Configurações', icon: 'settings' } as const
