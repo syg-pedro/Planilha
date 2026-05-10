@@ -262,6 +262,11 @@ export const useFinanceStore = defineStore('finance', () => {
     await bootstrap()
   }
 
+  const reseedEntries = async () => {
+    await fetchApi('/api/entries/reseed', { method: 'POST' })
+    await bootstrap()
+  }
+
   const saveTheme = async () => {
     const response = await fetchApi<{ settings: HouseholdSettings }>('/api/settings/theme', {
       method: 'POST',
@@ -400,6 +405,7 @@ export const useFinanceStore = defineStore('finance', () => {
     savePatrimony,
     saveGoals,
     rebuildRules,
+    reseedEntries,
     saveTheme,
     saveDashboard,
     importCsv,

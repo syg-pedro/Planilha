@@ -25,6 +25,7 @@ interface Repository {
   bootstrap: () => Promise<BootstrapResponse>
   saveEntriesBatch: (upserts: Partial<FinanceEntry>[], deletes: string[]) => Promise<FinanceEntry[]>
   rebuildRules: () => Promise<number>
+  reseedEntries: () => Promise<number>
   saveTheme: (payload: ThemeSettingsRequest) => Promise<HouseholdSettings>
   saveDashboard: (payload: DashboardSettingsRequest) => Promise<HouseholdSettings>
   importCsv: (csvText: string, accountId: string | null) => Promise<{ inserted: number; warnings: string[] }>
@@ -218,6 +219,21 @@ const makeMemoryRepo = (): Repository => ({
     state.entries.push(...generated)
     state.entries.sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     return generated.length
+  },
+
+  async reseedEntries() {
+    const state = await getMemoryState()
+    const config = useRuntimeConfig()
+    const configuredPath = (config.dataFilePath as string) || ''
+    const candidatePaths = [configuredPath, join(process.cwd(), 'dados.txt')].filter(Boolean)
+    let raw = DEFAULT_DADOS_TEXT
+    for (const filePath of candidatePaths) {
+      try { raw = await readFile(filePath, 'utf8'); break } catch { /* fallback */ }
+    }
+    const seed = parseDadosText(raw)
+    state.entries = seed.entries
+    state.entries.sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    return state.entries.length
   },
 
   async saveTheme(payload) {
@@ -698,6 +714,28 @@ const makeSupabaseRepo = (): Repository => ({
     }
 
     return generated.length
+  },
+
+  async reseedEntries() {
+    const client = getSupabaseClient()
+    const config = useRuntimeConfig()
+    const configuredPath = (config.dataFilePath as string) || ''
+    const candidatePaths = [configuredPath, join(process.cwd(), 'dados.txt')].filter(Boolean)
+    let raw = DEFAULT_DADOS_TEXT
+    for (const filePath of candidatePaths) {
+      try { raw = await readFile(filePath, 'utf8'); break } catch { /* fallback */ }
+    }
+    const seed = parseDadosText(raw)
+
+    const { error: deleteError } = await client.from('entries').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    if (deleteError) throw deleteError
+
+    if (seed.entries.length > 0) {
+      const { error: insertError } = await client.from('entries').insert(seed.entries.map(mapEntryToRow))
+      if (insertError) throw insertError
+    }
+
+    return seed.entries.length
   },
 
   async saveTheme(payload) {

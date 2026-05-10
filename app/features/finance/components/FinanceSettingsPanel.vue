@@ -137,6 +137,31 @@
       </div>
     </div>
 
+    <!-- Dados e recuperação -->
+    <div class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Dados e recuperação</h3>
+        <p class="panel-sub">Use quando os lançamentos estiverem incorretos ou precisar restaurar o estado inicial</p>
+      </div>
+      <div class="panel-body">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:12px 14px">
+            <p style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">Restaurar dados iniciais</p>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Apaga todos os lançamentos e recria do zero a partir do dados.txt (incluindo correções recentes).</p>
+            <button
+              class="btn-danger"
+              :disabled="reseedBusy"
+              @click="doReseed"
+            >
+              <svg v-if="reseedBusy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.86"/></svg>
+              {{ reseedBusy ? 'Restaurando...' : 'Restaurar dados iniciais' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Contas cadastradas -->
     <div class="panel">
       <div class="panel-header">
@@ -184,6 +209,7 @@ const store = useFinanceStore()
 const currency = useCurrency()
 const csvText = ref('')
 const importAccountId = ref('')
+const reseedBusy = ref(false)
 
 const { $pwaPrompt, $pwaInstalled } = useNuxtApp()
 const showPwaManual = useState('pwa-show-manual', () => false)
@@ -229,6 +255,16 @@ const runImport = async () => {
   if (!csvText.value.trim()) return
   await store.importCsv(csvText.value, importAccountId.value || null)
   csvText.value = ''
+}
+
+const doReseed = async () => {
+  if (!confirm('Isso vai apagar todos os lançamentos e recriar do zero. Continuar?')) return
+  reseedBusy.value = true
+  try {
+    await store.reseedEntries()
+  } finally {
+    reseedBusy.value = false
+  }
 }
 
 const accountTypeColor = (type: Account['type']) => {
@@ -358,4 +394,24 @@ const accountTypeLabel = (type: Account['type']) => {
   filter: brightness(1.1);
   transform: translateY(-1px);
 }
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+}
+.btn-danger:hover { filter: brightness(1.1); }
+.btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
