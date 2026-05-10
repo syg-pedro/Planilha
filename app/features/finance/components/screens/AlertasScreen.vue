@@ -85,7 +85,21 @@
       </button>
     </div>
 
-    <!-- Entry editor modal -->
+    <!-- Detail sheet (abre ao clicar no alerta) -->
+    <AlertEntryDetailSheet
+      :open="sheetOpen"
+      :entry="selectedEntry"
+      :accounts="store.accounts"
+      :categories="store.categories"
+      :alert-title="selectedAlertTitle"
+      :alert-tone="selectedAlertTone"
+      @close="closeSheet"
+      @pay="onPay"
+      @edit="openEditor"
+      @delete="onDelete"
+    />
+
+    <!-- Editor modal (abre só ao clicar Editar no sheet) -->
     <FinanceEntryEditorModal
       :open="editorOpen"
       :entry="selectedEntry"
@@ -93,7 +107,7 @@
       :categories="store.categories"
       @close="closeEditor"
       @save="saveFromEditor"
-      @delete="deleteFromEditor"
+      @delete="onDelete"
     />
 
   </div>
@@ -105,6 +119,7 @@ import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { useDateFormat } from '~/composables/useDateFormat'
 import BaseIcon                from '~/components/base/BaseIcon.vue'
 import BaseEmptyState          from '~/components/base/BaseEmptyState.vue'
+import AlertEntryDetailSheet   from '~/features/finance/components/AlertEntryDetailSheet.vue'
 import FinanceEntryEditorModal from '~/features/finance/components/FinanceEntryEditorModal.vue'
 import type { FinanceEntry } from '#shared/types'
 
@@ -127,19 +142,40 @@ const currency = useCurrency()
 const { formatDate } = useDateFormat()
 const fmt      = (v: number) => currency.format(v)
 
-const editorOpen    = ref(false)
-const selectedEntry = ref<FinanceEntry | null>(null)
+const sheetOpen         = ref(false)
+const editorOpen        = ref(false)
+const selectedEntry     = ref<FinanceEntry | null>(null)
+const selectedAlertTitle = ref('')
+const selectedAlertTone  = ref<AlertTone>('warning')
 
-const closeEditor = () => { editorOpen.value = false; selectedEntry.value = null }
+const closeSheet  = () => { sheetOpen.value = false }
+const closeEditor = () => { editorOpen.value = false }
+
+const openEditor = (entry: FinanceEntry) => {
+  sheetOpen.value = false
+  selectedEntry.value = entry
+  editorOpen.value = true
+}
 
 const saveFromEditor = async (value: Partial<FinanceEntry>) => {
   await store.saveEntriesBatch({ upserts: [value as FinanceEntry], deletes: [] })
   closeEditor()
+  selectedEntry.value = null
 }
 
-const deleteFromEditor = async (id: string) => {
+const onPay = async (id: string) => {
+  const entry = store.entries.find(e => e.id === id)
+  if (!entry) return
+  await store.saveEntriesBatch({ upserts: [{ ...entry, status: 'paid' }], deletes: [] })
+  closeSheet()
+  selectedEntry.value = null
+}
+
+const onDelete = async (id: string) => {
   await store.saveEntriesBatch({ upserts: [], deletes: [id] })
+  closeSheet()
   closeEditor()
+  selectedEntry.value = null
 }
 
 const isClickable = (alert: SmartAlert) => !!(alert.entryId || alert.navigateTo)
@@ -149,7 +185,9 @@ const onAlertClick = (alert: SmartAlert) => {
     const entry = store.entries.find(e => e.id === alert.entryId) ?? null
     if (entry) {
       selectedEntry.value = entry
-      editorOpen.value = true
+      selectedAlertTitle.value = alert.title
+      selectedAlertTone.value = alert.tone
+      sheetOpen.value = true
     }
     return
   }
