@@ -1,3 +1,15 @@
+-- ─── Garantir que household_members existe (criado em 0002) ─────────────────
+
+create table if not exists household_members (
+  user_id      uuid    not null references auth.users(id) on delete cascade,
+  household_id text    not null references household_settings(id) on delete cascade,
+  role         text    not null default 'owner',
+  created_at   timestamptz not null default now(),
+  primary key (user_id)
+);
+
+create index if not exists idx_household_members_household on household_members(household_id);
+
 -- ─── Tabela de convites para compartilhar household ──────────────────────────
 
 create table if not exists household_invitations (
