@@ -225,6 +225,7 @@ const pushInstallments = (
       installmentTotal: installments.length,
       status: 'pending',
       origin: 'manual',
+      excludeFromCalc: false,
       metadata: { owner: context.owner, source: 'dados.txt' },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -410,6 +411,7 @@ export const parseDadosText = (text: string): ParsedSeed => {
       installmentTotal: 10,
       status: 'pending',
       origin: 'manual',
+      excludeFromCalc: false,
       metadata: { source: 'dados.txt' },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()

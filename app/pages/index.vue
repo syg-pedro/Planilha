@@ -16,6 +16,7 @@
       <MatrizScreen       v-else-if="activeScreen === 'planilha'"      key="planilha"     />
       <AssinaturasScreen  v-else-if="activeScreen === 'subscriptions'" key="subscriptions"/>
       <DividasScreen          v-else-if="activeScreen === 'debts'"    key="debts"    />
+      <CartoesScreen        v-else-if="activeScreen === 'cartoes'"  key="cartoes"  />
       <ListaDeDesejosScreen v-else-if="activeScreen === 'wishlist'" key="wishlist" />
       <PlanejamentoScreen v-else-if="activeScreen === 'planning'"      key="planning"     />
       <RelatoriosScreen   v-else-if="activeScreen === 'reports'"       key="reports"      />
@@ -41,6 +42,7 @@ import RelatoriosScreen    from '~/features/finance/components/screens/Relatorio
 import AlertasScreen       from '~/features/finance/components/screens/AlertasScreen.vue'
 import DesignSystemScreen  from '~/features/finance/components/screens/DesignSystemScreen.vue'
 import ConfiguracoesScreen    from '~/features/finance/components/screens/ConfiguracoesScreen.vue'
+import CartoesScreen         from '~/features/finance/components/screens/CartoesScreen.vue'
 import ListaDeDesejosScreen  from '~/features/finance/components/screens/ListaDeDesejosScreen.vue'
 
 const store = useFinanceStore()

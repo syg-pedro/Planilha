@@ -72,7 +72,7 @@
                 <button style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px" @click="openModal(row.rule)">
                   <BaseIcon name="settings" :size="14" />
                 </button>
-                <button style="background: none; border: none; cursor: pointer; color: var(--danger); padding: 4px" @click="deleteRule(row.rule.id)">
+                <button style="background: none; border: none; cursor: pointer; color: var(--danger); padding: 4px" @click="deleteRule(row.rule)">
                   <BaseIcon name="close" :size="14" />
                 </button>
               </div>
@@ -82,71 +82,94 @@
       </table>
     </div>
 
-    <!-- Modal -->
-    <BaseModal :open="showModal" :title="editingRule ? 'Editar assinatura' : 'Nova assinatura'" @close="showModal = false">
+    <!-- Modal: criar/editar assinatura -->
+    <BaseModal :open="showModal" :title="editingRule ? 'Editar assinatura' : 'Nova assinatura'" @close="closeModal">
       <div style="display: flex; flex-direction: column; gap: 14px">
+
+        <!-- Nome -->
         <div>
-          <label style="font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 5px">Nome do serviço</label>
-          <input
-            v-model="form.title"
-            placeholder="Ex: Netflix, Spotify…"
-            style="width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 38px; font-size: 13px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box"
-          />
+          <label :style="labelStyle">Nome do serviço</label>
+          <input v-model="form.title" placeholder="Ex: Netflix, Spotify…" :style="inputStyle" />
         </div>
+
+        <!-- Descrição -->
+        <div>
+          <label :style="labelStyle">Descrição (opcional)</label>
+          <input v-model="form.description" placeholder="Ex: Parcela fixa mensal" :style="inputStyle" />
+        </div>
+
+        <!-- Valor + Vencimento -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
           <div>
-            <label style="font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 5px">Valor (R$)</label>
-            <input
-              v-model.number="form.amount"
-              type="number" min="0" step="0.01"
-              style="width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 38px; font-size: 13px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box"
-            />
+            <label :style="labelStyle">Valor (R$)</label>
+            <input v-model.number="form.amount" type="number" min="0" step="0.01" :style="inputStyle" />
           </div>
           <div>
-            <label style="font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 5px">Dia de vencimento</label>
-            <input
-              v-model.number="form.dueDay"
-              type="number" min="1" max="31"
-              style="width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 38px; font-size: 13px; color: var(--text); font-family: inherit; outline: none; box-sizing: border-box"
-            />
+            <label :style="labelStyle">Dia de vencimento</label>
+            <input v-model.number="form.dueDay" type="number" min="1" max="31" placeholder="Ex: 5" :style="inputStyle" />
           </div>
         </div>
-        <div>
-          <label style="font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 5px">Categoria</label>
-          <select
-            v-model="form.categoryId"
-            style="width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 38px; font-size: 13px; color: var(--text); font-family: inherit; outline: none"
-          >
-            <option value="">Sem categoria</option>
-            <option v-for="cat in store.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-          </select>
+
+        <!-- Categoria + Conta -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <div>
+            <label :style="labelStyle">Categoria</label>
+            <select v-model="form.categoryId" :style="selectStyle">
+              <option value="">Sem categoria</option>
+              <option v-for="cat in store.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label :style="labelStyle">Conta</label>
+            <select v-model="form.accountId" :style="selectStyle">
+              <option value="">Sem conta</option>
+              <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label style="font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 5px">Conta</label>
-          <select
-            v-model="form.accountId"
-            style="width: 100%; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 38px; font-size: 13px; color: var(--text); font-family: inherit; outline: none"
-          >
-            <option value="">Sem conta</option>
-            <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
-          </select>
-        </div>
+
+        <!-- Erro -->
+        <div
+          v-if="errorMsg"
+          style="padding: 10px 14px; border-radius: 8px; background: var(--danger-light); border: 1px solid var(--danger); font-size: 13px; color: var(--danger); font-weight: 600"
+        >{{ errorMsg }}</div>
+
         <div style="display: flex; gap: 10px; justify-content: flex-end">
+          <button :style="btnCancelStyle" @click="closeModal">Cancelar</button>
           <button
-            style="padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border)"
-            @click="showModal = false"
-          >Cancelar</button>
-          <button
-            :disabled="!form.title || !form.amount || saving"
-            style="padding: 8px 18px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: #fff"
+            :disabled="!form.title.trim() || form.amount <= 0 || saving"
+            :style="{ ...btnSaveStyle, opacity: (!form.title.trim() || form.amount <= 0 || saving) ? 0.5 : 1 }"
             @click="saveSubscription"
-          >{{ editingRule ? 'Salvar' : 'Criar' }}</button>
+          >
+            <svg v-if="saving" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            {{ saving ? 'Salvando...' : (editingRule ? 'Salvar' : 'Criar') }}
+          </button>
+        </div>
+      </div>
+    </BaseModal>
+
+    <!-- Modal: confirmar exclusão -->
+    <BaseModal :open="deleteConfirm.open" title="Excluir assinatura" @close="deleteConfirm.open = false">
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <p style="font-size: 13px; color: var(--text2); line-height: 1.6">
+          Excluir <strong>{{ deleteConfirm.title }}</strong>? Esta ação remove a regra e todos os lançamentos automáticos futuros associados.
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: flex-end">
+          <button :style="btnCancelStyle" @click="deleteConfirm.open = false">Cancelar</button>
+          <button
+            :style="{ ...btnSaveStyle, background: 'var(--danger)' }"
+            :disabled="deleting"
+            @click="confirmDelete"
+          >{{ deleting ? 'Excluindo...' : 'Excluir' }}</button>
         </div>
       </div>
     </BaseModal>
 
   </div>
 </template>
+<style scoped>
+@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+</style>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
@@ -182,43 +205,64 @@ const visibleRows = computed(() => {
 })
 
 const summary = computed(() => {
-  const rows   = subscriptionRows.value
+  const rows    = subscriptionRows.value
   const monthly = rows.reduce((s, r) => s + r.rule.amount, 0)
-  const today   = new Date()
+  const today    = new Date()
   const todayDay = today.getUTCDate()
-  const in7     = todayDay + 7
-  const next7   = rows
+  const in7      = todayDay + 7
+  const next7    = rows
     .filter(r => r.rule.dueDay != null && r.rule.dueDay >= todayDay && r.rule.dueDay <= in7)
     .reduce((s, r) => s + r.rule.amount, 0)
   return { count: rows.length, monthly, annual: monthly * 12, next7 }
 })
 
 // Modal
-const showModal  = ref(false)
+const showModal   = ref(false)
 const editingRule = ref<FinanceRule | null>(null)
-const saving     = ref(false)
-const form       = ref({ title: '', amount: 0, dueDay: null as number | null, categoryId: '', accountId: '' })
+const saving      = ref(false)
+const errorMsg    = ref('')
+const form        = ref({
+  title:       '',
+  description: '',
+  amount:      0,
+  dueDay:      null as number | null,
+  categoryId:  '',
+  accountId:   ''
+})
+
+const deleteConfirm = ref({ open: false, title: '', id: '' })
+const deleting      = ref(false)
 
 const openModal = (rule: FinanceRule | null) => {
   editingRule.value = rule
+  errorMsg.value    = ''
   form.value = {
-    title:      rule?.title       ?? '',
-    amount:     rule?.amount      ?? 0,
-    dueDay:     rule?.dueDay      ?? null,
-    categoryId: rule?.categoryId  ?? '',
-    accountId:  rule?.accountId   ?? ''
+    title:       rule?.title       ?? '',
+    description: rule?.description ?? '',
+    amount:      rule?.amount      ?? 0,
+    dueDay:      rule?.dueDay      ?? null,
+    categoryId:  rule?.categoryId  ?? '',
+    accountId:   rule?.accountId   ?? ''
   }
   showModal.value = true
 }
 
+const closeModal = () => {
+  showModal.value   = false
+  editingRule.value = null
+  errorMsg.value    = ''
+}
+
 const saveSubscription = async () => {
-  if (!form.value.title || !form.value.amount) return
-  saving.value = true
+  if (!form.value.title.trim() || form.value.amount <= 0) return
+  saving.value   = true
+  errorMsg.value = ''
   try {
     const now = new Date().toISOString().slice(0, 10)
     const upsert: Partial<FinanceRule> = {
       id:           editingRule.value?.id ?? makeId('rule'),
-      title:        form.value.title,
+      title:        form.value.title.trim(),
+      description:  form.value.description.trim(),
       amount:       form.value.amount,
       kind:         'expense',
       frequency:    'monthly',
@@ -230,13 +274,34 @@ const saveSubscription = async () => {
       endsAt:       null
     }
     await store.saveRules([upsert], [])
-    showModal.value = false
+    await store.rebuildRules()
+    closeModal()
+  } catch (e: unknown) {
+    errorMsg.value = e instanceof Error ? e.message : 'Erro ao salvar assinatura'
   } finally {
     saving.value = false
   }
 }
 
-const deleteRule = async (id: string) => {
-  await store.saveRules([], [id])
+const deleteRule = (rule: FinanceRule) => {
+  deleteConfirm.value = { open: true, title: rule.title, id: rule.id }
 }
+
+const confirmDelete = async () => {
+  deleting.value = true
+  try {
+    await store.saveRules([], [deleteConfirm.value.id])
+    await store.rebuildRules()
+    deleteConfirm.value.open = false
+  } finally {
+    deleting.value = false
+  }
+}
+
+// Style constants
+const labelStyle     = { display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '5px' }
+const inputStyle     = { width: '100%', boxSizing: 'border-box' as const, background: 'var(--surface2)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-xs)', padding: '0 10px', height: '36px', fontSize: '13px', color: 'var(--text)', fontFamily: 'inherit', outline: 'none' }
+const selectStyle    = inputStyle
+const btnCancelStyle = { padding: '9px 16px', fontSize: '13px', fontWeight: '600', borderRadius: 'var(--radius-sm)', cursor: 'pointer', border: '1.5px solid var(--border)', background: 'var(--surface2)', color: 'var(--text2)' }
+const btnSaveStyle   = { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', fontSize: '13px', fontWeight: '700', borderRadius: 'var(--radius-sm)', cursor: 'pointer', border: 'none', background: 'var(--primary)', color: '#fff' }
 </script>

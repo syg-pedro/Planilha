@@ -35,6 +35,7 @@ export const buildEntriesFromRule = ({ rule, householdId, startDate, months }: B
       installmentTotal: null,
       status: 'pending',
       origin: 'auto',
+      excludeFromCalc: false,
       metadata: { generatedFromRule: true },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()

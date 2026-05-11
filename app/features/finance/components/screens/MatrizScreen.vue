@@ -408,7 +408,7 @@ const saveCell = async (kind: EntryKind, title: string, month: string) => {
         title, description: '', amount: newAmount, kind,
         dueDate: `${month}-01`, competenceDate: `${month}-01`,
         installmentIndex: null, installmentTotal: null,
-        status: 'pending', origin: 'manual', metadata: null,
+        status: 'pending', origin: 'manual', excludeFromCalc: false, metadata: null,
         createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       }
       await store.saveEntriesBatch({ upserts: [newEntry], deletes: [] })
@@ -522,7 +522,7 @@ const confirmAdd = async () => {
     title: trimmed, description: '', amount: amt, kind,
     dueDate: `${currentMonth}-01`, competenceDate: `${currentMonth}-01`,
     installmentIndex: null, installmentTotal: null,
-    status: 'pending', origin: 'manual', metadata: null,
+    status: 'pending', origin: 'manual', excludeFromCalc: false, metadata: null,
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
   }
 
