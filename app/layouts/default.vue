@@ -33,62 +33,65 @@
       </div>
 
       <!-- Nav -->
-      <nav style="flex: 1; padding: 8px 6px; overflow-y: auto; overflow-x: hidden">
-        <div v-for="group in NAV_GROUPS" :key="group.id" style="margin-bottom: 4px">
-          <!-- Group header -->
-          <button
-            v-if="!collapsed"
-            style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 5px 8px; background: none; border: none; cursor: pointer; color: var(--text3); font-family: inherit; margin-bottom: 1px"
-            @click="toggleGroup(group.id)"
-          >
-            <span style="font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase">{{ group.label }}</span>
-            <span :style="{ display: 'flex', transition: 'transform .2s', transform: openGroups.includes(group.id) ? 'rotate(0)' : 'rotate(-90deg)' }">
-              <BaseIcon name="chevron_down" :size="12" />
-            </span>
-          </button>
-          <!-- Items -->
-          <template v-if="collapsed || openGroups.includes(group.id)">
+      <nav style="flex: 1; padding: 6px 6px; overflow-y: auto; overflow-x: hidden">
+        <template v-for="(group, gi) in NAV_GROUPS" :key="group.id">
+          <!-- Divider between groups -->
+          <div v-if="gi > 0 && !collapsed" style="height: 1px; background: var(--border); margin: 4px 8px" />
+          <div style="margin-bottom: 2px">
+            <!-- Group header -->
             <button
-              v-for="item in group.items"
-              :key="item.id"
-              :title="collapsed ? item.label : ''"
-              :style="{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '9px',
-                padding: collapsed ? '9px 0' : '8px 10px',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                borderRadius: 'var(--radius-xs)',
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                fontWeight: 600,
-                fontSize: '13px',
-                background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
-                color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
-                transition: 'background .12s, color .12s',
-                width: '100%',
-                position: 'relative',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-              }"
-              @mouseenter="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'var(--surface2)'"
-              @mouseleave="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'transparent'"
-              @click="goTo(item.id)"
+              v-if="!collapsed"
+              style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 6px 8px 3px; background: none; border: none; cursor: pointer; color: var(--text3); font-family: inherit"
+              @click="toggleGroup(group.id)"
             >
-              <span v-if="activeScreen === item.id" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
-              <span style="position: relative; flex-shrink: 0">
-                <BaseIcon :name="item.icon" :size="16" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
-                <span
-                  v-if="item.id === 'alerts' && alertCount > 0"
-                  style="position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff"
-                >{{ alertCount }}</span>
+              <span style="font-size: 9px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase">{{ group.label }}</span>
+              <span :style="{ display: 'flex', transition: 'transform .2s', transform: openGroups.includes(group.id) ? 'rotate(0)' : 'rotate(-90deg)' }">
+                <BaseIcon name="chevron_down" :size="11" />
               </span>
-              <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">{{ item.label }}</span>
             </button>
-          </template>
-          <div v-if="!collapsed" style="height: 4px" />
-        </div>
+            <!-- Items -->
+            <template v-if="collapsed || openGroups.includes(group.id)">
+              <button
+                v-for="item in group.items"
+                :key="item.id"
+                :title="collapsed ? item.label : ''"
+                :style="{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: collapsed ? '8px 0' : '7px 10px',
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  borderRadius: 'var(--radius-xs)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
+                  color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
+                  transition: 'background .12s, color .12s',
+                  width: '100%',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                }"
+                @mouseenter="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'var(--surface2)'"
+                @mouseleave="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'transparent'"
+                @click="goTo(item.id)"
+              >
+                <span v-if="activeScreen === item.id" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
+                <span style="position: relative; flex-shrink: 0">
+                  <BaseIcon :name="item.icon" :size="15" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
+                  <span
+                    v-if="item.id === 'alerts' && alertCount > 0"
+                    style="position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff"
+                  >{{ alertCount }}</span>
+                </span>
+                <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">{{ item.label }}</span>
+              </button>
+            </template>
+          </div>
+        </template>
       </nav>
 
       <!-- Bottom -->
@@ -170,9 +173,10 @@
             <p style="font-size: 14px; font-weight: 800; color: var(--text)">Familiar</p>
           </div>
         </div>
-        <nav style="flex: 1; padding: 8px 8px">
-          <div v-for="group in NAV_GROUPS" :key="group.id" style="margin-bottom: 8px">
-            <p style="font-size: 9px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 8px; margin-bottom: 2px">{{ group.label }}</p>
+        <nav style="flex: 1; padding: 6px 8px">
+          <template v-for="(group, gi) in NAV_GROUPS" :key="group.id">
+            <div v-if="gi > 0" style="height: 1px; background: var(--border); margin: 4px 4px" />
+            <p style="font-size: 9px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; padding: 6px 6px 2px; margin: 0">{{ group.label }}</p>
             <button
               v-for="item in group.items"
               :key="item.id"
@@ -180,7 +184,7 @@
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
-                padding: '10px 10px',
+                padding: '8px 10px',
                 borderRadius: 'var(--radius-sm)',
                 border: 'none',
                 cursor: 'pointer',
@@ -198,11 +202,11 @@
               @click="goTo(item.id)"
             >
               <span v-if="activeScreen === item.id" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
-              <BaseIcon :name="item.icon" :size="18" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
+              <BaseIcon :name="item.icon" :size="16" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
               {{ item.label }}
               <span v-if="item.id === 'alerts' && alertCount > 0" style="margin-left: auto; display: inline-flex; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; background: var(--danger-light); color: var(--danger)">{{ alertCount }}</span>
             </button>
-          </div>
+          </template>
         </nav>
         <div style="border-top: 1px solid var(--border); padding: 8px 8px">
           <button
