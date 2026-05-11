@@ -13,7 +13,7 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  await assertEditKey(event)
+  const { householdId } = await assertEditKey(event)
   const body = await readBody(event)
   const parsed = schema.safeParse(body)
 
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Invalid dashboard payload' })
   }
 
-  const repo = getRepository()
+  const repo = getRepository(householdId)
   const settings = await repo.saveDashboard(parsed.data)
   return { settings }
 })

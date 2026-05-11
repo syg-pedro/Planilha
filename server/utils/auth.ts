@@ -1,4 +1,6 @@
 import { createError, getHeader, getQuery, type H3Event } from 'h3'
+import { createClient } from '@supabase/supabase-js'
+import { DEFAULT_HOUSEHOLD_ID } from '../../shared/constants'
 import { createSupabaseServerClient } from './supabase/server'
 
 export const extractEditKey = (event: H3Event): string | null => {
@@ -9,7 +11,7 @@ export const extractEditKey = (event: H3Event): string | null => {
   return header ?? null
 }
 
-export const assertEditKey = async (event: H3Event): Promise<void> => {
+export const assertEditKey = async (event: H3Event): Promise<{ householdId: string }> => {
   const config = useRuntimeConfig(event)
 
   // When Supabase is configured, validate via session cookie first
@@ -17,7 +19,45 @@ export const assertEditKey = async (event: H3Event): Promise<void> => {
     try {
       const client = createSupabaseServerClient(event)
       const { data: { user } } = await client.auth.getUser()
-      if (user) return
+      if (user) {
+        // Look up the user's household using the service key (bypasses RLS)
+        const serviceClient = createClient(
+          config.supabaseUrl as string,
+          config.supabaseServiceKey as string,
+          { auth: { persistSession: false } }
+        )
+        const { data } = await serviceClient
+          .from('household_members')
+          .select('household_id')
+          .eq('user_id', user.id)
+          .single()
+
+        if (data?.household_id) {
+          return { householdId: data.household_id }
+        }
+
+        // User authenticated but no household yet (edge case) — create one
+        const newHouseholdId = `hh-${crypto.randomUUID()}`
+        await serviceClient.from('household_settings').insert({
+          id: newHouseholdId,
+          currency: 'BRL',
+          timezone: 'America/Sao_Paulo',
+          theme_mode: 'light',
+          density_mode: 'compact',
+          period_mode: 'due_date',
+          horizon_months: 18,
+          notification_days: [3, 1],
+          color_tokens: {},
+          dashboard_config: {},
+          updated_at: new Date().toISOString()
+        })
+        await serviceClient.from('household_members').insert({
+          user_id: user.id,
+          household_id: newHouseholdId,
+          role: 'owner'
+        })
+        return { householdId: newHouseholdId }
+      }
     } catch {
       // fall through to edit key
     }
@@ -29,4 +69,5 @@ export const assertEditKey = async (event: H3Event): Promise<void> => {
   if (!received || received !== expected) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
+  return { householdId: DEFAULT_HOUSEHOLD_ID }
 }

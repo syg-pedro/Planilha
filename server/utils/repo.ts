@@ -529,17 +529,16 @@ const getSupabaseClient = (): SupabaseClient => {
   })
 }
 
-const makeSupabaseRepo = (): Repository => ({
+const makeSupabaseRepo = (householdId: string): Repository => ({
   async bootstrap() {
     const client = getSupabaseClient()
-    await ensureSupabaseSeed(client)
 
     const [settingsRes, accountsRes, categoriesRes, rulesRes, entriesRes] = await Promise.all([
-      client.from('household_settings').select('*').eq('id', DEFAULT_HOUSEHOLD_ID).single(),
-      client.from('accounts').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
-      client.from('categories').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
-      client.from('rules').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
-      client.from('entries').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID),
+      client.from('household_settings').select('*').eq('id', householdId).single(),
+      client.from('accounts').select('*').eq('household_id', householdId),
+      client.from('categories').select('*').eq('household_id', householdId),
+      client.from('rules').select('*').eq('household_id', householdId),
+      client.from('entries').select('*').eq('household_id', householdId),
     ])
 
     if (settingsRes.error) throw settingsRes.error
@@ -573,7 +572,7 @@ const makeSupabaseRepo = (): Repository => ({
       const payload = upserts.map((entry) =>
         mapEntryToRow({
           id: entry.id ?? makeId('entry'),
-          householdId: DEFAULT_HOUSEHOLD_ID,
+          householdId,
           ruleId: entry.ruleId ?? null,
           accountId: entry.accountId ?? null,
           categoryId: entry.categoryId ?? null,
@@ -596,7 +595,7 @@ const makeSupabaseRepo = (): Repository => ({
       if (error) throw error
     }
 
-    const { data, error } = await client.from('entries').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    const { data, error } = await client.from('entries').select('*').eq('household_id', householdId)
     if (error) throw error
     return (data ?? []).map(mapEntryFromRow)
   },
@@ -607,21 +606,21 @@ const makeSupabaseRepo = (): Repository => ({
     const { data: settingsRows, error: settingsError } = await client
       .from('household_settings')
       .select('*')
-      .eq('id', DEFAULT_HOUSEHOLD_ID)
+      .eq('id', householdId)
       .single()
     if (settingsError) throw settingsError
 
-    const { data: rulesRows, error: rulesError } = await client.from('rules').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    const { data: rulesRows, error: rulesError } = await client.from('rules').select('*').eq('household_id', householdId)
     if (rulesError) throw rulesError
 
     const settings = mapSettingFromRow(settingsRows)
     const rules = (rulesRows ?? []).map(mapRuleFromRow)
-    const generated = buildEntriesFromRules(rules, DEFAULT_HOUSEHOLD_ID, settings.horizonMonths)
+    const generated = buildEntriesFromRules(rules, householdId, settings.horizonMonths)
 
     const { error: deleteError } = await client
       .from('entries')
       .delete()
-      .eq('household_id', DEFAULT_HOUSEHOLD_ID)
+      .eq('household_id', householdId)
       .eq('origin', 'auto')
     if (deleteError) throw deleteError
 
@@ -645,19 +644,19 @@ const makeSupabaseRepo = (): Repository => ({
     const seed = parseDadosText(raw)
 
     // Delete in FK order
-    const { error: delEntries } = await client.from('entries').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    const { error: delEntries } = await client.from('entries').delete().eq('household_id', householdId)
     if (delEntries) throw delEntries
 
-    const { error: delBudgets } = await client.from('budgets').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    const { error: delBudgets } = await client.from('budgets').delete().eq('household_id', householdId)
     if (delBudgets) throw delBudgets
 
-    const { error: delRules } = await client.from('rules').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    const { error: delRules } = await client.from('rules').delete().eq('household_id', householdId)
     if (delRules) throw delRules
 
-    const { error: delAccounts } = await client.from('accounts').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    const { error: delAccounts } = await client.from('accounts').delete().eq('household_id', householdId)
     if (delAccounts) throw delAccounts
 
-    const { error: delCategories } = await client.from('categories').delete().eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    const { error: delCategories } = await client.from('categories').delete().eq('household_id', householdId)
     if (delCategories) throw delCategories
 
     // Re-insert in FK-safe order
@@ -692,7 +691,7 @@ const makeSupabaseRepo = (): Repository => ({
     const { data, error } = await client
       .from('household_settings')
       .update(updates)
-      .eq('id', DEFAULT_HOUSEHOLD_ID)
+      .eq('id', householdId)
       .select('*')
       .single()
 
@@ -710,7 +709,7 @@ const makeSupabaseRepo = (): Repository => ({
     const { data, error } = await client
       .from('household_settings')
       .update(updates)
-      .eq('id', DEFAULT_HOUSEHOLD_ID)
+      .eq('id', householdId)
       .select('*')
       .single()
 
@@ -735,7 +734,7 @@ const makeSupabaseRepo = (): Repository => ({
         const kind = amount >= 0 ? 'expense' : 'income'
         const entry: FinanceEntry = {
           id: makeId('entry'),
-          householdId: DEFAULT_HOUSEHOLD_ID,
+          householdId,
           ruleId: null,
           accountId,
           categoryId: null,
@@ -774,7 +773,7 @@ const makeSupabaseRepo = (): Repository => ({
     if (upserts.length > 0) {
       const payload = upserts.map(r => mapRuleToRow({
         id:           r.id ?? makeId('rule'),
-        householdId:  DEFAULT_HOUSEHOLD_ID,
+        householdId,
         title:        r.title        ?? 'Nova regra',
         description:  r.description  ?? '',
         accountId:    r.accountId    ?? null,
@@ -791,7 +790,7 @@ const makeSupabaseRepo = (): Repository => ({
       const { error } = await client.from('rules').upsert(payload)
       if (error) throw error
     }
-    const { data, error } = await client.from('rules').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    const { data, error } = await client.from('rules').select('*').eq('household_id', householdId)
     if (error) throw error
     return (data ?? []).map(mapRuleFromRow)
   },
@@ -805,7 +804,7 @@ const makeSupabaseRepo = (): Repository => ({
     if (upserts.length > 0) {
       const payload = upserts.map(a => mapAccountToRow({
         id:          a.id          ?? makeId('account'),
-        householdId: DEFAULT_HOUSEHOLD_ID,
+        householdId,
         name:        a.name        ?? 'Nova conta',
         owner:       a.owner       ?? '',
         type:        a.type        ?? 'bank',
@@ -817,14 +816,14 @@ const makeSupabaseRepo = (): Repository => ({
       const { error } = await client.from('accounts').upsert(payload)
       if (error) throw error
     }
-    const { data, error } = await client.from('accounts').select('*').eq('household_id', DEFAULT_HOUSEHOLD_ID)
+    const { data, error } = await client.from('accounts').select('*').eq('household_id', householdId)
     if (error) throw error
     return (data ?? []).map(mapAccountFromRow)
   }
 })
 
-export const getRepository = (): Repository => {
+export const getRepository = (householdId: string = DEFAULT_HOUSEHOLD_ID): Repository => {
   const config = useRuntimeConfig()
   const hasSupabase = Boolean(config.supabaseUrl) && Boolean(config.supabaseServiceKey)
-  return hasSupabase ? makeSupabaseRepo() : makeMemoryRepo()
+  return hasSupabase ? makeSupabaseRepo(householdId) : makeMemoryRepo()
 }

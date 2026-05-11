@@ -20,14 +20,14 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  await assertEditKey(event)
+  const { householdId } = await assertEditKey(event)
   const body = await readBody(event)
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid theme payload' })
   }
 
-  const repo = getRepository()
+  const repo = getRepository(householdId)
   const settings = await repo.saveTheme(parsed.data)
   return { settings }
 })

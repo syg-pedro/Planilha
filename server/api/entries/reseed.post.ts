@@ -3,8 +3,8 @@ import { assertEditKey } from '../../utils/auth'
 import { getRepository } from '../../utils/repo'
 
 export default defineEventHandler(async (event) => {
-  await assertEditKey(event)
-  const repo = getRepository()
+  const { householdId } = await assertEditKey(event)
+  const repo = getRepository(householdId)
   try {
     const count = await repo.reseedEntries()
     return { count }

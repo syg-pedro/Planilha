@@ -215,11 +215,94 @@
       </div>
     </div>
 
+    <!-- Compartilhamento / Household -->
+    <div v-if="isSupabaseConfigured" class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">Compartilhamento</h3>
+        <p class="panel-sub">Gerencie quem tem acesso aos seus dados financeiros</p>
+      </div>
+      <div class="panel-body" style="display:flex;flex-direction:column;gap:14px">
+
+        <!-- Membros atuais -->
+        <div v-if="householdLoading" style="font-size:13px;color:var(--text3)">Carregando membros...</div>
+        <div v-else-if="members.length > 0">
+          <p style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">Membros</p>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div
+              v-for="m in members"
+              :key="m.userId"
+              style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border)"
+            >
+              <div style="width:30px;height:30px;border-radius:50%;background:var(--primary-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <span style="font-size:12px;font-weight:700;color:var(--primary)">{{ m.email[0]?.toUpperCase() }}</span>
+              </div>
+              <div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.email }}</p>
+                <p style="font-size:11px;color:var(--text3)">{{ m.role === 'owner' ? 'Proprietário' : 'Membro' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Convites pendentes -->
+        <div v-if="pendingInvites.length > 0">
+          <p style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">Convites pendentes</p>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div
+              v-for="inv in pendingInvites"
+              :key="inv.id"
+              style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:color-mix(in srgb,var(--warning) 8%,transparent);border-radius:var(--radius-sm);border:1px solid color-mix(in srgb,var(--warning) 25%,transparent)"
+            >
+              <div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:600;color:var(--text)">{{ inv.email }}</p>
+                <p style="font-size:11px;color:var(--text3)">Expira {{ fmtDate(inv.expiresAt) }}</p>
+              </div>
+              <span style="font-size:10px;font-weight:700;color:var(--warning);background:color-mix(in srgb,var(--warning) 15%,transparent);padding:2px 7px;border-radius:99px">Aguardando</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulário de convite -->
+        <div>
+          <p style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">Convidar por e-mail</p>
+          <div style="display:flex;gap:8px">
+            <input
+              v-model="inviteEmail"
+              type="email"
+              placeholder="email@exemplo.com"
+              style="flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-xs);padding:0 12px;height:38px;font-size:13px;color:var(--text);outline:none;font-family:inherit"
+              @keydown.enter="sendInvite"
+            />
+            <button
+              class="btn-primary"
+              style="flex-shrink:0"
+              :disabled="inviteSending || !inviteEmail"
+              @click="sendInvite"
+            >
+              {{ inviteSending ? '...' : 'Convidar' }}
+            </button>
+          </div>
+          <div v-if="inviteLink" style="margin-top:10px;padding:10px 12px;background:color-mix(in srgb,var(--success) 8%,transparent);border:1px solid color-mix(in srgb,var(--success) 25%,transparent);border-radius:var(--radius-sm)">
+            <p style="font-size:11px;font-weight:700;color:var(--success);margin-bottom:4px">Convite gerado! Compartilhe o link:</p>
+            <div style="display:flex;gap:6px;align-items:center">
+              <code style="font-size:11px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ inviteLink }}</code>
+              <button
+                style="font-size:11px;font-weight:700;color:var(--primary);background:transparent;border:none;cursor:pointer;flex-shrink:0"
+                @click="copyInviteLink"
+              >{{ linkCopied ? 'Copiado!' : 'Copiar' }}</button>
+            </div>
+          </div>
+          <p v-if="inviteError" style="font-size:12px;color:var(--danger);margin-top:6px">{{ inviteError }}</p>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { WIDGET_OPTIONS } from '#shared/constants'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import type { ThemeMode, Account } from '#shared/types'
@@ -311,6 +394,63 @@ const accountTypeLabel = (type: Account['type']) => {
   if (type === 'bank') return 'Conta bancária'
   if (type === 'credit_card') return 'Cartão de crédito'
   return 'Benefício'
+}
+
+// ─── Compartilhamento de household ───────────────────────────────────────────
+
+interface Member { userId: string; email: string; role: string; joinedAt: string }
+interface Invite  { id: string; email: string; role: string; expiresAt: string }
+
+const householdLoading = ref(false)
+const members          = ref<Member[]>([])
+const pendingInvites   = ref<Invite[]>([])
+const inviteEmail      = ref('')
+const inviteSending    = ref(false)
+const inviteLink       = ref('')
+const inviteError      = ref('')
+const linkCopied       = ref(false)
+
+const fmtDate = (d: string) => new Date(d).toLocaleDateString('pt-BR')
+
+const loadHousehold = async () => {
+  if (!isSupabaseConfigured.value) return
+  householdLoading.value = true
+  try {
+    const data = await $fetch<{ householdId: string; members: Member[]; invitations: Invite[] }>('/api/me/household')
+    members.value      = data.members
+    pendingInvites.value = data.invitations
+  } catch { /* ignore */ } finally {
+    householdLoading.value = false
+  }
+}
+
+onMounted(loadHousehold)
+
+const sendInvite = async () => {
+  if (!inviteEmail.value || inviteSending.value) return
+  inviteError.value = ''
+  inviteLink.value  = ''
+  inviteSending.value = true
+  try {
+    const res = await $fetch<{ token: string }>('/api/invitations/create', {
+      method: 'POST',
+      body: { email: inviteEmail.value }
+    })
+    const origin = window.location.origin
+    inviteLink.value = `${origin}/invite/${res.token}`
+    inviteEmail.value = ''
+    await loadHousehold()
+  } catch (err: any) {
+    inviteError.value = err?.data?.statusMessage ?? 'Erro ao criar convite.'
+  } finally {
+    inviteSending.value = false
+  }
+}
+
+const copyInviteLink = async () => {
+  await navigator.clipboard.writeText(inviteLink.value)
+  linkCopied.value = true
+  setTimeout(() => { linkCopied.value = false }, 2000)
 }
 </script>
 

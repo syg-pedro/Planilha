@@ -9,13 +9,13 @@ const schema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-  await assertEditKey(event)
+  const { householdId } = await assertEditKey(event)
   const body   = await readBody(event)
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid rules batch payload' })
   }
-  const repo  = getRepository()
+  const repo  = getRepository(householdId)
   const rules = await repo.saveRules(parsed.data.upserts as any[], parsed.data.deletes)
   return { rules }
 })
