@@ -193,18 +193,20 @@ const fmtDate = (d: string) => {
 
 const searchText = ref('')
 const kindFilter = ref('all')
-const statusFilter = ref('all')
+const statusFilter = ref('pending')
 const searchFocused = ref(false)
 const editorOpen = ref(false)
 const selectedEntry = ref<FinanceEntry | null>(null)
 
 const filteredRows = computed(() => {
-  return store.filteredEntries.filter(e => {
-    const matchText = !searchText.value || e.title.toLowerCase().includes(searchText.value.toLowerCase())
-    const matchKind = kindFilter.value === 'all' || e.kind === kindFilter.value
-    const matchStatus = statusFilter.value === 'all' || e.status === statusFilter.value
-    return matchText && matchKind && matchStatus
-  })
+  return store.filteredEntries
+    .filter(e => {
+      const matchText = !searchText.value || e.title.toLowerCase().includes(searchText.value.toLowerCase())
+      const matchKind = kindFilter.value === 'all' || e.kind === kindFilter.value
+      const matchStatus = statusFilter.value === 'all' || e.status === statusFilter.value
+      return matchText && matchKind && matchStatus
+    })
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
 })
 
 const totals = computed(() => {

@@ -20,6 +20,7 @@ export const NAV_GROUPS = [
     label: 'Controle',
     items: [
       { id: 'subscriptions', label: 'Assinaturas', icon: 'subscription' },
+      { id: 'wishlist', label: 'Lista de Desejos', icon: 'wishlist' },
     ],
   },
   {

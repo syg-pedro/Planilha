@@ -15,7 +15,10 @@ import type {
   FinanceEntry,
   FinanceRule,
   HouseholdSettings,
-  ThemeSettingsRequest
+  ThemeSettingsRequest,
+  WishItem,
+  WishPriority,
+  WishStatus
 } from '../../shared/types'
 
 interface Repository {
@@ -28,6 +31,8 @@ interface Repository {
   importCsv: (csvText: string, accountId: string | null) => Promise<{ inserted: number; warnings: string[] }>
   saveRules: (upserts: Partial<FinanceRule>[], deletes: string[]) => Promise<FinanceRule[]>
   saveAccounts: (upserts: Partial<Account>[], deletes: string[]) => Promise<Account[]>
+  getWishItems: () => Promise<WishItem[]>
+  saveWishItems: (upserts: Partial<WishItem>[], deletes: string[]) => Promise<WishItem[]>
 }
 
 interface MemoryState {
@@ -37,6 +42,7 @@ interface MemoryState {
   rules: FinanceRule[]
   entries: FinanceEntry[]
   warnings: string[]
+  wishItems: WishItem[]
 }
 
 let memoryState: MemoryState | null = null
@@ -123,7 +129,8 @@ const createMemoryState = async (): Promise<MemoryState> => {
     categories: seed.categories,
     rules: seed.rules,
     entries: seed.entries,
-    warnings: [...seed.warnings]
+    warnings: [...seed.warnings],
+    wishItems: []
   }
 }
 
@@ -177,6 +184,7 @@ const makeMemoryRepo = (): Repository => ({
           installmentTotal: patch.installmentTotal ?? null,
           status: patch.status ?? 'pending',
           origin: patch.origin ?? 'manual',
+          excludeFromCalc: patch.excludeFromCalc ?? false,
           metadata: patch.metadata ?? null,
           createdAt: now,
           updatedAt: now
@@ -279,6 +287,7 @@ const makeMemoryRepo = (): Repository => ({
         installmentTotal: null,
         status: 'pending',
         origin: 'imported',
+        excludeFromCalc: false,
         metadata: { csv: row },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -350,6 +359,42 @@ const makeMemoryRepo = (): Repository => ({
     return state.accounts
   },
 
+  async getWishItems() {
+    const state = await getMemoryState()
+    return state.wishItems
+  },
+
+  async saveWishItems(upserts, deletes) {
+    const state = await getMemoryState()
+    const index = new Map(state.wishItems.map(w => [w.id, w]))
+    for (const id of deletes) index.delete(id)
+    for (const patch of upserts) {
+      const now = new Date().toISOString()
+      const id = patch.id ?? makeId('wish')
+      const existing = index.get(id)
+      if (existing) {
+        index.set(id, { ...existing, ...patch, id, updatedAt: now })
+      } else {
+        index.set(id, {
+          id,
+          householdId: DEFAULT_HOUSEHOLD_ID,
+          name: patch.name ?? 'Item',
+          price: patch.price ?? null,
+          url: patch.url ?? null,
+          imageUrl: patch.imageUrl ?? null,
+          notes: patch.notes ?? null,
+          priority: (patch.priority ?? 'medium') as WishPriority,
+          status: (patch.status ?? 'want') as WishStatus,
+          category: patch.category ?? null,
+          createdAt: now,
+          updatedAt: now,
+        })
+      }
+    }
+    state.wishItems = [...index.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    return state.wishItems
+  },
+
 })
 
 const mapSettingToRow = (settings: HouseholdSettings) => ({
@@ -419,6 +464,7 @@ const mapEntryToRow = (entry: FinanceEntry) => ({
   installment_total: entry.installmentTotal,
   status: entry.status,
   origin: entry.origin,
+  exclude_from_calc: entry.excludeFromCalc ?? false,
   metadata: entry.metadata,
   created_at: entry.createdAt,
   updated_at: entry.updatedAt
@@ -492,9 +538,25 @@ const mapEntryFromRow = (row: Record<string, any>): FinanceEntry => ({
   installmentTotal: row.installment_total,
   status: row.status,
   origin: row.origin,
+  excludeFromCalc: row.exclude_from_calc ?? false,
   metadata: row.metadata,
   createdAt: row.created_at,
   updatedAt: row.updated_at
+})
+
+const mapWishItemFromRow = (row: Record<string, any>): WishItem => ({
+  id: row.id,
+  householdId: row.household_id,
+  name: row.name,
+  price: row.price != null ? toNumber(row.price) : null,
+  url: row.url ?? null,
+  imageUrl: row.image_url ?? null,
+  notes: row.notes ?? null,
+  priority: (row.priority ?? 'medium') as WishPriority,
+  status: (row.status ?? 'want') as WishStatus,
+  category: row.category ?? null,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
 })
 
 const ensureSupabaseSeed = async (client: SupabaseClient): Promise<void> => {
@@ -586,6 +648,7 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
           installmentTotal: entry.installmentTotal ?? null,
           status: entry.status ?? 'pending',
           origin: entry.origin ?? 'manual',
+          excludeFromCalc: entry.excludeFromCalc ?? false,
           metadata: entry.metadata ?? null,
           createdAt: entry.createdAt ?? new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -748,6 +811,7 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
           installmentTotal: null,
           status: 'pending',
           origin: 'imported',
+          excludeFromCalc: false,
           metadata: { csv: row },
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -819,7 +883,44 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
     const { data, error } = await client.from('accounts').select('*').eq('household_id', householdId)
     if (error) throw error
     return (data ?? []).map(mapAccountFromRow)
-  }
+  },
+
+  async getWishItems() {
+    const client = getSupabaseClient()
+    const { data, error } = await client.from('wish_items').select('*').eq('household_id', householdId)
+    if (error) throw error
+    return (data ?? []).map(mapWishItemFromRow)
+  },
+
+  async saveWishItems(upserts, deletes) {
+    const client = getSupabaseClient()
+    if (deletes.length > 0) {
+      const { error } = await client.from('wish_items').delete().in('id', deletes)
+      if (error) throw error
+    }
+    if (upserts.length > 0) {
+      const now = new Date().toISOString()
+      const payload = upserts.map(w => ({
+        id: w.id ?? makeId('wish'),
+        household_id: householdId,
+        name: w.name ?? 'Item',
+        price: w.price ?? null,
+        url: w.url ?? null,
+        image_url: w.imageUrl ?? null,
+        notes: w.notes ?? null,
+        priority: w.priority ?? 'medium',
+        status: w.status ?? 'want',
+        category: w.category ?? null,
+        created_at: w.createdAt ?? now,
+        updated_at: now,
+      }))
+      const { error } = await client.from('wish_items').upsert(payload)
+      if (error) throw error
+    }
+    const { data, error } = await client.from('wish_items').select('*').eq('household_id', householdId)
+    if (error) throw error
+    return (data ?? []).map(mapWishItemFromRow)
+  },
 })
 
 export const getRepository = (householdId: string = DEFAULT_HOUSEHOLD_ID): Repository => {

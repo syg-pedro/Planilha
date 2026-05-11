@@ -143,6 +143,24 @@
               </div>
             </div>
 
+            <!-- Excluir do cálculo -->
+            <label class="toggle-row">
+              <div class="toggle-content">
+                <span class="toggle-label">Excluir do cálculo</span>
+                <span class="toggle-hint">Não soma ao saldo, receitas ou despesas (ex: VR, VA)</span>
+              </div>
+              <button
+                type="button"
+                class="toggle-switch"
+                :class="{ 'toggle-on': draft.excludeFromCalc }"
+                role="switch"
+                :aria-checked="draft.excludeFromCalc"
+                @click="draft.excludeFromCalc = !draft.excludeFromCalc"
+              >
+                <span class="toggle-thumb" />
+              </button>
+            </label>
+
             <!-- Observações -->
             <div class="field-group">
               <label class="field-label">Observações</label>
@@ -206,6 +224,7 @@ const draft = reactive({
   categoryId: '',
   installmentIndex: null as number | null,
   installmentTotal: null as number | null,
+  excludeFromCalc: false,
 })
 
 const isInstallment = computed(() =>
@@ -228,6 +247,7 @@ watch(
     draft.categoryId = entry.categoryId ?? ''
     draft.installmentIndex = entry.installmentIndex ?? null
     draft.installmentTotal = entry.installmentTotal ?? null
+    draft.excludeFromCalc = entry.excludeFromCalc ?? false
   },
   { immediate: true }
 )
@@ -252,6 +272,7 @@ const onSave = () => {
     categoryId: draft.categoryId || null,
     installmentIndex: draft.installmentIndex,
     installmentTotal: draft.installmentTotal,
+    excludeFromCalc: draft.excludeFromCalc,
   })
 }
 
@@ -486,6 +507,63 @@ const onDelete = () => {
 .seg-active-income {
   background: color-mix(in srgb, var(--success) 14%, transparent);
   color: var(--success);
+}
+
+/* ── Toggle excluir do cálculo ───────────────────────────── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+.toggle-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.toggle-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.toggle-hint {
+  font-size: 12px;
+  color: var(--text3);
+}
+.toggle-switch {
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border-radius: 99px;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  padding: 0;
+}
+.toggle-switch.toggle-on {
+  background: var(--primary);
+}
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+  display: block;
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+}
+.toggle-switch.toggle-on .toggle-thumb {
+  transform: translateX(20px);
 }
 
 /* ── Footer ──────────────────────────────────────────────── */

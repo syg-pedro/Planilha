@@ -15,7 +15,8 @@
       <DashboardScreen    v-if="activeScreen === 'dashboard'"    key="dashboard"    @navigate="goTo" />
       <MatrizScreen       v-else-if="activeScreen === 'planilha'"      key="planilha"     />
       <AssinaturasScreen  v-else-if="activeScreen === 'subscriptions'" key="subscriptions"/>
-      <DividasScreen      v-else-if="activeScreen === 'debts'"         key="debts"        />
+      <DividasScreen          v-else-if="activeScreen === 'debts'"    key="debts"    />
+      <ListaDeDesejosScreen v-else-if="activeScreen === 'wishlist'" key="wishlist" />
       <PlanejamentoScreen v-else-if="activeScreen === 'planning'"      key="planning"     />
       <RelatoriosScreen   v-else-if="activeScreen === 'reports'"       key="reports"      />
       <AlertasScreen      v-else-if="activeScreen === 'alerts'"        key="alerts"        @navigate="goTo" />
@@ -39,7 +40,8 @@ import PlanejamentoScreen  from '~/features/finance/components/screens/Planejame
 import RelatoriosScreen    from '~/features/finance/components/screens/RelatoriosScreen.vue'
 import AlertasScreen       from '~/features/finance/components/screens/AlertasScreen.vue'
 import DesignSystemScreen  from '~/features/finance/components/screens/DesignSystemScreen.vue'
-import ConfiguracoesScreen from '~/features/finance/components/screens/ConfiguracoesScreen.vue'
+import ConfiguracoesScreen    from '~/features/finance/components/screens/ConfiguracoesScreen.vue'
+import ListaDeDesejosScreen  from '~/features/finance/components/screens/ListaDeDesejosScreen.vue'
 
 const store = useFinanceStore()
 const activeScreen = useState('finance-screen', () => 'dashboard')

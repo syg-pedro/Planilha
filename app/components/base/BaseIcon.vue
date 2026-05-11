@@ -56,6 +56,7 @@ const ICON_PATHS: Record<string, string> = {
   lock: 'M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2zM7 11V7a5 5 0 0110 0v4',
   user: 'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z',
   sparkle: 'M5 3l.5 2.5L8 6l-2.5.5L5 9l-.5-2.5L2 6l2.5-.5zM19 3l.5 2.5L22 6l-2.5.5L19 9l-.5-2.5L16 6l2.5-.5zM12 13l1 4 4 1-4 1-1 4-1-4-4-1 4-1z',
+  wishlist: 'M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 000-7.8z',
 }
 
 const props = withDefaults(defineProps<{

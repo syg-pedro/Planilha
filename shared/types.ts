@@ -88,6 +88,7 @@ export interface FinanceEntry {
   installmentTotal: number | null
   status: EntryStatus
   origin: EntryOrigin
+  excludeFromCalc: boolean
   metadata: Record<string, unknown> | null
   createdAt: string
   updatedAt: string
@@ -134,4 +135,22 @@ export interface ThemeSettingsRequest {
 export interface DashboardSettingsRequest {
   dashboardConfig: DashboardConfig
   periodMode: PeriodMode
+}
+
+export type WishPriority = 'high' | 'medium' | 'low'
+export type WishStatus = 'want' | 'saving' | 'bought'
+
+export interface WishItem {
+  id: string
+  householdId: string
+  name: string
+  price: number | null
+  url: string | null
+  imageUrl: string | null
+  notes: string | null
+  priority: WishPriority
+  status: WishStatus
+  category: string | null
+  createdAt: string
+  updatedAt: string
 }

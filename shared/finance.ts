@@ -25,7 +25,7 @@ export const applyFilters = (entries: FinanceEntry[], filters: DashboardFilters)
 
 export const excludeBenefitEntries = (entries: FinanceEntry[], accounts: Account[]): FinanceEntry[] => {
   const benefitIds = new Set(accounts.filter(a => a.type === 'benefit').map(a => a.id))
-  return entries.filter(e => !e.accountId || !benefitIds.has(e.accountId))
+  return entries.filter(e => !e.excludeFromCalc && (!e.accountId || !benefitIds.has(e.accountId)))
 }
 
 export const computeKpis = (entries: FinanceEntry[], accounts: Account[]): FinanceKpis => {
