@@ -1,6 +1,6 @@
 import { createError, getHeader, getQuery, type H3Event } from 'h3'
 import { createClient } from '@supabase/supabase-js'
-import { DEFAULT_HOUSEHOLD_ID } from '../../shared/constants'
+import { DEFAULT_COLORS, DEFAULT_DASHBOARD_CONFIG, DEFAULT_HOUSEHOLD_ID } from '../../shared/constants'
 import { createSupabaseServerClient } from './supabase/server'
 
 export const extractEditKey = (event: H3Event): string | null => {
@@ -47,8 +47,8 @@ export const assertEditKey = async (event: H3Event): Promise<{ householdId: stri
           period_mode: 'due_date',
           horizon_months: 18,
           notification_days: [3, 1],
-          color_tokens: {},
-          dashboard_config: {},
+          color_tokens: DEFAULT_COLORS,
+          dashboard_config: DEFAULT_DASHBOARD_CONFIG,
           updated_at: new Date().toISOString()
         })
         await serviceClient.from('household_members').insert({

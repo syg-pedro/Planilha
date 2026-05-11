@@ -348,7 +348,7 @@ const THEMES = [
 
 const WIDGETS = WIDGET_OPTIONS
 
-const isWidgetOn = (id: string) => store.settings.dashboardConfig.visibleWidgets.includes(id)
+const isWidgetOn = (id: string) => (store.settings.dashboardConfig.visibleWidgets ?? []).includes(id)
 
 const onThemeModeChange = async (value: string) => {
   if (value === 'light' || value === 'dark' || value === 'eva' || value === 'system') {

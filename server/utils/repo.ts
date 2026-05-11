@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { DEFAULT_HOUSEHOLD_ID } from '../../shared/constants'
+import { DEFAULT_COLORS, DEFAULT_DASHBOARD_CONFIG, DEFAULT_HOUSEHOLD_ID } from '../../shared/constants'
 import { DEFAULT_DADOS_TEXT } from '../../shared/defaultDadosText'
 import { computeKpis } from '../../shared/finance'
 import { parseDadosText } from '../../shared/parser'
@@ -434,8 +434,8 @@ const mapSettingFromRow = (row: Record<string, any>): HouseholdSettings => ({
   periodMode: row.period_mode,
   horizonMonths: row.horizon_months,
   notificationDays: row.notification_days ?? [3, 1],
-  colorTokens: row.color_tokens,
-  dashboardConfig: row.dashboard_config,
+  colorTokens: { ...DEFAULT_COLORS, ...(row.color_tokens ?? {}) },
+  dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG, ...(row.dashboard_config ?? {}) },
   updatedAt: row.updated_at
 })
 
