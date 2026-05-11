@@ -5,8 +5,8 @@
       <polyline :points="ptsStr" fill="none" :stroke="color" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
       <circle
         v-if="pts.length"
-        :cx="pts[pts.length - 1][0]"
-        :cy="pts[pts.length - 1][1]"
+        :cx="pts[pts.length - 1]![0]"
+        :cy="pts[pts.length - 1]![1]"
         r="4"
         :fill="color"
         stroke="var(--surface)"
@@ -59,8 +59,9 @@ const ptsStr = computed(() => pts.value.map(([x, y]) => `${x},${y}`).join(' '))
 
 const fillPath = computed(() => {
   if (!pts.value.length) return ''
-  const [[x0, y0], ...rest] = pts.value
+  const first = pts.value[0]!
+  const rest  = pts.value.slice(1)
   const pathPts = rest.map(([x, y]) => `${x},${y}`).join(' ')
-  return `M ${x0},${y0} ${pathPts} L ${w.value},${props.height} L 0,${props.height} Z`
+  return `M ${first[0]},${first[1]} ${pathPts} L ${w.value},${props.height} L 0,${props.height} Z`
 })
 </script>

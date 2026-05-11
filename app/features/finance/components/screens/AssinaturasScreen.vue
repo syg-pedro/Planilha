@@ -83,7 +83,7 @@
     </div>
 
     <!-- Modal -->
-    <BaseModal v-model="showModal" :title="editingRule ? 'Editar assinatura' : 'Nova assinatura'">
+    <BaseModal :open="showModal" :title="editingRule ? 'Editar assinatura' : 'Nova assinatura'" @close="showModal = false">
       <div style="display: flex; flex-direction: column; gap: 14px">
         <div>
           <label style="font-size: 12px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 5px">Nome do serviço</label>
