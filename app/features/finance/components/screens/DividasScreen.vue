@@ -116,7 +116,7 @@
               color: entry.status === 'paid' ? 'var(--success)' : isOverdue(entry.dueDate) ? 'var(--danger)' : 'var(--warning)'
             }"
           >
-            {{ entry.status === 'paid' ? 'Pago' : isOverdue(entry.dueDate) ? 'Vencida' : 'Pendente' }}
+            {{ entry.status === 'paid' ? (entry.kind === 'income' ? 'Recebido' : 'Pago') : isOverdue(entry.dueDate) ? 'Vencida' : 'Pendente' }}
           </span>
 
           <!-- Ações -->
@@ -129,7 +129,7 @@
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              Pagar
+              {{ entry.kind === 'income' ? 'Receber' : 'Pagar' }}
             </button>
             <button
               class="action-btn action-edit"

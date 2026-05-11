@@ -83,7 +83,7 @@
                 <label class="field-label">Status</label>
                 <select v-model="draft.status" class="field-select">
                   <option value="pending">Pendente</option>
-                  <option value="paid">Pago</option>
+                  <option value="paid">{{ draft.kind === 'income' ? 'Recebido' : 'Pago' }}</option>
                   <option value="review">Revisar</option>
                 </select>
               </div>

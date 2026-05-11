@@ -138,18 +138,18 @@
                 @click="openEdit(e)"
               >{{ fmt(e.amount) }}</td>
               <td style="padding:10px 12px" @click="openEdit(e)">
-                <span :style="badgeStyle(e.status)">{{ badgeLabel(e.status) }}</span>
+                <span :style="badgeStyle(e.status)">{{ badgeLabel(e.status, e.kind) }}</span>
               </td>
               <td style="padding:10px 12px">
                 <button
-                  v-if="e.status !== 'paid' && e.kind === 'expense'"
+                  v-if="e.status !== 'paid'"
                   class="action-btn"
                   @click.stop="quickPay(e.id)"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  Pagar
+                  {{ e.kind === 'income' ? 'Receber' : 'Pagar' }}
                 </button>
               </td>
             </tr>
@@ -230,7 +230,11 @@ const badgeStyle = (status: FinanceEntry['status']) => {
   return { background: s.bg, color: s.color, borderRadius: '99px', padding: '2px 10px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap' }
 }
 
-const badgeLabel = (status: FinanceEntry['status']) => ({ paid: 'Pago', pending: 'Pendente', review: 'Revisar' }[status])
+const badgeLabel = (status: FinanceEntry['status'], kind: FinanceEntry['kind']) => {
+  if (status === 'paid') return kind === 'income' ? 'Recebido' : 'Pago'
+  if (status === 'pending') return 'Pendente'
+  return 'Revisar'
+}
 
 const openNew = () => {
   const now = new Date().toISOString().slice(0, 10)
