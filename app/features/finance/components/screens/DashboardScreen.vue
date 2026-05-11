@@ -155,7 +155,7 @@ const smartAlerts = computed(() => {
 // ── Cashflow chart (last 6 months) ──────────────────────────
 const cashflowData = computed(() => {
   const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1))
-  const recent       = store.cashableEntries.filter(e => new Date(e.dueDate + 'T00:00:00Z') >= sixMonthsAgo)
+  const recent       = store.allCashableEntries.filter(e => new Date(e.dueDate + 'T00:00:00Z') >= sixMonthsAgo)
   const series       = buildCashflowSeries(recent, store.settings.periodMode)
   return series.map(s => ({
     month:   MONTH_NAMES[parseInt(s.month.slice(5)) - 1] ?? s.month.slice(5),

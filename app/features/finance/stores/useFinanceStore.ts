@@ -67,6 +67,8 @@ export const useFinanceStore = defineStore('finance', () => {
 
   const cashableEntries = computed(() => excludeBenefitEntries(filteredEntries.value, accounts.value))
 
+  const allCashableEntries = computed(() => excludeBenefitEntries(entries.value, accounts.value))
+
   const monthlyKpis = computed(() => computeKpis(filteredEntries.value, accounts.value))
 
   const categoryMap = computed(() => {
@@ -368,6 +370,7 @@ export const useFinanceStore = defineStore('finance', () => {
     chartData,
     filteredEntries,
     cashableEntries,
+    allCashableEntries,
     categoryMap,
     accountMap,
     offlineQueue,
