@@ -222,7 +222,7 @@
         >‹</button>
         <select
           v-model="selectedMonth"
-          style="appearance:none;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);padding:6px 36px 6px 16px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;text-align:center;min-width:200px;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 12px center"
+          class="month-select"
         >
           <option v-for="m in months" :key="m" :value="m">{{ formatMonthLong(m) }}</option>
         </select>
@@ -876,6 +876,22 @@ th:hover .col-menu-btn {
   background: var(--surface);
   color: var(--primary);
 }
+
+/* ── Month selector (Lista view) ────────────────── */
+.month-select {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  color: var(--text);
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+  min-width: 200px;
+}
+.month-select:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ── Row delete button ───────────────────────────── */
 .row-del-btn {
