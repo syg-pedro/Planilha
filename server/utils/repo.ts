@@ -208,11 +208,20 @@ const makeMemoryRepo = (): Repository => ({
 
   async rebuildRules() {
     const state = await getMemoryState()
-    state.entries = state.entries.filter((entry) => !(entry.origin === 'auto' && entry.metadata?.generatedFromRule))
+    const autoEntries = state.entries.filter((e) => e.origin === 'auto' && e.metadata?.generatedFromRule)
+    const preservedStatus = new Map<string, FinanceEntry['status']>()
+    for (const e of autoEntries) {
+      if (e.ruleId) preservedStatus.set(`${e.ruleId}__${e.dueDate}`, e.status)
+    }
+    state.entries = state.entries.filter((e) => !(e.origin === 'auto' && e.metadata?.generatedFromRule))
     const generated = buildEntriesFromRules(state.rules, DEFAULT_HOUSEHOLD_ID, state.settings.horizonMonths)
-    state.entries.push(...generated)
+    const withPreservedStatus = generated.map(e => ({
+      ...e,
+      status: preservedStatus.get(`${e.ruleId}__${e.dueDate}`) ?? e.status
+    }))
+    state.entries.push(...withPreservedStatus)
     state.entries.sort((a, b) => a.dueDate.localeCompare(b.dueDate))
-    return generated.length
+    return withPreservedStatus.length
   },
 
   async reseedEntries() {
@@ -676,9 +685,28 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
     const { data: rulesRows, error: rulesError } = await client.from('rules').select('*').eq('household_id', householdId)
     if (rulesError) throw rulesError
 
+    // Preserve status the user already set (e.g. salary marked as received)
+    const { data: existingAuto } = await client
+      .from('entries')
+      .select('rule_id, due_date, status')
+      .eq('household_id', householdId)
+      .eq('origin', 'auto')
+
+    const preservedStatus = new Map<string, string>()
+    for (const row of existingAuto ?? []) {
+      if (row.rule_id && row.due_date) {
+        preservedStatus.set(`${row.rule_id}__${row.due_date}`, row.status)
+      }
+    }
+
     const settings = mapSettingFromRow(settingsRows)
     const rules = (rulesRows ?? []).map(mapRuleFromRow)
     const generated = buildEntriesFromRules(rules, householdId, settings.horizonMonths)
+
+    const withPreservedStatus = generated.map(e => ({
+      ...e,
+      status: (preservedStatus.get(`${e.ruleId}__${e.dueDate}`) ?? e.status) as FinanceEntry['status']
+    }))
 
     const { error: deleteError } = await client
       .from('entries')
@@ -687,12 +715,12 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
       .eq('origin', 'auto')
     if (deleteError) throw deleteError
 
-    if (generated.length > 0) {
-      const { error: insertError } = await client.from('entries').insert(generated.map(mapEntryToRow))
+    if (withPreservedStatus.length > 0) {
+      const { error: insertError } = await client.from('entries').insert(withPreservedStatus.map(mapEntryToRow))
       if (insertError) throw insertError
     }
 
-    return generated.length
+    return withPreservedStatus.length
   },
 
   async reseedEntries() {

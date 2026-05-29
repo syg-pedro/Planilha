@@ -59,8 +59,22 @@
               v-for="(month, idx) in months"
               :key="month"
               :style="{ borderBottom: '1px solid var(--border)', background: idx % 2 === 0 ? 'transparent' : 'var(--surface2)' }"
+              @mouseenter="hoverMonth = month"
+              @mouseleave="hoverMonth = null"
             >
-              <td :style="stickyCell(idx % 2 === 0)">{{ formatMonth(month) }}</td>
+              <td :style="stickyCell(idx % 2 === 0)">
+                <div style="display:flex;align-items:center;gap:4px;justify-content:space-between">
+                  <span>{{ formatMonth(month) }}</span>
+                  <button
+                    class="row-del-btn"
+                    :style="{ opacity: hoverMonth === month ? '1' : '0' }"
+                    title="Excluir mês"
+                    @click.stop="openDeleteRow(month)"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  </button>
+                </div>
+              </td>
               <td
                 v-for="col in expenseColumns"
                 :key="col"
@@ -134,8 +148,22 @@
               v-for="(month, idx) in months"
               :key="month"
               :style="{ borderBottom: '1px solid var(--border)', background: idx % 2 === 0 ? 'transparent' : 'var(--surface2)' }"
+              @mouseenter="hoverMonth = month"
+              @mouseleave="hoverMonth = null"
             >
-              <td :style="stickyCell(idx % 2 === 0)">{{ formatMonth(month) }}</td>
+              <td :style="stickyCell(idx % 2 === 0)">
+                <div style="display:flex;align-items:center;gap:4px;justify-content:space-between">
+                  <span>{{ formatMonth(month) }}</span>
+                  <button
+                    class="row-del-btn"
+                    :style="{ opacity: hoverMonth === month ? '1' : '0' }"
+                    title="Excluir mês"
+                    @click.stop="openDeleteRow(month)"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  </button>
+                </div>
+              </td>
               <td
                 v-for="col in incomeColumns"
                 :key="col"
@@ -183,7 +211,30 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!-- LISTA VIEW                                                     -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
-    <FinanceEntryGrid v-else />
+    <template v-else>
+      <!-- Seletor de mês -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <button
+          :disabled="selectedMonthIndex === 0"
+          style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-size:16px;color:var(--text);transition:all .15s"
+          :style="selectedMonthIndex === 0 ? { opacity: '0.35', cursor: 'default' } : {}"
+          @click="prevMonth"
+        >‹</button>
+        <select
+          v-model="selectedMonth"
+          style="appearance:none;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);padding:6px 36px 6px 16px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;text-align:center;min-width:200px;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 12px center"
+        >
+          <option v-for="m in months" :key="m" :value="m">{{ formatMonthLong(m) }}</option>
+        </select>
+        <button
+          :disabled="selectedMonthIndex === months.length - 1"
+          style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-size:16px;color:var(--text);transition:all .15s"
+          :style="selectedMonthIndex === months.length - 1 ? { opacity: '0.35', cursor: 'default' } : {}"
+          @click="nextMonth"
+        >›</button>
+      </div>
+      <FinanceEntryGrid :month="selectedMonth" />
+    </template>
 
     <!-- ── Tooltip ──────────────────────────────────────────────────── -->
     <Teleport to="body">
@@ -238,7 +289,7 @@
       </Transition>
     </Teleport>
 
-    <!-- ── Modal: Confirmar exclusão ────────────────────────────────── -->
+    <!-- ── Modal: Confirmar exclusão de coluna ──────────────────────── -->
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="deleteState.open" class="modal-overlay" @click.self="deleteState.open = false">
@@ -251,6 +302,25 @@
             <div class="modal-footer">
               <button class="btn-cancel" @click="deleteState.open = false">Cancelar</button>
               <button class="btn-delete" @click="confirmDelete">Excluir</button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ── Modal: Confirmar exclusão de linha (mês) ───────────────── -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="deleteRowState.open" class="modal-overlay" @click.self="deleteRowState.open = false">
+          <div class="modal-box" @click.stop>
+            <h3 class="modal-title">Excluir mês</h3>
+            <p class="modal-sub">
+              Isso excluirá <strong>todos os {{ deleteRowState.count }} lançamento(s)</strong> de
+              <strong>{{ formatMonthLong(deleteRowState.month) }}</strong>. Esta ação não pode ser desfeita.
+            </p>
+            <div class="modal-footer">
+              <button class="btn-cancel" @click="deleteRowState.open = false">Cancelar</button>
+              <button class="btn-delete" @click="confirmDeleteRow">Excluir</button>
             </div>
           </div>
         </div>
@@ -329,6 +399,13 @@ const formatMonth = (key: string) => {
   const m = parts[1] ?? '01'
   return `${MONTH_ABBR[parseInt(m) - 1] ?? m}/${y.slice(2)}`
 }
+const formatMonthLong = (key: string) => {
+  const parts = key.split('-')
+  const y = parts[0] ?? '2025'
+  const m = parseInt(parts[1] ?? '1') - 1
+  const NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
+  return `${NAMES[m] ?? ''} de ${y}`
+}
 const truncate = (s: string, n = 14) => s.length > n ? s.slice(0, n - 1) + '…' : s
 
 // ─── computed columns & months ───────────────────────────────────────────────
@@ -338,6 +415,26 @@ const months = computed(() => {
   for (const e of store.entries) set.add(e.dueDate.slice(0, 7))
   return [...set].sort()
 })
+
+// ─── seletor de mês (usado na aba Lista) ────────────────────────────────────
+
+const currentMonthKey = new Date().toISOString().slice(0, 7)
+const selectedMonth = ref(currentMonthKey)
+
+const selectedMonthIndex = computed(() => {
+  const idx = months.value.indexOf(selectedMonth.value)
+  return idx >= 0 ? idx : 0
+})
+
+const prevMonth = () => {
+  const idx = selectedMonthIndex.value
+  if (idx > 0) selectedMonth.value = months.value[idx - 1]!
+}
+
+const nextMonth = () => {
+  const idx = selectedMonthIndex.value
+  if (idx < months.value.length - 1) selectedMonth.value = months.value[idx + 1]!
+}
 
 const expenseColumns = computed(() => buildColumns('expense'))
 const incomeColumns  = computed(() => buildColumns('income'))
@@ -515,6 +612,22 @@ const confirmRename = async () => {
   const entries = store.entries.filter(e => e.kind === kind && e.title === oldTitle)
   await store.saveEntriesBatch({ upserts: entries.map(e => ({ ...e, title: trimmed })), deletes: [] })
   renameState.value.open = false
+}
+
+// ─── delete row (month) ───────────────────────────────────────────────────────
+
+const hoverMonth = ref<string | null>(null)
+const deleteRowState = ref({ open: false, month: '', count: 0 })
+
+const openDeleteRow = (month: string) => {
+  const count = store.entries.filter(e => e.dueDate.startsWith(month)).length
+  deleteRowState.value = { open: true, month, count }
+}
+
+const confirmDeleteRow = async () => {
+  const ids = store.entries.filter(e => e.dueDate.startsWith(deleteRowState.value.month)).map(e => e.id)
+  await store.saveEntriesBatch({ upserts: [], deletes: ids })
+  deleteRowState.value.open = false
 }
 
 // ─── delete column ────────────────────────────────────────────────────────────
@@ -763,6 +876,24 @@ th:hover .col-menu-btn {
   background: var(--surface);
   color: var(--primary);
 }
+
+/* ── Row delete button ───────────────────────────── */
+.row-del-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.12s, background 0.12s;
+}
+.row-del-btn:hover { background: var(--danger-light); }
 
 /* ── Add column button ───────────────────────────── */
 .add-col-btn {

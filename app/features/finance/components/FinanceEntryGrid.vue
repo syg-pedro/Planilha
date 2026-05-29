@@ -182,6 +182,8 @@ import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import FinanceEntryEditorModal from '~/features/finance/components/FinanceEntryEditorModal.vue'
 import type { FinanceEntry } from '#shared/types'
 
+const props = withDefaults(defineProps<{ month?: string }>(), { month: '' })
+
 const store = useFinanceStore()
 const currency = useCurrency()
 
@@ -198,8 +200,12 @@ const searchFocused = ref(false)
 const editorOpen = ref(false)
 const selectedEntry = ref<FinanceEntry | null>(null)
 
+const baseEntries = computed(() =>
+  props.month ? store.entries.filter(e => e.dueDate.startsWith(props.month)) : store.filteredEntries
+)
+
 const filteredRows = computed(() => {
-  return store.filteredEntries
+  return baseEntries.value
     .filter(e => {
       const matchText = !searchText.value || e.title.toLowerCase().includes(searchText.value.toLowerCase())
       const matchKind = kindFilter.value === 'all' || e.kind === kindFilter.value
