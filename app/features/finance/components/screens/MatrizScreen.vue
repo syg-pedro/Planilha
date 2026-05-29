@@ -1,5 +1,5 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 16px" @click="closeColMenu">
+  <div style="display: flex; flex-direction: column; gap: 10px" @click="closeColMenu">
 
     <!-- Toolbar -->
     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between">

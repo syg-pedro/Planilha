@@ -276,8 +276,8 @@
       <main
         :style="{
           flex: 1,
-          padding: isMobile ? '16px 12px 80px' : '24px',
-          maxWidth: '1280px',
+          padding: isMobile ? '16px 12px 80px' : activeScreen === 'planilha' ? '12px 16px' : '24px',
+          maxWidth: activeScreen === 'planilha' ? 'none' : '1280px',
           width: '100%',
           margin: '0 auto',
           animation: 'fadeIn .18s ease',
