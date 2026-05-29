@@ -34,3 +34,4 @@ scripts/restore.sql
 scripts/demo-restore.sql
 docs/
 .claude/settings.local.json
+.claude/settings.local.json
