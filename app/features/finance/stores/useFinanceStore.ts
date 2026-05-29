@@ -99,10 +99,10 @@ export const useFinanceStore = defineStore('finance', () => {
     path: string,
     options: { method?: 'GET' | 'POST'; body?: any } = {}
   ): Promise<T> => {
-    const queryKey = encodeURIComponent(editKey.value)
-    const response = await $fetch(`${path}${path.includes('?') ? '&' : '?'}key=${queryKey}`, {
+    const response = await $fetch(path, {
       method: options.method ?? 'GET',
-      body: options.body
+      body: options.body,
+      headers: { 'x-edit-key': editKey.value }
     })
     return response as T
   }
@@ -345,6 +345,20 @@ export const useFinanceStore = defineStore('finance', () => {
     }
   }
 
+  const resetState = () => {
+    settings.value    = defaultSettings()
+    accounts.value    = []
+    categories.value  = []
+    rules.value       = []
+    entries.value     = []
+    warnings.value    = []
+    kpis.value        = { totalIncome: 0, totalExpense: 0, net: 0, pendingAmount: 0, upcoming7Days: 0, cardsUsedPercent: 0 }
+    filters.value     = defaultFilters()
+    offlineQueue.value = []
+    initialized.value = false
+    error.value       = null
+  }
+
   const boot = async () => {
     initEditKey()
     loadOfflineQueue()
@@ -377,6 +391,7 @@ export const useFinanceStore = defineStore('finance', () => {
     setEditKey,
     bootstrap,
     boot,
+    resetState,
     saveEntriesBatch,
     saveAccount,
     saveRules,

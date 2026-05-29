@@ -28,3 +28,9 @@ logs
 
 .vercel
 docs/dados.txt
+
+# Dados pessoais e arquivos locais
+scripts/restore.sql
+scripts/demo-restore.sql
+docs/
+.claude/settings.local.json

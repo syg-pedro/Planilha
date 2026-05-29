@@ -6,9 +6,25 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 
 const store = useFinanceStore()
+const { user } = useAuth()
+
+// Ao trocar de conta: resetar store e recarregar dados do novo usuário
+watch(user, async (newUser, oldUser) => {
+  const changedUser = newUser?.id !== oldUser?.id
+  if (!changedUser) return
+
+  store.resetState()
+
+  if (newUser) {
+    await store.boot()
+    await store.requestNotifications()
+    store.notifyUpcoming()
+  }
+}, { immediate: false })
 
 onMounted(async () => {
   if (!store.initialized) {

@@ -64,7 +64,7 @@
               <td
                 v-for="col in expenseColumns"
                 :key="col"
-                :style="dataCell(getAmount('expense', col, month), editingKey === cellKey('expense', col, month))"
+                :style="dataCell(getAmount('expense', col, month), editingKey === cellKey('expense', col, month), getStatus('expense', col, month), 'expense')"
                 @click="startEdit('expense', col, month, $event)"
               >
                 <input
@@ -79,11 +79,18 @@
                   @click.stop
                 />
                 <template v-else>
-                  <span v-if="getAmount('expense', col, month) > 0" style="font-variant-numeric: tabular-nums">
-                    {{ fmt(getAmount('expense', col, month)) }}
-                  </span>
-                  <span v-else style="color: var(--border)">—</span>
-                  <sup v-if="getCellCount('expense', col, month) > 1" style="font-size: 8px; color: var(--text3); margin-left: 2px">×{{ getCellCount('expense', col, month) }}</sup>
+                  <div class="cell-content">
+                    <sup v-if="getCellCount('expense', col, month) > 1" class="cell-count">×{{ getCellCount('expense', col, month) }}</sup>
+                    <span v-if="getAmount('expense', col, month) > 0" style="font-variant-numeric: tabular-nums">{{ fmt(getAmount('expense', col, month)) }}</span>
+                    <span v-else style="color: var(--border)">—</span>
+                    <button
+                      v-if="getAmount('expense', col, month) > 0"
+                      class="status-dot"
+                      :class="`status-dot--${getStatus('expense', col, month) === 'paid' ? 'paid' : getStatus('expense', col, month) === 'mixed' ? 'mixed' : 'pending-expense'}`"
+                      :title="getStatus('expense', col, month) === 'paid' ? 'Pago — clique para marcar como não pago' : 'Não pago — clique para marcar como pago'"
+                      @click.stop="toggleStatus('expense', col, month)"
+                    />
+                  </div>
                 </template>
               </td>
               <td :style="somaCell('expense', month)">
@@ -132,7 +139,7 @@
               <td
                 v-for="col in incomeColumns"
                 :key="col"
-                :style="dataCell(getAmount('income', col, month), editingKey === cellKey('income', col, month))"
+                :style="dataCell(getAmount('income', col, month), editingKey === cellKey('income', col, month), getStatus('income', col, month), 'income')"
                 @click="startEdit('income', col, month, $event)"
               >
                 <input
@@ -147,11 +154,18 @@
                   @click.stop
                 />
                 <template v-else>
-                  <span v-if="getAmount('income', col, month) > 0" style="font-variant-numeric: tabular-nums">
-                    {{ fmt(getAmount('income', col, month)) }}
-                  </span>
-                  <span v-else style="color: var(--border)">—</span>
-                  <sup v-if="getCellCount('income', col, month) > 1" style="font-size: 8px; color: var(--text3); margin-left: 2px">×{{ getCellCount('income', col, month) }}</sup>
+                  <div class="cell-content">
+                    <sup v-if="getCellCount('income', col, month) > 1" class="cell-count">×{{ getCellCount('income', col, month) }}</sup>
+                    <span v-if="getAmount('income', col, month) > 0" style="font-variant-numeric: tabular-nums">{{ fmt(getAmount('income', col, month)) }}</span>
+                    <span v-else style="color: var(--border)">—</span>
+                    <button
+                      v-if="getAmount('income', col, month) > 0"
+                      class="status-dot"
+                      :class="`status-dot--${getStatus('income', col, month) === 'paid' ? 'received' : getStatus('income', col, month) === 'mixed' ? 'mixed' : 'pending-income'}`"
+                      :title="getStatus('income', col, month) === 'paid' ? 'Recebido — clique para marcar como pendente' : 'Pendente — clique para marcar como recebido'"
+                      @click.stop="toggleStatus('income', col, month)"
+                    />
+                  </div>
                 </template>
               </td>
               <td :style="somaCell('income', month)">{{ monthIncomeTotal(month) > 0 ? fmt(monthIncomeTotal(month)) : '—' }}</td>
@@ -299,7 +313,7 @@
 import { computed, ref, nextTick } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import FinanceEntryGrid from '~/features/finance/components/FinanceEntryGrid.vue'
-import type { EntryKind, FinanceEntry } from '#shared/types'
+import type { EntryKind, EntryStatus, FinanceEntry } from '#shared/types'
 
 const store    = useFinanceStore()
 const currency = useCurrency()
@@ -357,6 +371,33 @@ const cellKey         = (kind: string, title: string, month: string) => `${kind}
 const getAmount       = (kind: string, title: string, month: string) => amountMap.value.map.get(cellKey(kind, title, month)) ?? 0
 const getCellCount    = (kind: string, title: string, month: string) => amountMap.value.cnt.get(cellKey(kind, title, month)) ?? 0
 const getCellEntries  = (kind: string, title: string, month: string) => amountMap.value.ents.get(cellKey(kind, title, month)) ?? []
+
+// ─── status por célula ───────────────────────────────────────────────────────
+
+const statusMap = computed(() => {
+  const map = new Map<string, 'paid' | 'pending' | 'mixed'>()
+  for (const e of store.entries) {
+    const k = cellKey(e.kind, e.title, e.dueDate.slice(0, 7))
+    const existing = map.get(k)
+    const st = e.status === 'paid' ? 'paid' : 'pending'
+    if (!existing) { map.set(k, st) }
+    else if (existing !== st) { map.set(k, 'mixed') }
+  }
+  return map
+})
+
+const getStatus = (kind: string, title: string, month: string): 'paid' | 'pending' | 'mixed' | null => {
+  if (getAmount(kind, title, month) === 0) return null
+  return statusMap.value.get(cellKey(kind, title, month)) ?? null
+}
+
+const toggleStatus = async (kind: string, title: string, month: string) => {
+  const entries = getCellEntries(kind, title, month)
+  if (!entries.length) return
+  const current = getStatus(kind, title, month)
+  const next: EntryStatus = current === 'paid' ? 'pending' : 'paid'
+  await store.saveEntriesBatch({ upserts: entries.map(e => ({ ...e, status: next })), deletes: [] })
+}
 
 const monthExpenseTotal = (month: string) => expenseColumns.value.reduce((s, c) => s + getAmount('expense', c, month), 0)
 const monthIncomeTotal  = (month: string) => incomeColumns.value.reduce((s, c)  => s + getAmount('income',  c, month), 0)
@@ -587,15 +628,26 @@ const stickyCell = (even: boolean) => ({
   padding: '6px 12px',
 })
 
-const dataCell = (amount: number, isEditing: boolean) => ({
+const statusBg = (status: 'paid' | 'pending' | 'mixed' | null, kind: 'expense' | 'income') => {
+  if (!status) return 'transparent'
+  if (status === 'paid') return 'color-mix(in srgb, var(--success) 8%, transparent)'
+  if (status === 'mixed') return 'color-mix(in srgb, var(--warning) 8%, transparent)'
+  return kind === 'income'
+    ? 'color-mix(in srgb, var(--warning) 8%, transparent)'
+    : 'color-mix(in srgb, var(--danger) 8%, transparent)'
+}
+
+const dataCell = (amount: number, isEditing: boolean, status?: 'paid' | 'pending' | 'mixed' | null, kind?: 'expense' | 'income') => ({
   ...BASE_CELL,
   cursor: 'text',
   userSelect: 'none' as const,
   minWidth: '80px',
   maxWidth: '130px',
-  padding: '5px 8px',
+  padding: '4px 6px 4px 6px',
   color: amount > 0 ? 'var(--text)' : 'var(--border)',
-  background: isEditing ? 'color-mix(in srgb, var(--primary) 8%, var(--surface))' : 'transparent',
+  background: isEditing
+    ? 'color-mix(in srgb, var(--primary) 8%, var(--surface))'
+    : (amount > 0 && status ? statusBg(status, kind ?? 'expense') : 'transparent'),
   outline: isEditing ? '2px solid var(--primary)' : 'none',
   outlineOffset: '-2px',
 })
@@ -634,6 +686,41 @@ const inputStyle = () => ({
 </script>
 
 <style scoped>
+/* ── Cell content layout ─────────────────────────── */
+.cell-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-height: 20px;
+}
+.cell-count {
+  font-size: 8px;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
+/* ── Status dot ──────────────────────────────────── */
+.status-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: transform .12s, opacity .12s;
+  opacity: 0.85;
+}
+.status-dot:hover { transform: scale(1.4); opacity: 1; }
+
+.status-dot--paid      { background: var(--success); }
+.status-dot--received  { background: var(--success); }
+.status-dot--pending-expense { background: var(--danger); }
+.status-dot--pending-income  { background: var(--warning); }
+.status-dot--mixed     { background: var(--warning); }
+
 /* ── Column header ───────────────────────────────── */
 .col-head {
   display: flex;
