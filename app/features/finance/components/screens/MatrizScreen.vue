@@ -350,7 +350,7 @@
                 />
               </div>
               <div>
-                <label class="modal-label">Valor inicial (mês atual, opcional)</label>
+                <label class="modal-label">{{ addState.recurrence > 1 ? 'Valor por mês (opcional)' : 'Valor inicial (mês atual, opcional)' }}</label>
                 <div style="position: relative">
                   <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 700; color: var(--text3); pointer-events: none">R$</span>
                   <input
@@ -365,6 +365,15 @@
                     @keydown.escape.prevent="addState.open = false"
                   />
                 </div>
+              </div>
+              <div>
+                <label class="modal-label">Recorrência</label>
+                <select v-model.number="addState.recurrence" class="modal-input modal-select">
+                  <option v-for="opt in RECURRENCE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                </select>
+                <p v-if="addState.recurrence > 1" style="font-size: 11px; color: var(--text3); margin-top: 5px">
+                  Cria o mesmo lançamento em {{ addState.recurrence }} meses, a partir deste. Cada mês pode ser editado depois.
+                </p>
               </div>
             </div>
             <div class="modal-footer">
@@ -653,34 +662,54 @@ const confirmDelete = async () => {
 
 const addTitleInputRef  = ref<HTMLInputElement | null>(null)
 const addAmountInputRef = ref<HTMLInputElement | null>(null)
-const addState = ref({ open: false, kind: 'expense' as EntryKind, title: '', amount: '' })
+const addState = ref({ open: false, kind: 'expense' as EntryKind, title: '', amount: '', recurrence: 1 })
+
+const RECURRENCE_OPTIONS = [
+  { value: 1,  label: 'Apenas este mês' },
+  { value: 6,  label: 'Próximos 6 meses' },
+  { value: 12, label: 'Próximos 12 meses' },
+  { value: 24, label: 'Próximos 24 meses' },
+]
 
 const openAdd = (kind: EntryKind) => {
-  addState.value = { open: true, kind, title: '', amount: '' }
+  addState.value = { open: true, kind, title: '', amount: '', recurrence: 1 }
   nextTick(() => { addTitleInputRef.value?.focus() })
 }
 
 const focusAddAmount = () => { addAmountInputRef.value?.focus() }
 
+// Avança N meses sobre uma chave 'YYYY-MM' e devolve a nova chave.
+const shiftMonthKey = (key: string, add: number): string => {
+  const [y, m] = key.split('-').map(Number)
+  const d = new Date(Date.UTC(y ?? 2025, (m ?? 1) - 1 + add, 1))
+  return d.toISOString().slice(0, 7)
+}
+
 const confirmAdd = async () => {
-  const { kind, title, amount } = addState.value
+  const { kind, title, amount, recurrence } = addState.value
   const trimmed = title.trim()
   if (!trimmed) return
 
   const amt = Math.max(0, parseFloat(amount.replace(',', '.')) || 0)
-  const currentMonth = new Date().toISOString().slice(0, 7)
+  const startMonth = new Date().toISOString().slice(0, 7)
   const householdId = store.entries[0]?.householdId ?? store.accounts[0]?.householdId ?? 'household-main'
+  const now = new Date().toISOString()
+  const months = Math.max(1, recurrence)
 
-  const newEntry: FinanceEntry = {
-    id: crypto.randomUUID(), householdId, ruleId: null, accountId: null, categoryId: null,
-    title: trimmed, description: '', amount: amt, kind,
-    dueDate: `${currentMonth}-01`, competenceDate: `${currentMonth}-01`,
-    installmentIndex: null, installmentTotal: null,
-    status: 'pending', origin: 'manual', excludeFromCalc: false, metadata: null,
-    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-  }
+  const upserts: FinanceEntry[] = Array.from({ length: months }, (_, i) => {
+    const monthKey = shiftMonthKey(startMonth, i)
+    const due = `${monthKey}-01`
+    return {
+      id: crypto.randomUUID(), householdId, ruleId: null, accountId: null, categoryId: null,
+      title: trimmed, description: '', amount: amt, kind,
+      dueDate: due, competenceDate: due,
+      installmentIndex: null, installmentTotal: null,
+      status: 'pending', origin: 'manual', excludeFromCalc: false, metadata: null,
+      createdAt: now, updatedAt: now,
+    }
+  })
 
-  await store.saveEntriesBatch({ upserts: [newEntry], deletes: [] })
+  await store.saveEntriesBatch({ upserts, deletes: [] })
   addState.value.open = false
 }
 
@@ -1018,6 +1047,13 @@ th:hover .col-menu-btn {
 .modal-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-dim);
+}
+.modal-select {
+  cursor: pointer;
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
 }
 .modal-footer {
   display: flex;
