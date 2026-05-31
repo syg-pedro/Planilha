@@ -66,12 +66,12 @@
                 <div style="display:flex;align-items:center;gap:4px;justify-content:space-between">
                   <span>{{ formatMonth(month) }}</span>
                   <button
-                    class="row-del-btn"
+                    class="row-clear-btn"
                     :style="{ opacity: hoverMonth === month ? '1' : '0' }"
-                    title="Excluir mês"
-                    @click.stop="openDeleteRow(month)"
+                    title="Apagar valores do mês"
+                    @click.stop="openClearRow(month)"
                   >
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
                   </button>
                 </div>
               </td>
@@ -155,12 +155,12 @@
                 <div style="display:flex;align-items:center;gap:4px;justify-content:space-between">
                   <span>{{ formatMonth(month) }}</span>
                   <button
-                    class="row-del-btn"
+                    class="row-clear-btn"
                     :style="{ opacity: hoverMonth === month ? '1' : '0' }"
-                    title="Excluir mês"
-                    @click.stop="openDeleteRow(month)"
+                    title="Apagar valores do mês"
+                    @click.stop="openClearRow(month)"
                   >
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
                   </button>
                 </div>
               </td>
@@ -305,19 +305,19 @@
       </Transition>
     </Teleport>
 
-    <!-- ── Modal: Confirmar exclusão de linha (mês) ───────────────── -->
+    <!-- ── Modal: Apagar valores do mês ───────────────────────────── -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="deleteRowState.open" class="modal-overlay" @click.self="deleteRowState.open = false">
+        <div v-if="clearRowState.open" class="modal-overlay" @click.self="clearRowState.open = false">
           <div class="modal-box" @click.stop>
-            <h3 class="modal-title">Excluir mês</h3>
+            <h3 class="modal-title">Apagar valores do mês</h3>
             <p class="modal-sub">
-              Isso excluirá <strong>todos os {{ deleteRowState.count }} lançamento(s)</strong> de
-              <strong>{{ formatMonthLong(deleteRowState.month) }}</strong>. Esta ação não pode ser desfeita.
+              Isso zera os <strong>{{ clearRowState.count }} valor(es)</strong> de
+              <strong>{{ formatMonthLong(clearRowState.month) }}</strong>, mantendo a linha do mês.
             </p>
             <div class="modal-footer">
-              <button class="btn-cancel" @click="deleteRowState.open = false">Cancelar</button>
-              <button class="btn-delete" @click="confirmDeleteRow">Excluir</button>
+              <button class="btn-cancel" @click="clearRowState.open = false">Cancelar</button>
+              <button class="btn-delete" :disabled="clearRowState.count === 0" @click="confirmClearRow">Apagar valores</button>
             </div>
           </div>
         </div>
@@ -627,20 +627,22 @@ const confirmRename = async () => {
   renameState.value.open = false
 }
 
-// ─── delete row (month) ───────────────────────────────────────────────────────
+// ─── clear row values (month) ─────────────────────────────────────────────────
 
 const hoverMonth = ref<string | null>(null)
-const deleteRowState = ref({ open: false, month: '', count: 0 })
+const clearRowState = ref({ open: false, month: '', count: 0 })
 
-const openDeleteRow = (month: string) => {
-  const count = store.entries.filter(e => e.dueDate.startsWith(month)).length
-  deleteRowState.value = { open: true, month, count }
+const openClearRow = (month: string) => {
+  const count = store.entries.filter(e => e.dueDate.startsWith(month) && e.amount > 0).length
+  clearRowState.value = { open: true, month, count }
 }
 
-const confirmDeleteRow = async () => {
-  const ids = store.entries.filter(e => e.dueDate.startsWith(deleteRowState.value.month)).map(e => e.id)
-  await store.saveEntriesBatch({ upserts: [], deletes: ids })
-  deleteRowState.value.open = false
+const confirmClearRow = async () => {
+  const upserts = store.entries
+    .filter(e => e.dueDate.startsWith(clearRowState.value.month) && e.amount > 0)
+    .map(e => ({ ...e, amount: 0 }))
+  if (upserts.length > 0) await store.saveEntriesBatch({ upserts, deletes: [] })
+  clearRowState.value.open = false
 }
 
 // ─── delete column ────────────────────────────────────────────────────────────
@@ -903,8 +905,8 @@ th:hover .col-menu-btn {
   color: var(--primary);
 }
 
-/* ── Row delete button ───────────────────────────── */
-.row-del-btn {
+/* ── Row clear-values button ─────────────────────── */
+.row-clear-btn {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -914,12 +916,12 @@ th:hover .col-menu-btn {
   border-radius: 4px;
   border: none;
   background: transparent;
-  color: var(--danger);
+  color: var(--text3);
   cursor: pointer;
   padding: 0;
-  transition: opacity 0.12s, background 0.12s;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
 }
-.row-del-btn:hover { background: var(--danger-light); }
+.row-clear-btn:hover { background: var(--danger-light); color: var(--danger); }
 
 /* ── Add column button ───────────────────────────── */
 .add-col-btn {
