@@ -97,7 +97,7 @@
       <!-- Bottom -->
       <div style="border-top: 1px solid var(--border); padding: 8px 6px; display: flex; flex-direction: column; gap: 2px">
         <button
-          v-for="item in [DS_ITEM, SETTINGS_ITEM]"
+          v-for="item in BOTTOM_ITEMS"
           :key="item.id"
           :title="collapsed ? item.label : ''"
           :style="{
@@ -210,7 +210,7 @@
         </nav>
         <div style="border-top: 1px solid var(--border); padding: 8px 8px">
           <button
-            v-for="item in [DS_ITEM, SETTINGS_ITEM]"
+            v-for="item in BOTTOM_ITEMS"
             :key="item.id"
             :style="{
               display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 10px',
@@ -257,6 +257,16 @@
             ↑ <span style="color: var(--success)">{{ currency.format(store.monthlyKpis.totalIncome) }}</span>
             &nbsp;↓ <span style="color: var(--danger)">{{ currency.format(store.monthlyKpis.totalExpense) }}</span>
           </span>
+          <button
+            style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
+            :style="{ background: helpMenuOpen ? 'var(--surface2)' : 'none', color: helpMenuOpen ? 'var(--primary)' : 'var(--text2)' }"
+            title="Ajuda desta tela"
+            @mouseenter="!helpMenuOpen && (($event.currentTarget as HTMLElement).style.background = 'var(--surface2)')"
+            @mouseleave="!helpMenuOpen && (($event.currentTarget as HTMLElement).style.background = 'none')"
+            @click="helpMenuOpen = !helpMenuOpen"
+          >
+            <BaseIcon name="help" :size="20" />
+          </button>
           <button
             style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
             @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
@@ -332,6 +342,41 @@
         <BaseIcon name="menu" :size="22" />Mais
       </button>
     </nav>
+
+    <!-- Popover de ajuda contextual -->
+    <Teleport to="body">
+      <div v-if="helpMenuOpen" style="position: fixed; inset: 0; z-index: 998" @click="helpMenuOpen = false" />
+      <Transition name="help-pop">
+        <div
+          v-if="helpMenuOpen"
+          class="help-pop"
+          :style="{ right: isMobile ? '10px' : '16px' }"
+        >
+          <div class="help-pop__head">
+            <BaseIcon :name="currentHelpGroup?.icon ?? 'help'" :size="15" color="var(--primary)" />
+            <span>Ajuda · {{ currentItemLabel }}</span>
+          </div>
+
+          <div v-if="currentHelpGroup" class="help-pop__list">
+            <button
+              v-for="topic in currentHelpGroup.topics"
+              :key="topic.id"
+              class="help-pop__item"
+              @click="openHelp(topic.id)"
+            >
+              <BaseIcon name="chevron_right" :size="13" color="var(--text3)" />
+              <span>{{ topic.title }}</span>
+            </button>
+          </div>
+          <p v-else class="help-pop__empty">Não há tutoriais específicos para esta tela.</p>
+
+          <button class="help-pop__all" @click="openHelp()">
+            <BaseIcon name="book" :size="14" color="var(--primary)" />
+            Ver Central de Ajuda
+          </button>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -339,7 +384,8 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import BaseIcon from '~/components/base/BaseIcon.vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import { NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, DS_ITEM } from '~/features/finance/constants/ui'
+import { NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, DS_ITEM, HELP_ITEM } from '~/features/finance/constants/ui'
+import { helpForScreen } from '~/features/finance/constants/helpContent'
 
 const store = useFinanceStore()
 const currency = useCurrency()
@@ -357,8 +403,22 @@ const now = new Date()
 const currentMonthName = MONTH_NAMES[now.getMonth()]
 const currentYear = now.getFullYear()
 
-const ALL_ITEMS = [...NAV_GROUPS.flatMap(g => g.items), SETTINGS_ITEM, DS_ITEM]
+const BOTTOM_ITEMS = [HELP_ITEM, DS_ITEM, SETTINGS_ITEM]
+const ALL_ITEMS = [...NAV_GROUPS.flatMap(g => g.items), ...BOTTOM_ITEMS]
 const currentItemLabel = computed(() => ALL_ITEMS.find(i => i.id === activeScreen.value)?.label ?? 'Dashboard')
+
+// ── Ajuda contextual ──────────────────────────────────────────────────────
+interface HelpFocus { screenId: string; topicId?: string }
+const helpFocus = useState<HelpFocus | null>('help-focus', () => null)
+const helpMenuOpen = ref(false)
+const currentHelpGroup = computed(() => helpForScreen(activeScreen.value))
+
+const openHelp = (topicId?: string) => {
+  const screenId = activeScreen.value
+  helpFocus.value = currentHelpGroup.value ? { screenId, topicId } : null
+  helpMenuOpen.value = false
+  goTo('help')
+}
 
 watch(() => store.settings.themeMode, () => {
   if (process.client) {
@@ -398,5 +458,95 @@ const toggleGroup = (id: string) => {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px) }
   to   { opacity: 1; transform: none             }
+}
+
+/* ── Popover de ajuda contextual ─────────────────────────── */
+.help-pop {
+  position: fixed;
+  top: 60px;
+  z-index: 999;
+  width: 300px;
+  max-width: calc(100vw - 20px);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px oklch(0% 0 0 / 0.25);
+  padding: 6px;
+}
+.help-pop__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.help-pop__list {
+  display: flex;
+  flex-direction: column;
+}
+.help-pop__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background .1s, color .1s;
+}
+.help-pop__item:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+.help-pop__empty {
+  padding: 10px;
+  font-size: 12.5px;
+  color: var(--text3);
+}
+.help-pop__all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 8px 8px;
+  background: transparent;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .1s;
+}
+.help-pop__all:hover {
+  background: var(--primary-dim);
+}
+
+.help-pop-enter-active,
+.help-pop-leave-active {
+  transition: opacity .15s ease, transform .15s ease;
+}
+.help-pop-enter-from,
+.help-pop-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 </style>
