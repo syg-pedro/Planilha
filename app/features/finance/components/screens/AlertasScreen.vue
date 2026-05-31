@@ -157,8 +157,8 @@ const openEditor = (entry: FinanceEntry) => {
   editorOpen.value = true
 }
 
-const saveFromEditor = async (value: Partial<FinanceEntry>) => {
-  await store.saveEntriesBatch({ upserts: [value as FinanceEntry], deletes: [] })
+const saveFromEditor = async (entries: Partial<FinanceEntry>[]) => {
+  await store.saveEntriesBatch({ upserts: entries, deletes: [] })
   closeEditor()
   selectedEntry.value = null
 }

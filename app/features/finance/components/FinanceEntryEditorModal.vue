@@ -119,6 +119,20 @@
               </div>
             </div>
 
+            <!-- Recorrência (apenas no editor da Lista) -->
+            <div v-if="allowRecurrence" class="field-group">
+              <label class="field-label">Recorrência</label>
+              <select v-model.number="draft.recurrence" class="field-select">
+                <option :value="1">Apenas este mês</option>
+                <option :value="6">Próximos 6 meses</option>
+                <option :value="12">Próximos 12 meses</option>
+                <option :value="24">Próximos 24 meses</option>
+              </select>
+              <span v-if="draft.recurrence > 1" class="toggle-hint">
+                Cria cópias deste lançamento nos próximos {{ draft.recurrence }} meses, a partir do vencimento.
+              </span>
+            </div>
+
             <!-- Parcelas (exibido apenas para lançamentos parcelados) -->
             <div v-if="isInstallment" class="field-row">
               <div class="field-group">
@@ -196,16 +210,19 @@
 import { computed, reactive, watch } from 'vue'
 import type { Account, Category, FinanceEntry } from '#shared/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   open: boolean
   entry: FinanceEntry | null
   accounts: Account[]
   categories: Category[]
-}>()
+  allowRecurrence?: boolean
+}>(), {
+  allowRecurrence: false,
+})
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'save', value: Partial<FinanceEntry>): void
+  (e: 'save', value: Partial<FinanceEntry>[]): void
   (e: 'delete', id: string): void
 }>()
 
@@ -225,7 +242,17 @@ const draft = reactive({
   installmentIndex: null as number | null,
   installmentTotal: null as number | null,
   excludeFromCalc: false,
+  recurrence: 1,
 })
+
+// Avança N meses sobre uma data ISO 'YYYY-MM-DD', preservando o dia (com clamp no fim do mês).
+const shiftIsoMonths = (iso: string, add: number): string => {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  const lastDay = new Date(Date.UTC(y, m - 1 + add + 1, 0)).getUTCDate()
+  const dt = new Date(Date.UTC(y, m - 1 + add, Math.min(d, lastDay)))
+  return dt.toISOString().slice(0, 10)
+}
 
 const isInstallment = computed(() =>
   draft.installmentIndex != null || draft.installmentTotal != null
@@ -248,6 +275,7 @@ watch(
     draft.installmentIndex = entry.installmentIndex ?? null
     draft.installmentTotal = entry.installmentTotal ?? null
     draft.excludeFromCalc = entry.excludeFromCalc ?? false
+    draft.recurrence = 1
   },
   { immediate: true }
 )
@@ -259,21 +287,41 @@ const onSave = () => {
 
   if (!draft.id || Number.isNaN(amount) || !dueDate || !competenceDate) return
 
-  emit('save', {
-    id: draft.id,
+  const kind = draft.kind === 'income' ? 'income' : 'expense'
+  const status = draft.status === 'paid' || draft.status === 'review' ? draft.status : 'pending'
+  const shared = {
     title: draft.title.trim() || 'Lançamento',
     description: draft.description,
     amount,
-    kind: draft.kind === 'income' ? 'income' : 'expense',
-    status: draft.status === 'paid' || draft.status === 'review' ? draft.status : 'pending',
-    dueDate,
-    competenceDate,
+    kind: kind as FinanceEntry['kind'],
     accountId: draft.accountId || null,
     categoryId: draft.categoryId || null,
     installmentIndex: draft.installmentIndex,
     installmentTotal: draft.installmentTotal,
     excludeFromCalc: draft.excludeFromCalc,
-  })
+  }
+
+  const months = props.allowRecurrence ? Math.max(1, draft.recurrence) : 1
+  const entries: Partial<FinanceEntry>[] = [{
+    ...shared,
+    id: draft.id,
+    status: status as FinanceEntry['status'],
+    dueDate,
+    competenceDate,
+  }]
+
+  // Cópias dos meses seguintes (somente quando há recorrência)
+  for (let i = 1; i < months; i += 1) {
+    entries.push({
+      ...shared,
+      id: crypto.randomUUID(),
+      status: 'pending',
+      dueDate: shiftIsoMonths(dueDate, i),
+      competenceDate: shiftIsoMonths(competenceDate, i),
+    })
+  }
+
+  emit('save', entries)
 }
 
 const onDelete = () => {

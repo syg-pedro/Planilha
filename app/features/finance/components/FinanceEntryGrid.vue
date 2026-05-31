@@ -169,6 +169,7 @@
       :entry="selectedEntry"
       :accounts="store.accounts"
       :categories="store.categories"
+      :allow-recurrence="true"
       @close="closeEditor"
       @save="saveFromEditor"
       @delete="deleteFromEditor"
@@ -279,8 +280,8 @@ const closeEditor = () => {
   selectedEntry.value = null
 }
 
-const saveFromEditor = async (entry: Partial<FinanceEntry>) => {
-  await store.saveEntriesBatch({ upserts: [entry], deletes: [] })
+const saveFromEditor = async (entries: Partial<FinanceEntry>[]) => {
+  await store.saveEntriesBatch({ upserts: entries, deletes: [] })
   closeEditor()
 }
 
