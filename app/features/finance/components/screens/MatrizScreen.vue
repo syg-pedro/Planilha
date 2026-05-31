@@ -220,12 +220,9 @@
           :style="selectedMonthIndex === 0 ? { opacity: '0.35', cursor: 'default' } : {}"
           @click="prevMonth"
         >‹</button>
-        <select
-          v-model="selectedMonth"
-          class="month-select"
-        >
+        <BaseDropdown v-model="selectedMonth" :height="38" style="min-width: 200px">
           <option v-for="m in months" :key="m" :value="m">{{ formatMonthLong(m) }}</option>
-        </select>
+        </BaseDropdown>
         <button
           :disabled="selectedMonthIndex === months.length - 1"
           style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-size:16px;color:var(--text);transition:all .15s"
@@ -367,12 +364,19 @@
                 </div>
               </div>
               <div>
-                <label class="modal-label">Recorrência</label>
-                <select v-model.number="addState.recurrence" class="modal-input modal-select">
-                  <option v-for="opt in RECURRENCE_OPTIONS" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                </select>
-                <p v-if="addState.recurrence > 1" style="font-size: 11px; color: var(--text3); margin-top: 5px">
-                  Cria o mesmo lançamento em {{ addState.recurrence }} meses, a partir deste. Cada mês pode ser editado depois.
+                <label class="modal-label">Recorrência (meses)</label>
+                <input
+                  v-model.number="addState.recurrence"
+                  type="number"
+                  min="1"
+                  max="120"
+                  class="modal-input"
+                  placeholder="1"
+                />
+                <p style="font-size: 11px; color: var(--text3); margin-top: 5px">
+                  {{ addState.recurrence > 1
+                    ? `Cria o lançamento em ${addState.recurrence} meses, a partir deste. Cada mês pode ser editado depois.`
+                    : '1 = apenas este mês.' }}
                 </p>
               </div>
             </div>
@@ -664,13 +668,6 @@ const addTitleInputRef  = ref<HTMLInputElement | null>(null)
 const addAmountInputRef = ref<HTMLInputElement | null>(null)
 const addState = ref({ open: false, kind: 'expense' as EntryKind, title: '', amount: '', recurrence: 1 })
 
-const RECURRENCE_OPTIONS = [
-  { value: 1,  label: 'Apenas este mês' },
-  { value: 6,  label: 'Próximos 6 meses' },
-  { value: 12, label: 'Próximos 12 meses' },
-  { value: 24, label: 'Próximos 24 meses' },
-]
-
 const openAdd = (kind: EntryKind) => {
   addState.value = { open: true, kind, title: '', amount: '', recurrence: 1 }
   nextTick(() => { addTitleInputRef.value?.focus() })
@@ -694,7 +691,7 @@ const confirmAdd = async () => {
   const startMonth = new Date().toISOString().slice(0, 7)
   const householdId = store.entries[0]?.householdId ?? store.accounts[0]?.householdId ?? 'household-main'
   const now = new Date().toISOString()
-  const months = Math.max(1, recurrence)
+  const months = Math.min(120, Math.max(1, recurrence || 1))
 
   const upserts: FinanceEntry[] = Array.from({ length: months }, (_, i) => {
     const monthKey = shiftMonthKey(startMonth, i)
@@ -906,22 +903,6 @@ th:hover .col-menu-btn {
   color: var(--primary);
 }
 
-/* ── Month selector (Lista view) ────────────────── */
-.month-select {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface2);
-  color: var(--text);
-  padding: 6px 16px;
-  font-size: 14px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  text-align: center;
-  min-width: 200px;
-}
-.month-select:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
-
 /* ── Row delete button ───────────────────────────── */
 .row-del-btn {
   flex-shrink: 0;
@@ -1047,13 +1028,6 @@ th:hover .col-menu-btn {
 .modal-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-dim);
-}
-.modal-select {
-  cursor: pointer;
-  padding-right: 36px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
 }
 .modal-footer {
   display: flex;

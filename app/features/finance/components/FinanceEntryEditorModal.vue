@@ -81,11 +81,11 @@
               </div>
               <div class="field-group">
                 <label class="field-label">Status</label>
-                <select v-model="draft.status" class="field-select">
+                <BaseDropdown v-model="draft.status" :height="48">
                   <option value="pending">Pendente</option>
                   <option value="paid">{{ draft.kind === 'income' ? 'Recebido' : 'Pago' }}</option>
                   <option value="review">Revisar</option>
-                </select>
+                </BaseDropdown>
               </div>
             </div>
 
@@ -105,31 +105,35 @@
             <div class="field-row">
               <div class="field-group">
                 <label class="field-label">Conta</label>
-                <select v-model="draft.accountId" class="field-select">
+                <BaseDropdown v-model="draft.accountId" :height="48">
                   <option value="">Sem conta</option>
                   <option v-for="acc in accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
-                </select>
+                </BaseDropdown>
               </div>
               <div class="field-group">
                 <label class="field-label">Categoria</label>
-                <select v-model="draft.categoryId" class="field-select">
+                <BaseDropdown v-model="draft.categoryId" :height="48">
                   <option value="">Sem categoria</option>
                   <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                </select>
+                </BaseDropdown>
               </div>
             </div>
 
             <!-- Recorrência (apenas no editor da Lista) -->
             <div v-if="allowRecurrence" class="field-group">
-              <label class="field-label">Recorrência</label>
-              <select v-model.number="draft.recurrence" class="field-select">
-                <option :value="1">Apenas este mês</option>
-                <option :value="6">Próximos 6 meses</option>
-                <option :value="12">Próximos 12 meses</option>
-                <option :value="24">Próximos 24 meses</option>
-              </select>
-              <span v-if="draft.recurrence > 1" class="toggle-hint">
-                Cria cópias deste lançamento nos próximos {{ draft.recurrence }} meses, a partir do vencimento.
+              <label class="field-label">Recorrência (meses)</label>
+              <input
+                v-model.number="draft.recurrence"
+                type="number"
+                min="1"
+                max="120"
+                class="field-input"
+                placeholder="1"
+              />
+              <span class="toggle-hint">
+                {{ draft.recurrence > 1
+                  ? `Cria ${draft.recurrence} lançamentos, um por mês a partir do vencimento.`
+                  : '1 = apenas este mês. Aumente para repetir nos próximos meses.' }}
               </span>
             </div>
 
@@ -301,7 +305,7 @@ const onSave = () => {
     excludeFromCalc: draft.excludeFromCalc,
   }
 
-  const months = props.allowRecurrence ? Math.max(1, draft.recurrence) : 1
+  const months = props.allowRecurrence ? Math.min(120, Math.max(1, draft.recurrence || 1)) : 1
   const entries: Partial<FinanceEntry>[] = [{
     ...shared,
     id: draft.id,

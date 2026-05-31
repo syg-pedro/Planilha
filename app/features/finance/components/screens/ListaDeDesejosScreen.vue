@@ -34,24 +34,18 @@
           placeholder="Buscar item..."
           style="background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 34px; font-size: 12px; color: var(--text); font-family: inherit; outline: none; min-width: 180px"
         />
-        <select
-          v-model="filterStatus"
-          style="background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 34px; font-size: 12px; color: var(--text); font-family: inherit; outline: none; cursor: pointer"
-        >
+        <BaseDropdown v-model="filterStatus" :height="34" style="min-width: 150px">
           <option value="">Todos</option>
           <option value="want">Quero</option>
           <option value="saving">Guardando</option>
           <option value="bought">Comprado</option>
-        </select>
-        <select
-          v-model="filterPriority"
-          style="background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 34px; font-size: 12px; color: var(--text); font-family: inherit; outline: none; cursor: pointer"
-        >
+        </BaseDropdown>
+        <BaseDropdown v-model="filterPriority" :height="34" style="min-width: 160px">
           <option value="">Todas prioridades</option>
           <option value="high">Alta</option>
           <option value="medium">Média</option>
           <option value="low">Baixa</option>
-        </select>
+        </BaseDropdown>
       </div>
       <button
         style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: #fff"
@@ -202,19 +196,19 @@
               <div class="field-row">
                 <div class="field-group">
                   <label class="field-label">Prioridade</label>
-                  <select v-model="draft.priority" class="field-select">
+                  <BaseDropdown v-model="draft.priority" :height="48">
                     <option value="high">Alta</option>
                     <option value="medium">Média</option>
                     <option value="low">Baixa</option>
-                  </select>
+                  </BaseDropdown>
                 </div>
                 <div class="field-group">
                   <label class="field-label">Status</label>
-                  <select v-model="draft.status" class="field-select">
+                  <BaseDropdown v-model="draft.status" :height="48">
                     <option value="want">Quero</option>
                     <option value="saving">Guardando</option>
                     <option value="bought">Comprado</option>
-                  </select>
+                  </BaseDropdown>
                 </div>
               </div>
 

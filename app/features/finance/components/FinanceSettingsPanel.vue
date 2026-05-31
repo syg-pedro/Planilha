@@ -132,13 +132,10 @@
         <div style="display:flex;flex-direction:column;gap:12px">
           <div class="field">
             <label class="field-label">Regra de período</label>
-            <div class="select-wrap">
-              <select v-model="store.filters.periodMode" class="select-inner">
-                <option value="due_date">Por vencimento</option>
-                <option value="competence">Por competência</option>
-              </select>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text3);flex-shrink:0;pointer-events:none"><polyline points="6 9 12 15 18 9" /></svg>
-            </div>
+            <BaseDropdown v-model="store.filters.periodMode" :height="38">
+              <option value="due_date">Por vencimento</option>
+              <option value="competence">Por competência</option>
+            </BaseDropdown>
           </div>
 
           <div>
@@ -189,13 +186,10 @@
           />
           <div class="field">
             <label class="field-label">Conta destino</label>
-            <div class="select-wrap">
-              <select v-model="importAccountId" class="select-inner">
-                <option value="">Sem conta</option>
-                <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
-              </select>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text3);flex-shrink:0;pointer-events:none"><polyline points="6 9 12 15 18 9" /></svg>
-            </div>
+            <BaseDropdown v-model="importAccountId" :height="38">
+              <option value="">Sem conta</option>
+              <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
+            </BaseDropdown>
           </div>
           <button class="btn-primary" @click="runImport">Importar CSV</button>
         </div>

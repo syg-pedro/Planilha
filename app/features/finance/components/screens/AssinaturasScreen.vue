@@ -114,17 +114,17 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
           <div>
             <label :style="labelStyle">Categoria</label>
-            <select v-model="form.categoryId" :style="selectStyle">
+            <BaseDropdown v-model="form.categoryId" :height="36">
               <option value="">Sem categoria</option>
               <option v-for="cat in store.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-            </select>
+            </BaseDropdown>
           </div>
           <div>
             <label :style="labelStyle">Conta</label>
-            <select v-model="form.accountId" :style="selectStyle">
+            <BaseDropdown v-model="form.accountId" :height="36">
               <option value="">Sem conta</option>
               <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
-            </select>
+            </BaseDropdown>
           </div>
         </div>
 
@@ -301,7 +301,6 @@ const confirmDelete = async () => {
 // Style constants
 const labelStyle     = { display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '5px' }
 const inputStyle     = { width: '100%', boxSizing: 'border-box' as const, background: 'var(--surface2)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-xs)', padding: '0 10px', height: '36px', fontSize: '13px', color: 'var(--text)', fontFamily: 'inherit', outline: 'none' }
-const selectStyle    = inputStyle
 const btnCancelStyle = { padding: '9px 16px', fontSize: '13px', fontWeight: '600', borderRadius: 'var(--radius-sm)', cursor: 'pointer', border: '1.5px solid var(--border)', background: 'var(--surface2)', color: 'var(--text2)' }
 const btnSaveStyle   = { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', fontSize: '13px', fontWeight: '700', borderRadius: 'var(--radius-sm)', cursor: 'pointer', border: 'none', background: 'var(--primary)', color: '#fff' }
 </script>

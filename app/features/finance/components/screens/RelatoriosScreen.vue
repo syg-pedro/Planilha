@@ -3,15 +3,12 @@
 
     <!-- Period selector -->
     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
-      <select
-        v-model="period"
-        style="background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 12px; height: 38px; font-size: 13px; color: var(--text); font-family: inherit; outline: none; min-width: 160px"
-      >
+      <BaseDropdown v-model="period" :height="38" style="min-width: 160px">
         <option value="month">Este mês</option>
         <option value="quarter">Últimos 3 meses</option>
         <option value="6months">Últimos 6 meses</option>
         <option value="year">Este ano</option>
-      </select>
+      </BaseDropdown>
 
       <button
         style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border)"

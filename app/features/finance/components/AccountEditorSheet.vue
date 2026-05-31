@@ -35,12 +35,12 @@
               </div>
               <div class="field-group">
                 <label class="field-label">Tipo</label>
-                <select v-model="draft.type" class="field-select">
+                <BaseDropdown v-model="draft.type" :height="48">
                   <option value="bank">Conta bancária</option>
                   <option value="credit_card">Cartão de crédito</option>
                   <option value="benefit">Benefício (VR/VA)</option>
                   <option value="external">Externo</option>
-                </select>
+                </BaseDropdown>
               </div>
             </div>
 
