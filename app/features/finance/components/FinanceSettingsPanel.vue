@@ -58,6 +58,71 @@
       </div>
     </div>
 
+    <!-- Cores personalizadas -->
+    <div class="panel">
+      <div class="panel-header">
+        <h3 class="panel-title">
+          Cores personalizadas
+          <span v-if="isCustomActive" class="active-badge">Ativo</span>
+        </h3>
+        <p class="panel-sub">Escolha as cores de destaque sobre uma base e veja exemplos antes de aplicar</p>
+      </div>
+      <div class="panel-body">
+        <!-- Base -->
+        <div class="field" style="margin-bottom:14px">
+          <label class="field-label">Base</label>
+          <div style="display:flex;gap:8px">
+            <button
+              v-for="b in [{ id: 'light', label: '☀️ Clara' }, { id: 'dark', label: '🌙 Escura' }]"
+              :key="b.id"
+              class="base-btn"
+              :style="{
+                border: customDraft.base === b.id ? '2px solid var(--primary)' : '1.5px solid var(--border)',
+                background: customDraft.base === b.id ? 'var(--primary-dim)' : 'var(--surface2)',
+                color: customDraft.base === b.id ? 'var(--primary)' : 'var(--text2)',
+              }"
+              @click="customDraft.base = (b.id as 'light' | 'dark')"
+            >{{ b.label }}</button>
+          </div>
+        </div>
+
+        <!-- Seletores de cor -->
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div v-for="f in COLOR_FIELDS" :key="f.key" class="color-row">
+            <span class="color-row-label">{{ f.label }}</span>
+            <div class="color-input">
+              <input v-model="customDraft[f.key]" type="color" class="color-swatch" />
+              <input v-model="customDraft[f.key]" type="text" class="hex-input" spellcheck="false" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Pré-visualização -->
+        <p class="field-label" style="margin:16px 0 6px">Pré-visualização</p>
+        <div class="cc-preview" :style="previewVars">
+          <div class="cc-prow">
+            <button class="cc-btn">Salvar</button>
+            <span class="cc-chip">Destaque</span>
+          </div>
+          <div class="cc-card">
+            <span class="cc-card-label">Saldo do mês</span>
+            <span class="cc-card-value">R$ 3.100,00</span>
+          </div>
+          <div class="cc-dots">
+            <span class="cc-dot"><i style="background:var(--pv-positive)" />Recebido</span>
+            <span class="cc-dot"><i style="background:var(--pv-negative)" />Despesa</span>
+            <span class="cc-dot"><i style="background:var(--pv-accent)" />Pendente</span>
+          </div>
+        </div>
+
+        <!-- Ações -->
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn-ghost" @click="resetCustom">Restaurar</button>
+          <button class="btn-primary" style="flex:1" @click="applyCustom">Aplicar cores</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Configurações do dashboard -->
     <div class="panel">
       <div class="panel-header">
@@ -303,7 +368,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { WIDGET_OPTIONS } from '#shared/constants'
+import { WIDGET_OPTIONS, DEFAULT_COLORS, DARK_COLORS } from '#shared/constants'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import type { ThemeMode, Account } from '#shared/types'
 
@@ -344,17 +409,98 @@ const THEMES = [
   { id: 'light', name: 'Light Clean', desc: 'Claro e minimalista, ideal para o dia a dia', icon: '☀️' },
   { id: 'dark', name: 'Dark Premium', desc: 'Escuro profissional, confortável à noite', icon: '🌙' },
   { id: 'eva', name: 'EVA-01', desc: 'Temática especial, roxa e neon', icon: '⚡' },
+  { id: 'cyberpunk', name: 'Cyberpunk', desc: 'Azul elétrico e amarelo neon', icon: '🌃' },
+  { id: 'arasaka', name: 'Arasaka', desc: 'Vermelho corporativo sobre preto', icon: '🔻' },
 ] as const
+
+const VALID_THEME_MODES = ['light', 'dark', 'eva', 'cyberpunk', 'arasaka', 'system']
 
 const WIDGETS = WIDGET_OPTIONS
 
 const isWidgetOn = (id: string) => (store.settings.dashboardConfig.visibleWidgets ?? []).includes(id)
 
 const onThemeModeChange = async (value: string) => {
-  if (value === 'light' || value === 'dark' || value === 'eva' || value === 'system') {
+  if (VALID_THEME_MODES.includes(value)) {
     store.setThemeMode(value as ThemeMode)
     await store.saveTheme()
   }
+}
+
+// ─── Cores personalizadas ────────────────────────────────────────────────────
+
+type ColorKey = 'primary' | 'accent' | 'positive' | 'negative'
+
+const COLOR_FIELDS: { key: ColorKey; label: string }[] = [
+  { key: 'primary',  label: 'Primária' },
+  { key: 'accent',   label: 'Destaque' },
+  { key: 'positive', label: 'Receita' },
+  { key: 'negative', label: 'Despesa' },
+]
+
+const customDraft = ref<{ base: 'light' | 'dark'; primary: string; accent: string; positive: string; negative: string }>({
+  base: 'dark',
+  primary: '#2f7bff',
+  accent: '#f5e000',
+  positive: '#22c55e',
+  negative: '#ef4444',
+})
+
+const isCustomActive = computed(() => store.settings.themeMode === 'custom')
+
+// Paleta estrutural do preview conforme a base escolhida.
+const PREVIEW_BASE = {
+  light: { bg: '#f8fafc', card: '#ffffff', text: '#0f172a', muted: '#64748b', border: '#e2e8f0' },
+  dark:  { bg: '#0b1020', card: '#111827', text: '#e6e9f0', muted: '#94a3b8', border: '#283047' },
+}
+
+const previewBase = computed(() => PREVIEW_BASE[customDraft.value.base])
+
+const previewVars = computed(() => ({
+  background: previewBase.value.bg,
+  color: previewBase.value.text,
+  '--pv-primary': customDraft.value.primary,
+  '--pv-accent': customDraft.value.accent,
+  '--pv-positive': customDraft.value.positive,
+  '--pv-negative': customDraft.value.negative,
+  '--pv-card': previewBase.value.card,
+  '--pv-text': previewBase.value.text,
+  '--pv-muted': previewBase.value.muted,
+  '--pv-border': previewBase.value.border,
+}))
+
+const initCustomDraft = () => {
+  if (store.settings.themeMode !== 'custom') return
+  const c = store.settings.colorTokens
+  const h = c.background.replace('#', '')
+  const isLight = h.length >= 6 && (0.299 * parseInt(h.slice(0, 2), 16) + 0.587 * parseInt(h.slice(2, 4), 16) + 0.114 * parseInt(h.slice(4, 6), 16)) > 140
+  customDraft.value = {
+    base: isLight ? 'light' : 'dark',
+    primary: c.primary, accent: c.accent, positive: c.positive, negative: c.negative,
+  }
+}
+
+const resetCustom = () => {
+  const base = customDraft.value.base === 'light' ? DEFAULT_COLORS : DARK_COLORS
+  customDraft.value = {
+    base: customDraft.value.base,
+    primary: base.primary, accent: base.accent, positive: base.positive, negative: base.negative,
+  }
+}
+
+const applyCustom = async () => {
+  const base = customDraft.value.base === 'light' ? DEFAULT_COLORS : DARK_COLORS
+  store.settings.themeMode = 'custom'
+  store.settings.colorTokens = {
+    primary: customDraft.value.primary,
+    accent: customDraft.value.accent,
+    positive: customDraft.value.positive,
+    negative: customDraft.value.negative,
+    neutral: base.neutral,
+    background: base.background,
+    card: base.card,
+  }
+  store.applyTheme()
+  await store.saveTheme()
 }
 
 const toggleWidget = (id: string) => {
@@ -425,6 +571,7 @@ const loadHousehold = async () => {
 }
 
 onMounted(loadHousehold)
+onMounted(initCustomDraft)
 
 const sendInvite = async () => {
   if (!inviteEmail.value || inviteSending.value) return
@@ -492,6 +639,162 @@ const copyInviteLink = async () => {
 .theme-btn:hover {
   filter: brightness(0.97);
 }
+
+/* ── Cores personalizadas ──────────────────────────── */
+.active-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--primary);
+  background: var(--primary-dim);
+  border-radius: 99px;
+  padding: 2px 8px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+.base-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.color-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+}
+.color-row-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.color-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.color-swatch {
+  width: 34px;
+  height: 30px;
+  padding: 0;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+.color-swatch::-webkit-color-swatch-wrapper { padding: 3px; }
+.color-swatch::-webkit-color-swatch { border: none; border-radius: 5px; }
+.hex-input {
+  width: 88px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 0 10px;
+  height: 30px;
+  font-size: 12px;
+  font-family: var(--ds-font-family-mono, monospace);
+  color: var(--text);
+  outline: none;
+  text-transform: lowercase;
+}
+.hex-input:focus { border-color: var(--primary); }
+
+.cc-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--pv-border);
+}
+.cc-prow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cc-btn {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--pv-primary);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: default;
+}
+.cc-chip {
+  padding: 5px 12px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--pv-accent) 22%, transparent);
+  color: var(--pv-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+.cc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--pv-card);
+  border: 1px solid var(--pv-border);
+}
+.cc-card-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pv-muted);
+}
+.cc-card-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pv-primary);
+}
+.cc-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.cc-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pv-text);
+}
+.cc-dot i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 16px;
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { filter: brightness(0.97); }
 .field {
   display: flex;
   flex-direction: column;

@@ -32,10 +32,33 @@ export const EVA_COLORS: ColorTokens = {
   card: '#1b1430'
 }
 
+export const CYBERPUNK_COLORS: ColorTokens = {
+  primary: '#2f7bff',
+  accent: '#f5e000',
+  positive: '#19e3c2',
+  negative: '#ff3b6b',
+  neutral: '#7c8aa6',
+  background: '#070b16',
+  card: '#0e1626'
+}
+
+export const ARASAKA_COLORS: ColorTokens = {
+  primary: '#e6112b',
+  accent: '#ff4d4d',
+  positive: '#37c25a',
+  negative: '#ff2233',
+  neutral: '#8a8f99',
+  background: '#09090b',
+  card: '#141417'
+}
+
 export const THEME_PRESETS: Record<ThemeMode, ColorTokens> = {
   light: DEFAULT_COLORS,
   dark: DARK_COLORS,
   eva: EVA_COLORS,
+  cyberpunk: CYBERPUNK_COLORS,
+  arasaka: ARASAKA_COLORS,
+  custom: DARK_COLORS,
   system: DEFAULT_COLORS
 }
 

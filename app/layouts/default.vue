@@ -421,10 +421,7 @@ const openHelp = (topicId?: string) => {
 }
 
 watch(() => store.settings.themeMode, () => {
-  if (process.client) {
-    document.documentElement.dataset.theme = store.settings.themeMode
-    document.documentElement.classList.toggle('dark', store.settings.themeMode === 'dark')
-  }
+  store.applyTheme()
 }, { immediate: true })
 
 const updateMobile = () => { isMobile.value = window.innerWidth < 768 }
