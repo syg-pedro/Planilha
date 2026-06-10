@@ -55,7 +55,7 @@
         </div>
         <div style="padding: 16px 18px">
           <BaseEmptyState v-if="cashflowChart.length === 0" icon="reports" title="Sem dados" body="Nenhum lançamento no período." />
-          <BaseBarChart v-else :data="cashflowChart" :height="150" />
+          <BaseBarChart v-else :data="cashflowChart" :height="150" :currency="store.settings.currency || 'BRL'" />
         </div>
       </div>
 

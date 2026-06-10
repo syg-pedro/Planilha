@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { parseCookies, setCookie, type H3Event } from 'h3'
+import WebSocket from 'ws'
 
 export const createSupabaseServerClient = (event: H3Event) => {
   const config = useRuntimeConfig(event)
@@ -11,6 +12,8 @@ export const createSupabaseServerClient = (event: H3Event) => {
   }
 
   return createServerClient(supabaseUrl, supabaseKey, {
+    // Node < 22 não tem WebSocket nativo; o realtime-js precisa de um transporte explícito.
+    realtime: { transport: WebSocket as unknown as typeof globalThis.WebSocket },
     cookies: {
       getAll() {
         const cookies = parseCookies(event)

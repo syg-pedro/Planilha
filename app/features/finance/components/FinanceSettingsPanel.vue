@@ -222,10 +222,10 @@
     </div>
 
     <!-- Sair da conta -->
-    <div v-if="isSupabaseConfigured" class="panel">
+    <div class="panel">
       <div class="panel-header">
         <h3 class="panel-title">Conta</h3>
-        <p class="panel-sub">{{ authUser?.email }}</p>
+        <p class="panel-sub">{{ authUser?.email ?? 'Modo demonstração' }}</p>
       </div>
       <div class="panel-body">
         <button
@@ -368,7 +368,8 @@ import type { ThemeMode, Account } from '#shared/types'
 
 const store = useFinanceStore()
 const currency = useCurrency()
-const { user: authUser, signOut } = useAuth()
+const { user: authUser } = useAuth()
+const { logout } = useLogout()
 
 const config = useRuntimeConfig()
 const isSupabaseConfigured = computed(() => !!(config.public.supabaseUrl && config.public.supabaseAnonKey))
@@ -377,8 +378,7 @@ const signingOut = ref(false)
 const doSignOut = async () => {
   signingOut.value = true
   try {
-    await signOut()
-    await navigateTo('/login')
+    await logout()
   } finally {
     signingOut.value = false
   }

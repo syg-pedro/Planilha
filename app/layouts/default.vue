@@ -127,6 +127,36 @@
           <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">{{ item.label }}</span>
         </button>
 
+        <!-- Sair -->
+        <button
+          title="Sair"
+          :style="{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '9px',
+            padding: collapsed ? '9px 0' : '8px 10px',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            borderRadius: 'var(--radius-xs)',
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            fontWeight: 600,
+            fontSize: '13px',
+            background: 'transparent',
+            color: 'var(--danger)',
+            transition: 'background .12s',
+            width: '100%',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+          }"
+          @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--danger-light)'"
+          @mouseleave="($event.currentTarget as HTMLElement).style.background = 'transparent'"
+          @click="logout()"
+        >
+          <BaseIcon name="logout" :size="16" color="currentColor" />
+          <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">Sair</span>
+        </button>
+
         <!-- Net worth badge -->
         <div
           v-if="!collapsed"
@@ -223,6 +253,19 @@
             @click="goTo(item.id)"
           >
             <BaseIcon :name="item.icon" :size="18" />{{ item.label }}
+          </button>
+          <button
+            :style="{
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 10px',
+              borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+              fontWeight: 600, fontSize: '14px',
+              background: 'transparent',
+              color: 'var(--danger)',
+              width: '100%', transition: 'background .12s',
+            }"
+            @click="logout()"
+          >
+            <BaseIcon name="logout" :size="18" />Sair
           </button>
         </div>
       </div>
@@ -389,6 +432,7 @@ import { helpForScreen } from '~/features/finance/constants/helpContent'
 
 const store = useFinanceStore()
 const currency = useCurrency()
+const { logout } = useLogout()
 
 const activeScreen = useState('finance-screen', () => 'dashboard')
 const collapsed = ref(false)

@@ -53,7 +53,7 @@ const dismissed = ref(false)
 const showManual = useState('pwa-show-manual', () => false)
 
 const showAutoPrompt = computed(
-  () => !!$pwaPrompt.value && !dismissed.value && !$pwaInstalled.value
+  () => !!$pwaPrompt?.value && !dismissed.value && !$pwaInstalled?.value
 )
 
 watch($pwaPrompt, (prompt) => {

@@ -34,7 +34,7 @@
         <div style="padding: 16px 18px">
           <BaseEmptyState v-if="cashflowData.length === 0" icon="reports" title="Sem dados" body="Sem lançamentos nos últimos 6 meses." />
           <template v-else>
-            <BaseBarChart :data="cashflowData" :height="130" />
+            <BaseBarChart :data="cashflowData" :height="130" :currency="store.settings.currency || 'BRL'" />
             <div class="cashflow-months">
               <div
                 v-for="d in cashflowData.slice(-3)"
