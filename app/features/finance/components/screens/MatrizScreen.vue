@@ -29,7 +29,7 @@
     <template v-if="viewMode === 'matrix'">
 
       <!-- DESPESAS table -->
-      <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface)">
+    <div class="matrix-table" style="overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface)">
         <table style="border-collapse: collapse; font-size: 12px; width: max-content; min-width: 100%">
           <thead>
             <tr>
@@ -117,7 +117,7 @@
       </div>
 
       <!-- RECEITAS table -->
-      <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface)">
+    <div class="matrix-table" style="overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface)">
         <table style="border-collapse: collapse; font-size: 12px; width: max-content; min-width: 100%">
           <thead>
             <tr>
@@ -844,10 +844,10 @@ const inputStyle = () => ({
 /* ── Status dot ──────────────────────────────────── */
 .status-dot {
   flex-shrink: 0;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  border: none;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--border);
+  border-radius: 0;
   cursor: pointer;
   padding: 0;
   outline: none;
@@ -882,8 +882,8 @@ const inputStyle = () => ({
   flex-shrink: 0;
   width: 20px;
   height: 20px;
-  border-radius: 4px;
-  border: none;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text3);
   cursor: pointer;
@@ -902,6 +902,7 @@ th:hover .col-menu-btn {
 }
 .col-menu-btn:hover {
   background: var(--surface);
+  border-color: var(--border);
   color: var(--primary);
 }
 
@@ -913,23 +914,23 @@ th:hover .col-menu-btn {
   justify-content: center;
   width: 18px;
   height: 18px;
-  border-radius: 4px;
-  border: none;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text3);
   cursor: pointer;
   padding: 0;
   transition: opacity 0.12s, background 0.12s, color 0.12s;
 }
-.row-clear-btn:hover { background: var(--danger-light); color: var(--danger); }
+.row-clear-btn:hover { background: var(--danger-light); border-color: var(--border); color: var(--danger); }
 
 /* ── Add column button ───────────────────────────── */
 .add-col-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  border: 1px dashed var(--border);
-  border-radius: 6px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-xs);
   padding: 4px 8px;
   background: transparent;
   color: var(--text3);
@@ -953,8 +954,8 @@ th:hover .col-menu-btn {
   gap: 8px;
   width: 100%;
   padding: 8px 12px;
-  border: none;
-  border-radius: 7px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-xs);
   background: transparent;
   color: var(--text2);
   font-size: 13px;
@@ -964,7 +965,7 @@ th:hover .col-menu-btn {
   transition: background 0.1s;
   text-align: left;
 }
-.menu-item:hover { background: var(--surface2); }
+.menu-item:hover { background: var(--surface2); border-color: var(--border); }
 .menu-item-danger { color: var(--danger); }
 .menu-item-danger:hover { background: var(--danger-light); }
 
@@ -977,8 +978,7 @@ th:hover .col-menu-btn {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: oklch(0% 0 0 / 0.5);
-  backdrop-filter: blur(4px);
+  background: oklch(0% 0 0 / 0.64);
 }
 .modal-box {
   background: var(--surface);
@@ -1082,8 +1082,8 @@ th:hover .col-menu-btn {
 .btn-delete:hover { filter: brightness(1.1); }
 
 /* ── Modal transition ────────────────────────────── */
-.modal-enter-active, .modal-leave-active { transition: opacity 0.2s ease; }
-.modal-enter-active .modal-box, .modal-leave-active .modal-box { transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
+.modal-enter-active, .modal-leave-active { transition: opacity var(--ds-motion-base) linear; }
+.modal-enter-active .modal-box, .modal-leave-active .modal-box { transition: transform var(--ds-motion-base) linear; }
 .modal-enter-from, .modal-leave-to { opacity: 0; }
-.modal-enter-from .modal-box, .modal-leave-to .modal-box { transform: scale(0.95) translateY(6px); }
+.modal-enter-from .modal-box, .modal-leave-to .modal-box { transform: translate(5px, 5px); }
 </style>

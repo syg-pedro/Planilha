@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection, computeKpis, excludeBenefitEntries } from '#shared/finance'
-import { DEFAULT_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
+import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
 import type {
   Account,
   BootstrapResponse,
@@ -19,12 +19,12 @@ const defaultSettings = (): HouseholdSettings => ({
   id: 'household-main',
   currency: 'BRL',
   timezone: 'America/Sao_Paulo',
-  themeMode: 'light',
+  themeMode: 'dark',
   densityMode: 'compact',
   periodMode: 'due_date',
   horizonMonths: 18,
   notificationDays: [3, 1],
-  colorTokens: { ...DEFAULT_COLORS },
+  colorTokens: { ...DARK_COLORS },
   dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG },
   updatedAt: new Date().toISOString()
 })

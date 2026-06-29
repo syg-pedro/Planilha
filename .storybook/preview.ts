@@ -14,8 +14,8 @@ const preview: Preview = {
     backgrounds: {
       default: 'light',
       values: [
-        { name: 'light', value: '#f8fafc' },
-        { name: 'dark', value: '#0f172a' }
+        { name: 'Neo light', value: '#f3efe6' },
+        { name: 'Neo dark', value: '#090b10' }
       ]
     }
   }

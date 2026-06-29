@@ -16,8 +16,8 @@
     <div class="charts-grid">
 
       <!-- Cashflow chart -->
-      <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden">
-        <div class="chart-header">
+      <div class="neo-panel">
+        <div class="chart-header neo-panel-header">
           <div>
             <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Fluxo de caixa</h3>
             <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Últimos 6 meses</p>
@@ -56,8 +56,8 @@
     <div class="cards-grid">
 
       <!-- Upcoming -->
-      <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden">
-        <div style="padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border)">
+      <div class="neo-panel">
+        <div class="neo-panel-header" style="padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border)">
           <div>
             <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Próximos vencimentos</h3>
             <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Despesas pendentes</p>
@@ -98,12 +98,12 @@
         </div>
       </div>
       <div class="savings-cta">
-        <button
-          style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); border: none; cursor: pointer; background: var(--primary); color: #fff"
+        <BaseButton
+          variant="primary"
           @click="$emit('navigate', 'reports')"
         >
           <BaseIcon name="reports" :size="15" color="#fff" />Relatório completo
-        </button>
+        </BaseButton>
       </div>
     </div>
   </div>
@@ -119,6 +119,7 @@ import BaseProgressBar from '~/components/base/BaseProgressBar.vue'
 import BaseBarChart    from '~/components/base/BaseBarChart.vue'
 import BaseIcon        from '~/components/base/BaseIcon.vue'
 import BaseEmptyState  from '~/components/base/BaseEmptyState.vue'
+import BaseButton      from '~/components/base/BaseButton.vue'
 
 defineEmits<{ navigate: [screen: string] }>()
 
@@ -214,7 +215,7 @@ const savingsRateLabel = computed(() =>
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   flex-wrap: wrap;
 }
 
@@ -228,7 +229,8 @@ const savingsRateLabel = computed(() =>
 .savings-strip {
   background: var(--surface);
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
+  box-shadow: var(--shadow-sm);
   padding: 14px 18px;
   display: flex;
   flex-wrap: wrap;

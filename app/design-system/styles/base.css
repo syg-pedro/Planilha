@@ -10,9 +10,48 @@ html {
 
 body {
   font-family: var(--ds-font-family-sans);
+  font-weight: 500;
+  line-height: 1.45;
   color: var(--text);
   background: var(--bg);
-  transition: background 0.3s, color 0.3s;
+  transition: background var(--ds-motion-base) linear, color var(--ds-motion-base) linear;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--ds-font-family-display);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Elimina o delay de 300ms em tap no mobile */
@@ -30,19 +69,46 @@ label {
 }
 
 ::selection {
-  background: var(--ds-color-brand-primary-dim);
+  color: #111111;
+  background: var(--accent);
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--surface2);
+  border-left: 1px solid var(--border);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--ds-color-border-strong);
-  border-radius: 99px;
+  background: var(--primary);
+  border: 2px solid var(--border);
+  border-radius: 0;
+}
+
+code,
+kbd,
+samp,
+.ds-mono,
+.ds-money {
+  font-family: var(--ds-font-family-mono);
+}
+
+.ds-money {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

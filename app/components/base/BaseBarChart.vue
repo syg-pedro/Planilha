@@ -13,11 +13,12 @@
           :style="{
             width: '9px',
             height: `${Math.round((d.income / maxVal) * (height - 24))}px`,
-            borderRadius: '3px 3px 0 0',
+            borderRadius: 'var(--radius-xs) var(--radius-xs) 0 0',
+            border: '1px solid var(--border)',
             background: colorIncome,
             opacity: activeIndex === i || (activeIndex === null && d.current) ? 1 : 0.5,
-            transition: 'height 0.5s, opacity 0.2s',
-            boxShadow: d.current ? `0 0 6px ${colorIncome}` : 'none',
+            transition: 'height 0.45s steps(8, end), opacity 0.12s linear',
+            boxShadow: d.current ? '2px 0 0 var(--ds-shadow-color)' : 'none',
           }"
         />
         <div
@@ -25,11 +26,12 @@
           :style="{
             width: '9px',
             height: `${Math.round((d.expense / maxVal) * (height - 24))}px`,
-            borderRadius: '3px 3px 0 0',
+            borderRadius: 'var(--radius-xs) var(--radius-xs) 0 0',
+            border: '1px solid var(--border)',
             background: colorExpense,
             opacity: activeIndex === i || (activeIndex === null && d.current) ? 1 : 0.5,
-            transition: 'height 0.5s, opacity 0.2s',
-            boxShadow: d.current ? `0 0 6px ${colorExpense}` : 'none',
+            transition: 'height 0.45s steps(8, end), opacity 0.12s linear',
+            boxShadow: d.current ? '2px 0 0 var(--ds-shadow-color)' : 'none',
           }"
         />
       </div>
@@ -121,11 +123,10 @@ function result(d: BarDataPoint) {
   min-width: 150px;
   padding: 10px 12px;
   background: var(--panel2, var(--panel));
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   pointer-events: none;
-  backdrop-filter: blur(4px);
 }
 
 .bar-tooltip::after {
@@ -156,7 +157,8 @@ function result(d: BarDataPoint) {
 .bar-tooltip__dot {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border: 1px solid var(--border);
+  border-radius: 0;
   flex-shrink: 0;
 }
 
@@ -180,7 +182,7 @@ function result(d: BarDataPoint) {
 
 .bar-tooltip-enter-active,
 .bar-tooltip-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity var(--ds-motion-base) linear, transform var(--ds-motion-base) linear;
 }
 
 .bar-tooltip-enter-from,

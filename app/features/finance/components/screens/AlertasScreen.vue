@@ -7,14 +7,15 @@
         <h2 style="font-size: 16px; font-weight: 800; color: var(--text)">Alertas inteligentes</h2>
         <p style="font-size: 12px; color: var(--text3); margin-top: 2px">{{ activeAlerts.length }} alerta(s) ativo(s)</p>
       </div>
-      <button
+      <BaseButton
         v-if="activeAlerts.length > 0"
-        style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border); min-height: 44px; touch-action: manipulation"
+        variant="secondary"
+        size="sm"
         @click="dismissAll"
       >
         <BaseIcon name="close" :size="13" />
         Dispensar todos
-      </button>
+      </BaseButton>
     </div>
 
     <!-- Empty -->
@@ -29,30 +30,15 @@
     <div
       v-for="alert in activeAlerts"
       :key="alert.id"
+      class="alert-card"
+      :class="{ 'alert-card--interactive': isClickable(alert) }"
       :style="{
-        background: 'var(--surface)',
-        borderRadius: 'var(--radius)',
-        border: `1px solid ${TONE_COLORS[alert.tone].border}`,
-        borderLeft: `4px solid ${TONE_COLORS[alert.tone].accent}`,
-        padding: '14px 16px',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '12px',
-        boxShadow: 'var(--shadow-sm)',
-        cursor: isClickable(alert) ? 'pointer' : 'default',
-        transition: 'opacity 0.15s',
+        '--alert-accent': TONE_COLORS[alert.tone].accent,
+        '--alert-bg': TONE_COLORS[alert.tone].bg,
       }"
       @click="onAlertClick(alert)"
-      @mouseenter="(e) => { if (isClickable(alert)) (e.currentTarget as HTMLElement).style.opacity = '0.85' }"
-      @mouseleave="(e) => (e.currentTarget as HTMLElement).style.opacity = '1'"
     >
-      <div
-        :style="{
-          width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0,
-          background: TONE_COLORS[alert.tone].bg,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }"
-      >
+      <div class="alert-card__icon">
         <BaseIcon :name="TONE_ICONS[alert.tone]" :size="16" :color="TONE_COLORS[alert.tone].accent" />
       </div>
       <div style="flex: 1; min-width: 0">
@@ -65,10 +51,9 @@
       </div>
       <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0">
         <button
-          style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 8px; display: flex; align-items: center; border-radius: 8px; min-width: 36px; min-height: 36px; touch-action: manipulation"
+          class="alert-card__close"
+          aria-label="Dispensar alerta"
           @click.stop="dismiss(alert.id)"
-          @mouseenter="($event.currentTarget as HTMLElement).style.background='var(--surface2)'"
-          @mouseleave="($event.currentTarget as HTMLElement).style.background='none'"
         >
           <BaseIcon name="close" :size="14" />
         </button>
@@ -119,6 +104,7 @@ import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { useDateFormat } from '~/composables/useDateFormat'
 import BaseIcon                from '~/components/base/BaseIcon.vue'
 import BaseEmptyState          from '~/components/base/BaseEmptyState.vue'
+import BaseButton              from '~/components/base/BaseButton.vue'
 import AlertEntryDetailSheet   from '~/features/finance/components/AlertEntryDetailSheet.vue'
 import FinanceEntryEditorModal from '~/features/finance/components/FinanceEntryEditorModal.vue'
 import type { FinanceEntry } from '#shared/types'
@@ -331,3 +317,66 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
   return data
 }
 </script>
+
+<style scoped>
+.alert-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-left: 10px solid var(--alert-accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  cursor: default;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.alert-card--interactive {
+  cursor: pointer;
+}
+
+.alert-card--interactive:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+.alert-card--interactive:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ds-shadow-color);
+}
+
+.alert-card__icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--alert-bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+}
+
+.alert-card__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 8px;
+  color: var(--text3);
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  cursor: pointer;
+}
+
+.alert-card__close:active {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+</style>

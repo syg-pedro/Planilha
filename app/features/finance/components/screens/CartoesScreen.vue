@@ -122,7 +122,7 @@
     <!-- ── Outras contas ──────────────────────────────────────────────── -->
     <div v-if="bankAccounts.length > 0">
       <p class="section-label">Outras contas</p>
-      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden">
+      <div class="neo-panel">
         <div
           v-for="(acc, idx) in bankAccounts"
           :key="acc.id"
@@ -216,20 +216,20 @@ const usagePercent = (card: Account) =>
 const totalLimit   = computed(() => creditCards.value.reduce((s, c) => s + (c.limitTotal ?? 0), 0))
 const totalPending = computed(() => creditCards.value.reduce((s, c) => s + pendingForCard(c.id), 0))
 
-// ─── card gradient (deterministic per id) ───────────────────────────────────
+// ─── card color (deterministic per id) ──────────────────────────────────────
 
-const GRADIENTS = [
-  'linear-gradient(135deg, #6C63FF 0%, #3b82f6 100%)',
-  'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
-  'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-  'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-  'linear-gradient(135deg, #1e293b 0%, #475569 100%)',
-  'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
+const CARD_COLORS = [
+  '#5b5bf7',
+  '#e84545',
+  '#13a86b',
+  '#8b5cf6',
+  '#263238',
+  '#c66a00',
 ]
 
 const cardGradient = (id: string) => {
   const hash = id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-  return { background: GRADIENTS[hash % GRADIENTS.length] }
+  return { background: CARD_COLORS[hash % CARD_COLORS.length] }
 }
 
 // ─── type helpers ────────────────────────────────────────────────────────────
@@ -355,6 +355,7 @@ const onSave = async (account: Partial<Account>) => {
   justify-content: space-between;
   position: relative;
   overflow: hidden;
+  border-bottom: 2px solid var(--border);
 }
 .credit-card::before {
   content: '';
@@ -363,8 +364,10 @@ const onSave = async (account: Partial<Account>) => {
   right: -40px;
   width: 140px;
   height: 140px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.06);
+  background: var(--accent);
+  border: 3px solid var(--border);
+  transform: rotate(18deg);
+  opacity: 0.8;
 }
 .credit-card::after {
   content: '';
@@ -373,8 +376,9 @@ const onSave = async (account: Partial<Account>) => {
   left: -20px;
   width: 180px;
   height: 180px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.04);
+  background: rgb(255 255 255 / 0.16);
+  border: 3px solid var(--border);
+  transform: rotate(-12deg);
 }
 
 .card-stats {

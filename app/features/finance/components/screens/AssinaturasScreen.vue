@@ -34,7 +34,7 @@
     </BaseEmptyState>
 
     <!-- Table -->
-    <div v-else style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden">
+    <div v-else class="neo-panel">
       <table style="width: 100%; border-collapse: collapse; font-size: 13px">
         <thead>
           <tr style="background: var(--surface2); border-bottom: 1px solid var(--border)">

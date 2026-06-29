@@ -2,15 +2,16 @@
   <div ref="containerRef" :style="{ width: '100%', height: `${height}px` }">
     <svg v-if="data.length" width="100%" :height="height" style="overflow: visible">
       <path v-if="fill" :d="fillPath" :fill="color" opacity="0.12" />
-      <polyline :points="ptsStr" fill="none" :stroke="color" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      <polyline :points="ptsStr" fill="none" stroke="var(--border)" stroke-width="6" stroke-linejoin="bevel" />
+      <polyline :points="ptsStr" fill="none" :stroke="color" stroke-width="3" stroke-linejoin="bevel" />
       <circle
         v-if="pts.length"
         :cx="pts[pts.length - 1]![0]"
         :cy="pts[pts.length - 1]![1]"
         r="4"
         :fill="color"
-        stroke="var(--surface)"
-        stroke-width="2"
+          stroke="var(--border)"
+          stroke-width="2.5"
       />
     </svg>
   </div>

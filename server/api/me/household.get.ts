@@ -30,7 +30,6 @@ export default defineEventHandler(async (event) => {
   ])
 
   // Fetch emails for members via auth.users (service role only)
-  const memberUserIds = (membersRes.data ?? []).map(m => m.user_id)
   const members: { userId: string; email: string; role: string; joinedAt: string }[] = []
 
   for (const m of membersRes.data ?? []) {

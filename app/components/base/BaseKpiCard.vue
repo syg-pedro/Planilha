@@ -1,40 +1,26 @@
 <template>
   <div
-    :style="{
-      background: 'var(--surface)',
-      borderRadius: 'var(--radius)',
-      padding: '16px 18px',
-      border: '1px solid var(--border)',
-      boxShadow: 'var(--shadow-sm)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '10px',
-      position: 'relative',
-      overflow: 'hidden',
-      transition: 'transform 0.15s, box-shadow 0.15s',
-      cursor: onClick ? 'pointer' : 'default',
-    }"
-    @mouseenter="hovered = true"
-    @mouseleave="hovered = false"
+    class="base-kpi"
+    :class="{ 'base-kpi--interactive': onClick }"
+    :style="{ '--kpi-color': color }"
+    :role="onClick ? 'button' : undefined"
+    :tabindex="onClick ? 0 : undefined"
     @click="onClick?.()"
+    @keydown.enter.prevent="onClick?.()"
+    @keydown.space.prevent="onClick?.()"
   >
-    <div
-      style="position: absolute; right: -16px; top: -16px; width: 80px; height: 80px; border-radius: 50%; pointer-events: none"
-      :style="{ background: color + '18' }"
-    />
-    <div v-if="alert" style="position: absolute; top: 10px; right: 10px">
+    <div class="base-kpi__accent" aria-hidden="true" />
+    <div v-if="alert" class="base-kpi__alert">
       <BaseIcon name="warning" :size="14" color="var(--warning)" />
     </div>
-    <div style="display: flex; justify-content: space-between; align-items: flex-start">
-      <div
-        style="width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center"
-        :style="{ background: color + '18', color }"
-      >
+    <div class="base-kpi__top">
+      <div class="base-kpi__icon">
         <BaseIcon :name="icon" :size="17" :color="color" />
       </div>
       <span
         v-if="trend !== undefined"
-        style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; white-space: nowrap"
+        class="base-kpi__trend"
+        :class="trend >= 0 ? 'base-kpi__trend--up' : 'base-kpi__trend--down'"
         :style="trend >= 0
           ? { background: 'var(--success-light)', color: 'var(--success)' }
           : { background: 'var(--danger-light)', color: 'var(--danger)' }"
@@ -43,18 +29,17 @@
       </span>
     </div>
     <div>
-      <p style="font-size: 11px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px">{{ label }}</p>
-      <p style="font-size: 22px; font-weight: 800; line-height: 1.1" :style="{ color }">{{ value }}</p>
-      <p v-if="sub" style="font-size: 11px; color: var(--text3); margin-top: 4px">{{ sub }}</p>
+      <p class="base-kpi__label">{{ label }}</p>
+      <p class="base-kpi__value">{{ value }}</p>
+      <p v-if="sub" class="base-kpi__sub">{{ sub }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import BaseIcon from './BaseIcon.vue'
+import BaseIcon from '../../design-system/components/BaseIcon.vue'
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   icon: string
   label: string
   value: string
@@ -64,9 +49,117 @@ const props = withDefaults(defineProps<{
   alert?: boolean
   onClick?: () => void
 }>(), {
+  sub: '',
   color: 'var(--primary)',
+  trend: undefined,
   alert: false,
+  onClick: undefined,
 })
 
-const hovered = ref(false)
 </script>
+
+<style scoped>
+.base-kpi {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  cursor: default;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.base-kpi:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+.base-kpi--interactive {
+  cursor: pointer;
+}
+
+.base-kpi--interactive:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ds-shadow-color);
+}
+
+.base-kpi__accent {
+  position: absolute;
+  right: -22px;
+  top: -32px;
+  width: 92px;
+  height: 72px;
+  background: var(--kpi-color);
+  border: 2px solid var(--border);
+  transform: rotate(18deg);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.base-kpi__alert {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.base-kpi__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.base-kpi__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--kpi-color);
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+}
+
+.base-kpi__trend {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.base-kpi__label {
+  margin-bottom: 4px;
+  color: var(--text3);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.base-kpi__value {
+  color: var(--kpi-color);
+  font-family: var(--ds-font-family-mono);
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.05em;
+}
+
+.base-kpi__sub {
+  margin-top: 5px;
+  color: var(--text3);
+  font-size: 11px;
+  font-weight: 600;
+}
+</style>

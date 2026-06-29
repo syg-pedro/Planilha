@@ -13,6 +13,9 @@ if (!Object.groupBy) {
 
 export default withNuxt(
   {
+    ignores: ['.claude/**', '.agents/**', '.codex/**']
+  },
+  {
     files: ['app/**/*.{ts,vue}', 'shared/**/*.ts', 'server/**/*.{ts,js}'],
     plugins: {
       boundaries

@@ -17,7 +17,7 @@
     </div>
 
     <!-- Calendar grid -->
-    <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm)">
+    <div class="neo-panel">
       <!-- Day headers -->
       <div class="cal-header-row">
         <div

@@ -16,6 +16,7 @@
     <div
       v-for="group in debtGroups"
       :key="group.key"
+      class="debt-group"
       style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden"
     >
       <!-- Header -->

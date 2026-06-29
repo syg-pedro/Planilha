@@ -1,7 +1,8 @@
 <template>
   <div :style="{ position: 'relative', width: `${size}px`, height: `${size}px`, flexShrink: 0 }">
     <svg :width="size" :height="size" style="transform: rotate(-90deg)">
-      <circle :cx="size / 2" :cy="size / 2" :r="r" fill="none" stroke="var(--bg2)" :stroke-width="stroke" />
+    <circle :cx="size / 2" :cy="size / 2" :r="r" fill="none" stroke="var(--border)" :stroke-width="stroke + 3" />
+    <circle :cx="size / 2" :cy="size / 2" :r="r" fill="none" stroke="var(--bg2)" :stroke-width="stroke" />
       <circle
         :cx="size / 2"
         :cy="size / 2"
@@ -9,10 +10,9 @@
         fill="none"
         :stroke="ringColor"
         :stroke-width="stroke"
-        stroke-linecap="round"
         :stroke-dasharray="circ"
         :stroke-dashoffset="offset"
-        style="transition: stroke-dashoffset 0.6s ease"
+      style="transition: stroke-dashoffset 0.45s steps(8, end)"
       />
     </svg>
     <div
@@ -39,6 +39,8 @@ const props = withDefaults(defineProps<{
   color: 'var(--primary)',
   size: 80,
   stroke: 10,
+  label: '',
+  sublabel: '',
 })
 
 const r = computed(() => (props.size - props.stroke) / 2)

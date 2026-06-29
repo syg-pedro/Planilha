@@ -1,10 +1,13 @@
 /* ── Form fields ──────────────────────────────────────────── */
 .ds-field {
-  @apply w-full rounded-lg border px-3 text-sm outline-none transition;
-  height: 38px;
-  background: var(--ds-color-surface-card-soft);
-  border-color: var(--ds-color-border-default);
+  @apply w-full px-3 text-sm outline-none;
+  height: 42px;
+  background: var(--ds-color-surface-card);
+  border: var(--ds-border-width) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-sm);
   color: var(--ds-color-text-primary);
+  font-weight: 650;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
 }
 
 /* Previne zoom automático do iOS Safari em inputs com font-size < 16px */
@@ -33,8 +36,17 @@
 }
 
 .ds-field:focus {
-  border-color: var(--ds-color-brand-primary);
-  box-shadow: 0 0 0 3px var(--ds-color-brand-primary-dim);
+  border-color: var(--ds-color-border-strong);
+  box-shadow: 3px 3px 0 var(--primary);
+  transform: translate(-1px, -1px);
+}
+
+textarea.ds-field {
+  height: auto;
+  min-height: 96px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  resize: vertical;
 }
 
 .ds-select {
@@ -49,10 +61,12 @@
 
 /* ── Panels ───────────────────────────────────────────────── */
 .ds-panel {
-  @apply rounded-2xl border overflow-hidden;
+  @apply overflow-hidden;
   background: var(--ds-color-surface-card);
+  border: var(--ds-border-width) solid var(--ds-color-border-default);
+  border-radius: var(--ds-radius-lg);
   box-shadow: var(--ds-shadow-sm);
-  padding: 16px 20px;
+  padding: 18px 20px;
 }
 
 .ds-panel-header {
@@ -67,19 +81,19 @@
   background: var(--surface);
   border-radius: var(--radius);
   padding: 18px 20px;
-  border: 1px solid var(--border);
+  border: var(--border-width) solid var(--border);
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   gap: 10px;
   position: relative;
   overflow: hidden;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
   cursor: default;
 }
 
 .ds-kpi-card:hover {
-  transform: translateY(-2px);
+  transform: translate(-2px, -2px);
   box-shadow: var(--shadow-md);
 }
 
@@ -105,31 +119,37 @@
 .ds-badge-paid {
   background: var(--ds-color-state-success-light);
   color: var(--ds-color-state-success);
-  border-radius: 99px;
-  padding: 2px 10px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 3px 9px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   white-space: nowrap;
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
 }
 
 .ds-badge-pending {
   background: var(--ds-color-state-warning-light);
   color: var(--ds-color-state-warning);
-  border-radius: 99px;
-  padding: 2px 10px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 3px 9px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   white-space: nowrap;
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
 }
 
 .ds-badge-review {
   background: var(--ds-color-state-danger-light);
   color: var(--ds-color-state-danger);
-  border-radius: 99px;
-  padding: 2px 10px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 3px 9px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   white-space: nowrap;
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
 }
 
 /* ── AG Grid theme ────────────────────────────────────────── */
@@ -139,6 +159,8 @@
   --ag-header-background-color: var(--ds-color-surface-card-soft);
   --ag-font-size: 12px;
   --ag-border-color: var(--ds-color-border-default);
+  --ag-borders: solid var(--ds-border-width);
+  --ag-border-radius: var(--ds-radius-sm);
   --ag-header-foreground-color: var(--ds-color-text-secondary);
   --ag-odd-row-background-color: color-mix(in srgb, var(--ds-color-surface-card-soft) 95%, transparent);
   --ag-row-hover-color: color-mix(in srgb, var(--ds-color-brand-primary) 8%, transparent);
@@ -147,9 +169,10 @@
 
 /* ── Alert variants ───────────────────────────────────────── */
 .ds-alert-warning {
-  border: 1px solid color-mix(in srgb, var(--ds-color-brand-accent) 68%, #7c2d12);
+  border: var(--ds-border-width) solid var(--border);
   background: color-mix(in srgb, var(--ds-color-brand-accent) 18%, var(--ds-color-surface-card));
   color: #7c2d12;
+  box-shadow: var(--ds-shadow-sm);
 }
 
 .ds-alert-warning .ds-text-muted {
@@ -157,9 +180,142 @@
 }
 
 .ds-alert-error {
-  border: 1px solid color-mix(in srgb, var(--ds-color-state-danger) 66%, #7f1d1d);
+  border: var(--ds-border-width) solid var(--border);
   background: color-mix(in srgb, var(--ds-color-state-danger) 14%, var(--ds-color-surface-card));
   color: #7f1d1d;
+  box-shadow: var(--ds-shadow-sm);
+}
+
+/* ── Legacy surface bridge ───────────────────────────────────
+   Keeps existing screens visually coherent while their inline
+   styles are progressively moved into base components. */
+:where(
+  .panel,
+  .neo-panel,
+  .kpi-card,
+  .modal-box,
+  .sheet,
+  .sheet-container,
+  .table-wrap,
+  .matrix-table,
+  .credit-card-wrap,
+  .savings-strip,
+  .help-pop,
+  .cal-modal,
+  .cal-nav,
+  .help-group,
+  .wish-card,
+  .debt-group
+) {
+  border-width: var(--ds-border-width) !important;
+  border-style: solid !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+:where(.sheet, .sheet-container) {
+  border: var(--ds-border-width-strong) solid var(--border) !important;
+  border-bottom: 0 !important;
+  border-radius: var(--radius) var(--radius) 0 0 !important;
+  box-shadow: 0 -6px 0 var(--ds-shadow-color) !important;
+}
+
+:where(.sheet-overlay, .modal-overlay, .cal-modal-overlay) {
+  background: rgb(0 0 0 / 0.64) !important;
+  backdrop-filter: none !important;
+}
+
+.neo-panel {
+  overflow: hidden;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.neo-panel-header {
+  background: var(--surface2);
+  border-bottom: var(--border-width) solid var(--border) !important;
+}
+
+:where(.panel-header, .sheet-header) {
+  background: var(--surface2) !important;
+  border-bottom: var(--border-width) solid var(--border) !important;
+}
+
+:where(.panel-title, .sheet-title, .modal-title) {
+  font-family: var(--ds-font-family-display) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+}
+
+:where(.sheet-footer, .modal-footer) {
+  border-top-color: var(--border) !important;
+  border-top-width: var(--border-width) !important;
+}
+
+:where(
+  .btn-primary,
+  .btn-save,
+  .btn-danger,
+  .btn-delete,
+  .btn-cancel,
+  .btn-ghost,
+  .add-btn,
+  .new-btn,
+  .sheet-btn,
+  .action-btn,
+  .edit-btn,
+  .cal-nav-btn,
+  .seg-btn,
+  .base-btn,
+  .theme-btn,
+  .pwa-banner-btn
+) {
+  border: var(--ds-border-width) solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 3px 3px 0 var(--ds-shadow-color) !important;
+  font-family: var(--ds-font-family-sans) !important;
+  font-weight: 750 !important;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear !important;
+}
+
+:where(
+  .btn-primary,
+  .btn-save,
+  .btn-danger,
+  .btn-delete,
+  .btn-cancel,
+  .btn-ghost,
+  .add-btn,
+  .new-btn,
+  .sheet-btn,
+  .action-btn,
+  .edit-btn,
+  .cal-nav-btn,
+  .seg-btn,
+  .base-btn,
+  .theme-btn,
+  .pwa-banner-btn
+):not(:disabled):active {
+  box-shadow: 1px 1px 0 var(--ds-shadow-color) !important;
+  transform: translate(2px, 2px) !important;
+}
+
+:where(
+  .field-input,
+  .modal-input,
+  .textarea-field,
+  .amount-input,
+  .hex-input,
+  .search-box
+) {
+  border-width: var(--ds-border-width) !important;
+  border-style: solid !important;
+  border-color: var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--surface) !important;
 }
 
 :root[data-theme='dark'] .ds-alert-warning,

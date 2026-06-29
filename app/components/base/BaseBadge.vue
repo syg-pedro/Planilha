@@ -1,5 +1,5 @@
 <template>
-  <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold" :class="toneClass">
+  <span class="base-badge" :class="toneClass">
     <slot />
   </span>
 </template>
@@ -17,8 +17,35 @@ const props = withDefaults(
 )
 
 const toneClass = computed(() => {
-  if (props.tone === 'success') return 'bg-emerald-100 text-emerald-700'
-  if (props.tone === 'warning') return 'bg-amber-100 text-amber-700'
-  return 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100'
+  return `base-badge--${props.tone}`
 })
 </script>
+
+<style scoped>
+.base-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.base-badge--success {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.base-badge--warning {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.base-badge--neutral {
+  background: var(--surface2);
+  color: var(--text2);
+}
+</style>
