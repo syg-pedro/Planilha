@@ -3,23 +3,23 @@ import type { ColorTokens, DashboardConfig, ThemeMode } from './types'
 export const DEFAULT_HOUSEHOLD_ID = 'household-main'
 
 export const DEFAULT_COLORS: ColorTokens = {
-  primary: '#0f766e',
-  accent: '#f59e0b',
-  positive: '#16a34a',
-  negative: '#dc2626',
-  neutral: '#64748b',
-  background: '#f8fafc',
-  card: '#ffffff'
+  primary: '#5b5bf7',
+  accent: '#ffd43b',
+  positive: '#13a86b',
+  negative: '#e84545',
+  neutral: '#5f6472',
+  background: '#f3efe6',
+  card: '#fffdf6'
 }
 
 export const DARK_COLORS: ColorTokens = {
-  primary: '#14b8a6',
-  accent: '#f59e0b',
-  positive: '#22c55e',
-  negative: '#f43f5e',
-  neutral: '#94a3b8',
-  background: '#0b1020',
-  card: '#111827'
+  primary: '#00ff33',
+  accent: '#bb00ff',
+  positive: '#13a86b',
+  negative: '#e84545',
+  neutral: '#9aa2b2',
+  background: '#090b10',
+  card: '#171c25'
 }
 
 export const EVA_COLORS: ColorTokens = {

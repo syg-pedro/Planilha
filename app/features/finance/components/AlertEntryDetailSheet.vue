@@ -110,9 +110,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void
-  (e: 'pay', id: string): void
+  (e: 'pay' | 'delete', id: string): void
   (e: 'edit', entry: FinanceEntry): void
-  (e: 'delete', id: string): void
 }>()
 
 const currency = useCurrency()

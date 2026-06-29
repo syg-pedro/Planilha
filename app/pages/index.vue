@@ -8,7 +8,7 @@
     </BasePanel>
 
     <div v-if="store.loading" class="space-y-4">
-      <div v-for="n in 3" :key="n" class="h-32 animate-pulse rounded-2xl border" :style="{ background: 'var(--surface2)', borderColor: 'var(--border)' }" />
+      <div v-for="n in 3" :key="n" class="h-32 animate-pulse rounded-sm border-2 shadow-panel" :style="{ background: 'var(--surface2)', borderColor: 'var(--border)' }" />
     </div>
 
     <transition v-else name="fade-slide" mode="out-in">

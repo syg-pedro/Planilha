@@ -10,8 +10,8 @@
     </div>
 
     <!-- Tabela anual -->
-    <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden">
-      <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px">
+    <div class="neo-panel">
+      <div class="neo-panel-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px">
         <div>
           <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Planejamento {{ year }}</h3>
           <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Receitas, despesas e saldo por mês</p>
@@ -104,7 +104,7 @@
     </div>
 
     <!-- Projeção de saldo acumulado -->
-    <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px 18px">
+    <div class="neo-panel" style="padding: 14px 18px">
       <h3 style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 12px">Evolução do saldo acumulado</h3>
       <BaseEmptyState v-if="lineData.length === 0" icon="planning" title="Sem dados" body="Não há lançamentos para o ano selecionado." />
       <BaseLineChart v-else :data="lineData" :height="100" color="var(--primary)" />

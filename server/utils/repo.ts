@@ -568,7 +568,7 @@ const mapWishItemFromRow = (row: Record<string, any>): WishItem => ({
   updatedAt: row.updated_at,
 })
 
-const ensureSupabaseSeed = async (client: SupabaseClient): Promise<void> => {
+const _ensureSupabaseSeed = async (client: SupabaseClient): Promise<void> => {
   const { count, error } = await client
     .from('household_settings')
     .select('id', { count: 'exact', head: true })

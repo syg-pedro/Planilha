@@ -75,7 +75,6 @@
 import { ref, onMounted } from 'vue'
 
 const route = useRoute()
-const router = useRouter()
 const supabase = useSupabaseClient()
 
 const token    = route.params.token as string

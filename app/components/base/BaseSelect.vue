@@ -4,22 +4,24 @@
     <div ref="containerRef" class="relative select-none">
       <!-- Trigger -->
       <div
-        class="flex cursor-pointer items-center justify-between gap-2 rounded-lg border px-3 text-sm transition"
-        style="height: 38px; background: var(--ds-color-surface-card-soft)"
-        :style="open
-          ? { borderColor: 'var(--ds-color-brand-primary)', boxShadow: '0 0 0 3px var(--ds-color-brand-primary-dim)', borderBottomLeftRadius: '0', borderBottomRightRadius: '0' }
-          : { borderColor: 'var(--ds-color-border-default)' }"
+        class="base-select__trigger"
+        :class="{ 'base-select__trigger--open': open }"
+        role="combobox"
+        tabindex="0"
+        :aria-expanded="open"
         @click="toggle"
+        @keydown.enter.prevent="toggle"
+        @keydown.space.prevent="toggle"
+        @keydown.esc="open = false"
       >
         <span
-          class="flex-1 overflow-hidden text-ellipsis whitespace-nowrap"
-          :style="selectedOption ? { color: 'var(--ds-color-text-primary)' } : { color: 'var(--ds-color-text-muted)' }"
+          class="base-select__value"
+          :class="{ 'base-select__value--placeholder': !selectedOption }"
         >
           {{ selectedOption?.label ?? placeholder }}
         </span>
         <svg
-          class="shrink-0 transition-transform duration-200"
-          style="color: var(--ds-color-text-muted)"
+          class="base-select__caret"
           :style="{ transform: open ? 'rotate(180deg)' : 'none' }"
           width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
         >
@@ -30,19 +32,17 @@
       <!-- Dropdown -->
       <div
         v-if="open"
-        class="absolute left-0 right-0 z-50 overflow-y-auto border border-t-0"
-        style="max-height: 220px; background: var(--ds-color-surface-card); border-color: var(--ds-color-brand-primary); border-radius: 0 0 var(--ds-radius-sm) var(--ds-radius-sm); box-shadow: var(--ds-shadow-md)"
+        class="base-select__menu"
+        role="listbox"
       >
         <div
           v-for="opt in options"
           :key="opt.value"
-          class="flex cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-sm transition-colors"
-          :style="String(opt.value) === String(modelValue)
-            ? { color: 'var(--ds-color-brand-primary)', background: 'var(--ds-color-brand-primary-dim)' }
-            : { color: 'var(--ds-color-text-primary)' }"
+          class="base-select__option"
+          :class="{ 'base-select__option--active': String(opt.value) === String(modelValue) }"
+          role="option"
+          :aria-selected="String(opt.value) === String(modelValue)"
           @mousedown.prevent="select(opt.value)"
-          @mouseenter="onOptHover($event, opt.value, true)"
-          @mouseleave="onOptHover($event, opt.value, false)"
         >
           <span>{{ opt.label }}</span>
           <svg
@@ -137,12 +137,6 @@ const select = (value: string) => {
   open.value = false
 }
 
-const onOptHover = (e: MouseEvent, value: string, entering: boolean) => {
-  if (String(value) === String(props.modelValue)) return
-  const el = e.currentTarget as HTMLElement
-  el.style.background = entering ? 'var(--ds-color-surface-card-soft)' : 'transparent'
-}
-
 const handleClickOutside = (e: MouseEvent) => {
   if (containerRef.value && !containerRef.value.contains(e.target as Node)) {
     open.value = false
@@ -152,3 +146,87 @@ const handleClickOutside = (e: MouseEvent) => {
 onMounted(() => document.addEventListener('mousedown', handleClickOutside))
 onBeforeUnmount(() => document.removeEventListener('mousedown', handleClickOutside))
 </script>
+
+<style scoped>
+.base-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 42px;
+  padding: 0 12px;
+  color: var(--text);
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.base-select__trigger--open {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+  box-shadow: 3px 3px 0 var(--primary);
+}
+
+.base-select__value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.base-select__value--placeholder {
+  color: var(--text3);
+}
+
+.base-select__caret {
+  flex-shrink: 0;
+  color: var(--text);
+  transition: transform var(--ds-motion-base) linear;
+}
+
+.base-select__menu {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 50;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: var(--shadow-md);
+}
+
+.base-select__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.base-select__option:last-child {
+  border-bottom: 0;
+}
+
+.base-select__option:hover {
+  background: var(--surface2);
+}
+
+.base-select__option--active {
+  color: var(--text);
+  background: var(--primary-dim);
+  font-weight: 800;
+}
+</style>

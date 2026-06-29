@@ -208,28 +208,30 @@ onBeforeUnmount(removeListeners)
   width: 100%;
   box-sizing: border-box;
   padding: 0 12px;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
   cursor: pointer;
   font-family: inherit;
   font-size: 14px;
   color: var(--text);
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
   user-select: none;
 }
 .bd-trigger:focus-visible,
 .bd-trigger--open {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-dim);
+  border-color: var(--border);
+  box-shadow: 3px 3px 0 var(--primary);
+  transform: translate(-1px, -1px);
 }
 .bd-value {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 500;
+  font-weight: 650;
 }
 .bd-value--placeholder { color: var(--text3); }
 .bd-caret {
@@ -244,13 +246,13 @@ onBeforeUnmount(removeListeners)
 .bd-list {
   z-index: 1000;
   margin: 0;
-  padding: 5px;
+  padding: 4px;
   list-style: none;
   overflow-y: auto;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 0 12px 40px oklch(0% 0 0 / 0.25);
+  box-shadow: var(--shadow-md);
 }
 .bd-opt {
   display: flex;
@@ -258,9 +260,10 @@ onBeforeUnmount(removeListeners)
   justify-content: space-between;
   gap: 8px;
   padding: 9px 11px;
+  border: 2px solid transparent;
   border-radius: var(--radius-xs);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 650;
   color: var(--text);
   cursor: pointer;
 }
@@ -269,14 +272,18 @@ onBeforeUnmount(removeListeners)
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.bd-opt--cursor { background: var(--surface2); }
+.bd-opt--cursor {
+  background: var(--surface2);
+  border-color: var(--border);
+}
 .bd-opt--active {
-  color: var(--primary);
+  color: var(--text);
   background: var(--primary-dim);
+  border-color: var(--border);
   font-weight: 700;
 }
 .bd-pop-enter-active,
-.bd-pop-leave-active { transition: opacity 0.14s ease, transform 0.14s ease; }
+.bd-pop-leave-active { transition: opacity var(--ds-motion-base) linear, transform var(--ds-motion-base) linear; }
 .bd-pop-enter-from,
-.bd-pop-leave-to { opacity: 0; transform: translateY(-6px); }
+.bd-pop-leave-to { opacity: 0; transform: translate(4px, 4px); }
 </style>

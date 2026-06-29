@@ -1,14 +1,12 @@
 <template>
-  <div style="width: 100%">
-    <div :style="{ height: `${height}px`, background: 'var(--bg2)', borderRadius: '99px', overflow: 'hidden' }">
+  <div class="base-progress">
+    <div class="base-progress__track" :style="{ height: `${height}px` }">
       <div
+        class="base-progress__fill"
         :style="{
           width: `${pct}%`,
-          height: '100%',
           background: barColor,
-          borderRadius: '99px',
-          transition: animate ? 'width 0.6s cubic-bezier(.4,0,.2,1)' : 'none',
-          boxShadow: pct >= 90 ? `0 0 8px ${barColor}` : pct >= 70 ? `0 0 4px ${barColor}` : 'none',
+          transition: animate ? 'width 0.45s steps(8, end)' : 'none',
         }"
       />
     </div>
@@ -39,3 +37,22 @@ const barColor = computed(() => {
   return props.color
 })
 </script>
+
+<style scoped>
+.base-progress {
+  width: 100%;
+}
+
+.base-progress__track {
+  min-height: 8px;
+  overflow: hidden;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+}
+
+.base-progress__fill {
+  height: 100%;
+  border-right: 2px solid var(--border);
+}
+</style>

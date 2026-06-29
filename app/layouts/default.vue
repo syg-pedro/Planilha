@@ -1,9 +1,10 @@
 <template>
-  <div :style="{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', display: 'flex' }">
+  <div class="app-shell" :style="{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', display: 'flex' }">
 
     <!-- Desktop sidebar -->
     <aside
       v-if="!isMobile"
+      class="app-sidebar"
       :style="{
         width: collapsed ? '68px' : '240px',
         minHeight: '100vh',
@@ -23,7 +24,7 @@
     >
       <!-- Logo -->
       <div :style="{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 14px', borderBottom: '1px solid var(--border)', height: '56px', flexShrink: 0, overflow: 'hidden' }">
-        <div style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+        <div class="app-brand-mark" style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0">
           <BaseIcon name="balance" :size="17" color="#fff" />
         </div>
         <div :style="{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: collapsed ? 0 : 1, transition: 'opacity .15s', pointerEvents: collapsed ? 'none' : 'auto' }">
@@ -54,6 +55,8 @@
               <button
                 v-for="item in group.items"
                 :key="item.id"
+                class="app-nav-item"
+                :class="{ 'app-nav-item--active': activeScreen === item.id }"
                 :title="collapsed ? item.label : ''"
                 :style="{
                   display: 'flex',
@@ -99,6 +102,8 @@
         <button
           v-for="item in BOTTOM_ITEMS"
           :key="item.id"
+          class="app-nav-item"
+          :class="{ 'app-nav-item--active': activeScreen === item.id }"
           :title="collapsed ? item.label : ''"
           :style="{
             display: 'flex',
@@ -191,11 +196,12 @@
     >
       <div style="position: absolute; inset: 0; background: oklch(0% 0 0 / 0.45); backdrop-filter: blur(2px)" />
       <div
+        class="app-drawer"
         style="position: relative; width: 280px; height: 100%; background: var(--surface); border-right: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 1; display: flex; flex-direction: column; animation: slideInLeft .22s cubic-bezier(.4,0,.2,1); overflow-y: auto"
         @click.stop
       >
         <div style="display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); height: 56px; flex-shrink: 0">
-          <div style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center">
+          <div class="app-brand-mark" style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center">
             <BaseIcon name="balance" :size="17" color="#fff" />
           </div>
           <div>
@@ -210,6 +216,8 @@
             <button
               v-for="item in group.items"
               :key="item.id"
+              class="app-nav-item"
+              :class="{ 'app-nav-item--active': activeScreen === item.id }"
               :style="{
                 display: 'flex',
                 alignItems: 'center',
@@ -242,6 +250,8 @@
           <button
             v-for="item in BOTTOM_ITEMS"
             :key="item.id"
+            class="app-nav-item"
+            :class="{ 'app-nav-item--active': activeScreen === item.id }"
             :style="{
               display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 10px',
               borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
@@ -275,10 +285,11 @@
     <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
 
       <!-- Top bar -->
-      <div style="height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 90; flex-shrink: 0">
+      <div class="app-topbar" style="height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 90; flex-shrink: 0">
         <!-- Mobile: hamburger -->
         <button
           v-if="isMobile"
+          class="app-icon-button"
           style="background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
           @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
           @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
@@ -301,6 +312,7 @@
             &nbsp;↓ <span style="color: var(--danger)">{{ currency.format(store.monthlyKpis.totalExpense) }}</span>
           </span>
           <button
+            class="app-icon-button"
             style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
             :style="{ background: helpMenuOpen ? 'var(--surface2)' : 'none', color: helpMenuOpen ? 'var(--primary)' : 'var(--text2)' }"
             title="Ajuda desta tela"
@@ -311,6 +323,7 @@
             <BaseIcon name="help" :size="20" />
           </button>
           <button
+            class="app-icon-button"
             style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
             @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
             @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
@@ -319,7 +332,7 @@
             <BaseIcon name="alerts" :size="20" />
             <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff">{{ alertCount }}</span>
           </button>
-          <div style="padding: 4px 10px; border-radius: 99px; background: var(--primary-dim); border: 1px solid var(--primary)">
+          <div class="app-balance-chip" style="padding: 4px 10px; border-radius: 99px; background: var(--primary-dim); border: 1px solid var(--primary)">
             <span style="font-size: 12px; font-weight: 800; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</span>
           </div>
         </div>
@@ -343,12 +356,15 @@
     <!-- Mobile bottom nav -->
     <nav
       v-if="isMobile"
+      class="app-mobile-nav"
       style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -4px 20px oklch(0% 0 0 / 0.1); display: flex"
       :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
     >
       <button
         v-for="item in BOTTOM_NAV_ITEMS"
         :key="item.id"
+        class="app-mobile-nav__item"
+        :class="{ 'app-mobile-nav__item--active': activeScreen === item.id }"
         :style="{
           flex: 1,
           display: 'flex',
@@ -379,6 +395,7 @@
         {{ item.label }}
       </button>
       <button
+        class="app-mobile-nav__item"
         style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px 4px 8px; border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 10px; font-weight: 700; touch-action: manipulation; min-height: 56px"
         @click="drawerOpen = true"
       >
@@ -492,6 +509,81 @@ const toggleGroup = (id: string) => {
 </script>
 
 <style>
+.app-shell {
+  isolation: isolate;
+}
+
+.app-sidebar {
+  border-right: 3px solid var(--border) !important;
+  box-shadow: 4px 0 0 var(--ds-shadow-color) !important;
+}
+
+.app-brand-mark {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 3px 3px 0 var(--ds-shadow-color);
+}
+
+.app-nav-item {
+  border: 2px solid transparent !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 700 !important;
+}
+
+.app-nav-item:hover {
+  border-color: var(--border) !important;
+}
+
+.app-nav-item--active {
+  color: var(--text) !important;
+  background: var(--primary-dim) !important;
+  border-color: var(--border) !important;
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+}
+
+.app-drawer {
+  border-right: 3px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.app-topbar {
+  border-bottom: 3px solid var(--border) !important;
+  box-shadow: 0 4px 0 var(--ds-shadow-color) !important;
+}
+
+.app-icon-button {
+  color: var(--text) !important;
+  background: var(--surface2) !important;
+  border: 2px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+}
+
+.app-icon-button:active {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+
+.app-balance-chip {
+  border: 2px solid var(--border) !important;
+  border-radius: var(--radius-xs) !important;
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+}
+
+.app-mobile-nav {
+  border-top: 3px solid var(--border) !important;
+  box-shadow: 0 -4px 0 var(--ds-shadow-color) !important;
+}
+
+.app-mobile-nav__item {
+  border-right: 1px solid var(--border) !important;
+}
+
+.app-mobile-nav__item--active {
+  color: var(--text) !important;
+  background: var(--primary-dim) !important;
+}
+
 @keyframes slideInLeft {
   from { transform: translateX(-100%); opacity: .5 }
   to   { transform: translateX(0);    opacity: 1  }
@@ -511,9 +603,9 @@ const toggleGroup = (id: string) => {
   max-height: calc(100vh - 80px);
   overflow-y: auto;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 12px 40px oklch(0% 0 0 / 0.25);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
   padding: 6px;
 }
 .help-pop__head {
@@ -526,7 +618,7 @@ const toggleGroup = (id: string) => {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text3);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   margin-bottom: 4px;
 }
 .help-pop__list {
@@ -539,8 +631,8 @@ const toggleGroup = (id: string) => {
   gap: 8px;
   width: 100%;
   padding: 9px 10px;
-  border: none;
-  border-radius: 8px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text2);
   font-size: 13px;
@@ -552,6 +644,7 @@ const toggleGroup = (id: string) => {
 }
 .help-pop__item:hover {
   background: var(--surface2);
+  border-color: var(--border);
   color: var(--text);
 }
 .help-pop__empty {
@@ -566,9 +659,9 @@ const toggleGroup = (id: string) => {
   width: 100%;
   margin-top: 4px;
   padding: 10px;
-  border: none;
-  border-top: 1px solid var(--border);
-  border-radius: 0 0 8px 8px;
+  border: 2px solid transparent;
+  border-top: 2px solid var(--border);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   background: transparent;
   color: var(--primary);
   font-size: 13px;
@@ -579,15 +672,18 @@ const toggleGroup = (id: string) => {
 }
 .help-pop__all:hover {
   background: var(--primary-dim);
+  border-right-color: var(--border);
+  border-bottom-color: var(--border);
+  border-left-color: var(--border);
 }
 
 .help-pop-enter-active,
 .help-pop-leave-active {
-  transition: opacity .15s ease, transform .15s ease;
+  transition: opacity var(--ds-motion-base) linear, transform var(--ds-motion-base) linear;
 }
 .help-pop-enter-from,
 .help-pop-leave-to {
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translate(4px, 4px);
 }
 </style>

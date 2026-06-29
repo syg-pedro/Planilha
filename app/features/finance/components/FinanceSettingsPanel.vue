@@ -400,11 +400,11 @@ const installPwa = async () => {
 
 const THEMES = [
   { id: 'system', name: 'Sistema', desc: 'Segue automaticamente o tema do dispositivo', icon: '🖥️' },
-  { id: 'light', name: 'Light Clean', desc: 'Claro e minimalista, ideal para o dia a dia', icon: '☀️' },
-  { id: 'dark', name: 'Dark Premium', desc: 'Escuro profissional, confortável à noite', icon: '🌙' },
-  { id: 'eva', name: 'EVA-01', desc: 'Temática especial, roxa e neon', icon: '⚡' },
-  { id: 'cyberpunk', name: 'Cyberpunk', desc: 'Azul elétrico e amarelo neon', icon: '🌃' },
-  { id: 'arasaka', name: 'Arasaka', desc: 'Vermelho corporativo sobre preto', icon: '🔻' },
+  { id: 'light', name: 'Neo Light', desc: 'Papel quente, tinta preta e cores diretas', icon: '☀️' },
+  { id: 'dark', name: 'Neo Dark', desc: 'Superfícies escuras com contornos claros', icon: '🌙' },
+  { id: 'eva', name: 'EVA Brutal', desc: 'Roxo e neon com estrutura neo-brutalista', icon: '⚡' },
+  { id: 'cyberpunk', name: 'Cyber Brutal', desc: 'Azul elétrico e amarelo em blocos sólidos', icon: '🌃' },
+  { id: 'arasaka', name: 'Arasaka Brutal', desc: 'Vermelho corporativo com contraste rígido', icon: '🔻' },
 ] as const
 
 const VALID_THEME_MODES = ['light', 'dark', 'eva', 'cyberpunk', 'arasaka', 'system']
@@ -433,18 +433,18 @@ const COLOR_FIELDS: { key: ColorKey; label: string }[] = [
 
 const customDraft = ref<{ base: 'light' | 'dark'; primary: string; accent: string; positive: string; negative: string }>({
   base: 'dark',
-  primary: '#2f7bff',
-  accent: '#f5e000',
-  positive: '#22c55e',
-  negative: '#ef4444',
+  primary: '#00ff33',
+  accent: '#bb00ff',
+  positive: '#13a86b',
+  negative: '#e84545',
 })
 
 const isCustomActive = computed(() => store.settings.themeMode === 'custom')
 
 // Paleta estrutural do preview conforme a base escolhida.
 const PREVIEW_BASE = {
-  light: { bg: '#f8fafc', card: '#ffffff', text: '#0f172a', muted: '#64748b', border: '#e2e8f0' },
-  dark:  { bg: '#0b1020', card: '#111827', text: '#e6e9f0', muted: '#94a3b8', border: '#283047' },
+  light: { bg: '#f3efe6', card: '#fffdf6', text: '#171717', muted: '#666666', border: '#171717' },
+  dark:  { bg: '#090b10', card: '#171c25', text: '#f7f2e8', muted: '#969dac', border: '#020306' },
 }
 
 const previewBase = computed(() => PREVIEW_BASE[customDraft.value.base])
@@ -599,16 +599,18 @@ const copyInviteLink = async () => {
 .panel {
   background: var(--surface);
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 .panel-header {
-  padding: 16px 20px 0;
+  padding: 14px 20px;
+  background: var(--surface2);
+  border-bottom: 2px solid var(--border);
 }
 .panel-title {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
 }
 .panel-sub {
@@ -626,7 +628,7 @@ const copyInviteLink = async () => {
   padding: 12px 16px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
   text-align: left;
   width: 100%;
 }
@@ -640,7 +642,8 @@ const copyInviteLink = async () => {
   font-weight: 800;
   color: var(--primary);
   background: var(--primary-dim);
-  border-radius: 99px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
   padding: 2px 8px;
   margin-left: 8px;
   text-transform: uppercase;
@@ -664,7 +667,7 @@ const copyInviteLink = async () => {
   gap: 12px;
   padding: 8px 12px;
   background: var(--surface2);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--radius-xs);
 }
 .color-row-label {
@@ -709,7 +712,8 @@ const copyInviteLink = async () => {
   gap: 12px;
   padding: 16px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--pv-border);
+  border: 3px solid var(--pv-border);
+  box-shadow: 6px 6px 0 var(--pv-border);
 }
 .cc-prow {
   display: flex;
@@ -718,8 +722,9 @@ const copyInviteLink = async () => {
 }
 .cc-btn {
   padding: 8px 18px;
-  border: none;
-  border-radius: 8px;
+  border: 2px solid var(--pv-border);
+  border-radius: var(--radius-sm);
+  box-shadow: 3px 3px 0 var(--pv-border);
   background: var(--pv-primary);
   color: #fff;
   font-family: inherit;
@@ -729,7 +734,8 @@ const copyInviteLink = async () => {
 }
 .cc-chip {
   padding: 5px 12px;
-  border-radius: 99px;
+  border: 2px solid var(--pv-border);
+  border-radius: var(--radius-xs);
   background: color-mix(in srgb, var(--pv-accent) 22%, transparent);
   color: var(--pv-accent);
   font-size: 12px;
@@ -740,9 +746,10 @@ const copyInviteLink = async () => {
   flex-direction: column;
   gap: 2px;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: var(--pv-card);
-  border: 1px solid var(--pv-border);
+  border: 2px solid var(--pv-border);
+  box-shadow: 3px 3px 0 var(--pv-border);
 }
 .cc-card-label {
   font-size: 11px;
@@ -752,6 +759,7 @@ const copyInviteLink = async () => {
 .cc-card-value {
   font-size: 18px;
   font-weight: 800;
+  font-family: var(--ds-font-family-mono);
   color: var(--pv-primary);
 }
 .cc-dots {
@@ -770,7 +778,8 @@ const copyInviteLink = async () => {
 .cc-dot i {
   width: 9px;
   height: 9px;
-  border-radius: 50%;
+  border: 1px solid var(--pv-border);
+  border-radius: 0;
   display: inline-block;
 }
 .btn-ghost {

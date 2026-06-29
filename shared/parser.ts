@@ -1,4 +1,4 @@
-import { DEFAULT_COLORS, DEFAULT_DASHBOARD_CONFIG, DEFAULT_HOUSEHOLD_ID, MONTH_ALIASES } from './constants'
+import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG, DEFAULT_HOUSEHOLD_ID, MONTH_ALIASES } from './constants'
 import { makeId } from './id'
 import { buildEntriesFromRules } from './rules'
 import type { Account, Category, FinanceEntry, FinanceRule, HouseholdSettings } from './types'
@@ -78,12 +78,12 @@ const makeSettings = (): HouseholdSettings => ({
   id: DEFAULT_HOUSEHOLD_ID,
   currency: 'BRL',
   timezone: 'America/Sao_Paulo',
-  themeMode: 'light',
+  themeMode: 'dark',
   densityMode: 'compact',
   periodMode: 'due_date',
   horizonMonths: 18,
   notificationDays: [3, 1],
-  colorTokens: { ...DEFAULT_COLORS },
+  colorTokens: { ...DARK_COLORS },
   dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG },
   updatedAt: new Date().toISOString()
 })

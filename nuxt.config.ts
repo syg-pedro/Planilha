@@ -17,6 +17,8 @@ const envSupabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   ''
 
+const envNitroOutputDir = process.env.NITRO_OUTPUT_DIR || ''
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
@@ -26,6 +28,13 @@ export default defineNuxtConfig({
     'ag-grid-community/styles/ag-theme-quartz.css'
   ],
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@vite-pwa/nuxt', '@nuxt/eslint'],
+  nitro: envNitroOutputDir
+    ? {
+        output: {
+          dir: envNitroOutputDir
+        }
+      }
+    : {},
   vite: {
     optimizeDeps: {
       include: [
@@ -63,8 +72,8 @@ export default defineNuxtConfig({
       name: 'Financeiro Familiar',
       short_name: 'Financeiro',
       description: 'Planejamento financeiro familiar com dashboard, planilha e calendario.',
-      theme_color: '#0f766e',
-      background_color: '#f8fafc',
+      theme_color: '#5b5bf7',
+      background_color: '#f3efe6',
       display: 'standalone',
       start_url: '/',
       id: '/',
@@ -115,12 +124,12 @@ export default defineNuxtConfig({
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap' },
         { rel: 'apple-touch-icon', href: '/icon-192.png' }
       ],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
-        { name: 'theme-color', content: '#0f766e' },
+        { name: 'theme-color', content: '#5b5bf7' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
         { name: 'apple-mobile-web-app-title', content: 'Financeiro' },

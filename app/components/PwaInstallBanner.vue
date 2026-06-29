@@ -93,14 +93,16 @@ const closeManual = () => { showManual.value = false }
   gap: 12px;
   padding: 14px 16px;
   background: var(--surface);
-  border-top: 1px solid var(--border);
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+  border-top: 3px solid var(--border);
+  box-shadow: 0 -4px 0 var(--ds-shadow-color);
 }
 
 .pwa-banner-icon {
   width: 44px;
   height: 44px;
-  border-radius: 10px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 3px 3px 0 var(--ds-shadow-color);
   flex-shrink: 0;
 }
 
@@ -136,7 +138,7 @@ const closeManual = () => { showManual.value = false }
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgb(0 0 0 / 0.64);
   display: flex;
   align-items: flex-end;
   padding: 16px;
@@ -145,7 +147,9 @@ const closeManual = () => { showManual.value = false }
 .pwa-manual {
   width: 100%;
   background: var(--surface);
-  border-radius: 16px 16px 12px 12px;
+  border: 3px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  box-shadow: 0 -6px 0 var(--ds-shadow-color);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -158,15 +162,24 @@ const closeManual = () => { showManual.value = false }
   gap: 12px;
 }
 
-.pwa-manual-icon { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0 }
+.pwa-manual-icon {
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 3px 3px 0 var(--ds-shadow-color);
+  flex-shrink: 0;
+}
 
 .pwa-manual-title { font-size: 15px; font-weight: 800; color: var(--text) }
 .pwa-manual-sub { font-size: 12px; color: var(--text3); margin-top: 2px }
 
 .pwa-manual-close {
   margin-left: auto;
-  background: none;
-  border: none;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
   font-size: 16px;
   cursor: pointer;
   color: var(--text3);
@@ -188,7 +201,9 @@ const closeManual = () => { showManual.value = false }
 .pwa-step-num {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  box-shadow: 2px 2px 0 var(--ds-shadow-color);
   background: var(--primary);
   color: #fff;
   font-size: 12px;
@@ -203,13 +218,14 @@ const closeManual = () => { showManual.value = false }
   font-size: 11px;
   color: var(--text3);
   background: var(--surface2);
-  border-radius: 8px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
   line-height: 1.5;
 }
 
 .pwa-slide-enter-active,
-.pwa-slide-leave-active { transition: transform 0.3s ease, opacity 0.3s ease }
+.pwa-slide-leave-active { transition: transform var(--ds-motion-base) linear, opacity var(--ds-motion-base) linear }
 .pwa-slide-enter-from,
 .pwa-slide-leave-to { transform: translateY(100%); opacity: 0 }
 </style>

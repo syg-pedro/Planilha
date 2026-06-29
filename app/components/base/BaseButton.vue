@@ -3,9 +3,9 @@
     :type="type"
     :disabled="disabled || loading"
     :class="buttonClass"
-    :style="buttonStyle"
+    :aria-busy="loading || undefined"
   >
-    <span v-if="loading" class="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" />
+    <span v-if="loading" class="base-button__spinner" aria-hidden="true" />
     <slot />
   </button>
 </template>
@@ -35,43 +35,94 @@ const props = withDefaults(
   }
 )
 
-const variants: Record<Variant, string> = {
-  primary: 'text-white border-transparent',
-  secondary: 'border',
-  ghost: 'border-transparent',
-  danger: 'text-white border-transparent'
-}
-
-const sizes: Record<Size, string> = {
-  sm: 'px-2.5 py-1.5 text-xs',
-  md: 'px-3 py-2 text-sm'
-}
-
 const buttonClass = computed(() => {
-  const base =
-    'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60'
-  const sizeClass = sizes[props.size]
-  const variantClass = variants[props.variant]
-  return [base, sizeClass, variantClass, props.block ? 'w-full' : '']
-})
-
-const buttonStyle = computed(() => {
-  if (props.variant === 'primary') {
-    return { background: 'var(--ds-color-brand-primary)' }
-  }
-  if (props.variant === 'danger') {
-    return { background: 'var(--ds-color-state-danger)' }
-  }
-  if (props.variant === 'ghost') {
-    return {
-      background: 'transparent',
-      color: 'var(--ds-color-text-muted)'
-    }
-  }
-  return {
-    background: 'color-mix(in srgb, var(--ds-color-surface-card) 98%, transparent)',
-    borderColor: 'var(--ds-color-border-strong)',
-    color: 'var(--ds-color-text-primary)'
-  }
+  return [
+    'base-button',
+    `base-button--${props.variant}`,
+    `base-button--${props.size}`,
+    { 'base-button--block': props.block },
+  ]
 })
 </script>
+
+<style scoped>
+.base-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 3px 3px 0 var(--ds-shadow-color);
+  color: var(--text);
+  font-weight: 750;
+  line-height: 1.1;
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.base-button:not(:disabled):hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ds-shadow-color);
+}
+
+.base-button:not(:disabled):active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ds-shadow-color);
+}
+
+.base-button:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.45);
+  opacity: 0.58;
+}
+
+.base-button--primary {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.base-button--secondary {
+  background: var(--surface);
+}
+
+.base-button--ghost {
+  background: var(--surface2);
+  color: var(--text2);
+  box-shadow: none;
+}
+
+.base-button--danger {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+.base-button--sm {
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.base-button--md {
+  min-height: 40px;
+  padding: 9px 14px;
+  font-size: 14px;
+}
+
+.base-button--block {
+  width: 100%;
+}
+
+.base-button__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: base-button-spin 0.65s linear infinite;
+}
+
+@keyframes base-button-spin {
+  to { transform: rotate(360deg); }
+}
+</style>

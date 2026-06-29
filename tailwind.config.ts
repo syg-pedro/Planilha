@@ -12,11 +12,11 @@ export default <Partial<Config>>{
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Manrope', 'Plus Jakarta Sans', 'Segoe UI', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Consolas', 'monospace']
+        sans: ['Space Grotesk', 'Segoe UI', 'system-ui', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'Consolas', 'monospace']
       },
       boxShadow: {
-        panel: '0 12px 30px rgba(15, 23, 42, 0.12)'
+        panel: '5px 5px 0 #111111'
       }
     }
   }

@@ -1,14 +1,10 @@
 <template>
   <div
     v-if="current"
+    class="base-alert"
     :style="{
       background: bgMap[current.tone ?? 'info'],
-      border: `1px solid ${borderMap[current.tone ?? 'info']}`,
-      borderRadius: 'var(--radius-sm)',
-      padding: '10px 14px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '10px',
+      '--alert-color': borderMap[current.tone ?? 'info'],
     }"
   >
     <BaseIcon
@@ -16,16 +12,18 @@
       :size="16"
       :color="borderMap[current.tone ?? 'info']"
     />
-    <div style="flex: 1; min-width: 0">
-      <p style="font-size: 13px; font-weight: 700; color: var(--text)">{{ current.title }}</p>
-      <p v-if="current.body" style="font-size: 12px; color: var(--text2); margin-top: 1px">{{ current.body }}</p>
+    <div class="base-alert__content">
+      <p class="base-alert__title">{{ current.title }}</p>
+      <p v-if="current.body" class="base-alert__body">{{ current.body }}</p>
     </div>
     <span
       v-if="remaining > 0"
-      style="display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; background: var(--surface2); color: var(--text2); white-space: nowrap"
+      class="base-alert__count"
     >+{{ remaining }}</span>
     <button
-      style="background: none; border: none; cursor: pointer; color: var(--text3); display: flex; padding: 4px; border-radius: 6px"
+      class="base-alert__close"
+      type="button"
+      aria-label="Dispensar alerta"
       @click="dismiss"
     >
       <BaseIcon name="close" :size="14" />
@@ -35,7 +33,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import BaseIcon from './BaseIcon.vue'
+import BaseIcon from '../../design-system/components/BaseIcon.vue'
 
 interface AlertItem {
   tone?: 'danger' | 'warning' | 'info' | 'success'
@@ -70,3 +68,57 @@ const dismiss = () => {
   if (idx >= 0) dismissed.value = [...dismissed.value, idx]
 }
 </script>
+
+<style scoped>
+.base-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border: var(--border-width) solid var(--border);
+  border-left: 8px solid var(--alert-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.base-alert__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.base-alert__title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.base-alert__body {
+  margin-top: 1px;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.base-alert__count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  color: var(--text2);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.base-alert__close {
+  display: flex;
+  padding: 5px;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+</style>

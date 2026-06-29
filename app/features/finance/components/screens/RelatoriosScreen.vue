@@ -30,8 +30,8 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px">
 
       <!-- Category breakdown -->
-      <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden">
-        <div style="padding: 14px 18px; border-bottom: 1px solid var(--border)">
+      <div class="neo-panel">
+        <div class="neo-panel-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border)">
           <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Despesas por categoria</h3>
           <p style="font-size: 11px; color: var(--text3); margin-top: 2px">{{ periodLabel }}</p>
         </div>
@@ -48,8 +48,8 @@
       </div>
 
       <!-- Monthly cashflow chart -->
-      <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden">
-        <div style="padding: 14px 18px; border-bottom: 1px solid var(--border)">
+      <div class="neo-panel">
+        <div class="neo-panel-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border)">
           <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Comparativo mensal</h3>
           <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Receitas vs. despesas</p>
         </div>
@@ -60,8 +60,8 @@
       </div>
 
       <!-- Per-person -->
-      <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden">
-        <div style="padding: 14px 18px; border-bottom: 1px solid var(--border)">
+      <div class="neo-panel">
+        <div class="neo-panel-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border)">
           <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Por pessoa</h3>
           <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Saldo por titular da conta</p>
         </div>
@@ -85,8 +85,8 @@
     </div>
 
     <!-- Summary table -->
-    <div style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden">
-      <div style="padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center">
+    <div class="neo-panel">
+      <div class="neo-panel-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center">
         <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Resumo mensal</h3>
         <span style="font-size: 12px; color: var(--text3)">{{ cashflowChart.length }} meses</span>
       </div>
