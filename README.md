@@ -152,6 +152,19 @@ Configure as variáveis de ambiente na dashboard da Vercel:
 
 O APK de produção é publicado nos [GitHub Releases](https://github.com/syg-pedro/Planilha/releases). Ele é assinado com uma chave privada, mantida fora do repositório, portanto novas versões devem usar a mesma chave para que o Android permita a atualização por cima da instalação existente.
 
+### Instalação
+
+[**Baixar o Financeiro Familiar para Android (APK v1.0.0)**](https://github.com/syg-pedro/Planilha/releases/download/v1.0.0/Financeiro-Familiar-v1.0.0.apk)
+
+1. Abra o link acima no celular Android e baixe o arquivo.
+2. Abra o APK baixado e permita a instalação pela fonte usada (Chrome, WhatsApp ou Arquivos), caso o Android solicite.
+3. Abra o Financeiro Familiar, permita as notificações e entre ou crie sua conta.
+
+### Como funcionam as atualizações
+
+- **Melhorias normais:** cada commit na `main` publica automaticamente uma atualização OTA. Basta deixar o aplicativo em segundo plano e abri-lo novamente para receber as melhorias; não é necessário baixar outro APK.
+- **Atualizações nativas:** permissões, ícone, plugins Capacitor ou qualquer alteração Android exigem um novo APK. Quando isso acontecer, ele será publicado nos [GitHub Releases](https://github.com/syg-pedro/Planilha/releases) e pode ser instalado por cima da versão anterior.
+
 - Mudanças de interface e código web: todo commit na `main` publica automaticamente um pacote OTA no canal `production` do Capgo. O aplicativo instala o pacote na próxima transição para segundo plano e retorno.
 - Mudanças nativas (permissões, plugins Capacitor, ícone ou configuração Android): execute o workflow **Publicar APK Android** em Actions, aumentando `version` e `version_code`. O workflow anexa o APK assinado a um GitHub Release.
 - Segredos exigidos em GitHub Actions: `CAPGO_TOKEN`, `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` e `ANDROID_KEY_PASSWORD`.
