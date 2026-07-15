@@ -38,10 +38,16 @@ const releases = [
     version,
     date: 'Em desenvolvimento',
     items: [
-      'Aplicativo Android com Capacitor',
-      'Lembretes de vencimento em horário configurável',
-      'Indicador de dia de vencimento na matriz',
-      'Ajustes de uso em telas menores'
+      'Dashboard com receitas, despesas, saldo, pendências, vencimentos e fluxo de caixa',
+      'Planilha em Matriz e Lista, com lançamentos editáveis e indicador do dia de vencimento',
+      'Relatórios e planejamento anual para acompanhar os gastos ao longo do tempo',
+      'Controle de contas, cartões, limites, assinaturas e compras recorrentes',
+      'Dívidas e parcelas com acompanhamento de pagamentos',
+      'Lista de desejos para organizar objetivos e compras futuras',
+      'Alertas inteligentes, lembretes de vencimento e notificações configuráveis',
+      'Login, criação de conta e opção de lembrar o acesso neste aparelho',
+      'Aplicativo Android com uso otimizado para telas menores e navegação pelo botão Voltar',
+      'Atualizações automáticas e seguras, sem precisar baixar outro APK para melhorias normais'
     ]
   }
 ]

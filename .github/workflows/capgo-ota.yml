@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      release_notes:
+        description: Novidades exibidas no aplicativo
+        required: false
+        type: string
 
 concurrency:
   group: capgo-production
@@ -14,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CAPGO_TOKEN: ${{ secrets.CAPGO_TOKEN }}
+      OTA_RELEASE_NOTES: ${{ inputs.release_notes || github.event.head_commit.message || 'Melhorias e correções de estabilidade.' }}
       NUXT_PUBLIC_API_BASE_URL: ${{ vars.NUXT_PUBLIC_API_BASE_URL }}
       NUXT_PUBLIC_SUPABASE_URL: ${{ vars.NUXT_PUBLIC_SUPABASE_URL }}
       NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -48,4 +54,4 @@ jobs:
 
       - name: Publicar atualização na produção
         if: steps.capgo.outputs.configured == 'true'
-        run: npx @capgo/cli@latest bundle upload --apikey "$CAPGO_TOKEN" --channel production --bundle "1.0.${{ github.run_number }}" --delta --fail-on-incompatible
+        run: npx @capgo/cli@latest bundle upload --apikey "$CAPGO_TOKEN" --channel production --bundle "1.0.${{ github.run_number }}" --comment "$OTA_RELEASE_NOTES" --delta --fail-on-incompatible
