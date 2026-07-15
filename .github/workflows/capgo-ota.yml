@@ -48,4 +48,4 @@ jobs:
 
       - name: Publicar atualização na produção
         if: steps.capgo.outputs.configured == 'true'
-        run: npx @capgo/cli@latest bundle upload --apikey "$CAPGO_TOKEN" --channel production --delta
+        run: npx @capgo/cli@latest bundle upload --apikey "$CAPGO_TOKEN" --channel production --bundle "1.0.${{ github.run_number }}" --delta --fail-on-incompatible
