@@ -20,7 +20,12 @@ jobs:
     steps:
       - name: Verificar configuração do Capgo
         id: capgo
-        run: echo "configured=$([ -n \"$CAPGO_TOKEN\" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ -n "$CAPGO_TOKEN" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: actions/checkout@v4
         if: steps.capgo.outputs.configured == 'true'

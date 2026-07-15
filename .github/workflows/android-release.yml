@@ -61,7 +61,9 @@ jobs:
 
       - name: Gerar APK Release assinado
         working-directory: android
-        run: ./gradlew :app:assembleRelease --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleRelease --no-daemon
 
       - name: Preparar artefato
         run: |
