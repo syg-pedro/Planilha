@@ -1,0 +1,77 @@
+name: Publicar APK Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Versão exibida no Android, por exemplo 1.0.1
+        required: true
+        type: string
+      version_code:
+        description: Número interno maior que o da versão anterior, por exemplo 2
+        required: true
+        type: string
+      release_notes:
+        description: Notas exibidas no GitHub Release e no aplicativo
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_VERSION_NAME: ${{ inputs.version }}
+      ANDROID_VERSION_CODE: ${{ inputs.version_code }}
+      ANDROID_KEYSTORE_FILE: keystore/financeiro-familiar-release.jks
+      ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      NUXT_PUBLIC_APP_VERSION: ${{ inputs.version }}
+      NUXT_PUBLIC_API_BASE_URL: ${{ vars.NUXT_PUBLIC_API_BASE_URL }}
+      NUXT_PUBLIC_SUPABASE_URL: ${{ vars.NUXT_PUBLIC_SUPABASE_URL }}
+      NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Restaurar a chave de assinatura
+        run: |
+          mkdir -p android/keystore
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/keystore/financeiro-familiar-release.jks
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Gerar e sincronizar o aplicativo
+        run: |
+          npm run generate
+          npx cap sync android
+
+      - name: Gerar APK Release assinado
+        working-directory: android
+        run: ./gradlew :app:assembleRelease --no-daemon
+
+      - name: Preparar artefato
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/release/app-release.apk "release/Financeiro-Familiar-v${{ inputs.version }}.apk"
+
+      - name: Publicar GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: Financeiro Familiar v${{ inputs.version }}
+          body: ${{ inputs.release_notes }}
+          files: release/Financeiro-Familiar-v${{ inputs.version }}.apk

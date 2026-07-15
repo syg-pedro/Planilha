@@ -1,5 +1,5 @@
 <template>
-  <NuxtLayout :name="layoutName" :key="layoutName">
+  <NuxtLayout :key="layoutName" :name="layoutName">
     <NuxtPage />
   </NuxtLayout>
   <PwaInstallBanner v-if="!isNativePlatform" />
@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
+import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 
 const store = useFinanceStore()
@@ -25,6 +26,11 @@ const layoutName = computed(() => {
   return typeof route.meta.layout === 'string' ? route.meta.layout : 'default'
 })
 
+const notifyNativeBundleReady = () => {
+  if (!isNativePlatform) return
+  void CapacitorUpdater.notifyAppReady().catch(() => undefined)
+}
+
 // Ao trocar de conta: resetar store e recarregar dados do novo usuário
 watch(user, async (newUser, oldUser) => {
   const changedUser = newUser?.id !== oldUser?.id
@@ -40,6 +46,8 @@ watch(user, async (newUser, oldUser) => {
 }, { immediate: false })
 
 onMounted(async () => {
+  notifyNativeBundleReady()
+
   // Com Supabase configurado, os dados financeiros so podem ser carregados
   // depois de uma sessao valida. No modo local sem Supabase, mantemos o demo.
   if (requiresAuthentication && !user.value) {

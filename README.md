@@ -145,3 +145,14 @@ npx vercel deploy --prod --yes
 
 Configure as variáveis de ambiente na dashboard da Vercel:
 `EDIT_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `NUXT_PUBLIC_SUPABASE_URL`, `NUXT_PUBLIC_SUPABASE_ANON_KEY`
+
+---
+
+## Android: distribuição e atualizações
+
+O APK de produção é publicado nos [GitHub Releases](https://github.com/syg-pedro/Planilha/releases). Ele é assinado com uma chave privada, mantida fora do repositório, portanto novas versões devem usar a mesma chave para que o Android permita a atualização por cima da instalação existente.
+
+- Mudanças de interface e código web: todo commit na `main` publica automaticamente um pacote OTA no canal `production` do Capgo. O aplicativo instala o pacote na próxima transição para segundo plano e retorno.
+- Mudanças nativas (permissões, plugins Capacitor, ícone ou configuração Android): execute o workflow **Publicar APK Android** em Actions, aumentando `version` e `version_code`. O workflow anexa o APK assinado a um GitHub Release.
+- Segredos exigidos em GitHub Actions: `CAPGO_TOKEN`, `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` e `ANDROID_KEY_PASSWORD`.
+- Variáveis de Actions: `NUXT_PUBLIC_API_BASE_URL`, `NUXT_PUBLIC_SUPABASE_URL` e `NUXT_PUBLIC_SUPABASE_ANON_KEY`.

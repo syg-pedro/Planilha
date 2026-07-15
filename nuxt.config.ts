@@ -58,7 +58,7 @@ export default defineNuxtConfig({
     public: {
       appName: 'Financeiro Familiar',
       appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.0.0',
-      updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || '',
+      updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || 'https://planilha-cyan.vercel.app/api/android-release',
       defaultEditKey: process.env.EDIT_KEY || 'demo-finance-key',
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '',
       supabaseUrl: envSupabaseUrl,

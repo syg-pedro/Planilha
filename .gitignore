@@ -21,6 +21,9 @@ logs
 .idea
 .agents
 android/screenshot-*.png
+android/keystore/
+android/keystore.properties
+.capgo_key_v2
 
 # Local env files
 .env

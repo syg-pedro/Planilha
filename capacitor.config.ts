@@ -14,6 +14,11 @@ const config: CapacitorConfig = {
     LocalNotifications: {
       smallIcon: 'ic_stat_notification',
       iconColor: '#d7ff18'
+    },
+    CapacitorUpdater: {
+      autoUpdate: 'atBackground',
+      defaultChannel: 'production',
+      resetWhenUpdate: true
     }
   }
 }
