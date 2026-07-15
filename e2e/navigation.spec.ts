@@ -26,6 +26,9 @@ test.describe('navegação do Financeiro Familiar', () => {
     for (const module of modules) {
       await page.getByRole('button', { name: module.navigation, exact: typeof module.navigation === 'string' }).click()
       await expect(page.getByRole('heading', { name: module.heading, level: 1 })).toBeVisible()
+      if (module.heading === 'Novidades') {
+        await expect(page.getByRole('button', { name: 'Verificar atualizações', exact: true })).toBeVisible()
+      }
     }
   })
 
