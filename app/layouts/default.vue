@@ -29,7 +29,7 @@
         </div>
         <div :style="{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: collapsed ? 0 : 1, transition: 'opacity .15s', pointerEvents: collapsed ? 'none' : 'auto' }">
           <p style="font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">Financeiro</p>
-          <p style="font-size: 14px; font-weight: 800; color: var(--text)">Familiar</p>
+          <p style="font-size: 14px; font-weight: 800; color: var(--text)">Familiar <span class="app-version-inline">{{ appVersion }}</span></p>
         </div>
       </div>
 
@@ -162,8 +162,6 @@
           <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">Sair</span>
         </button>
 
-        <p v-if="!collapsed" class="app-version-badge">Versão v{{ appVersion }}</p>
-
         <!-- Net worth badge -->
         <div
           v-if="!collapsed"
@@ -208,7 +206,7 @@
           </div>
           <div>
             <p style="font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">Financeiro</p>
-            <p style="font-size: 14px; font-weight: 800; color: var(--text)">Familiar</p>
+            <p style="font-size: 14px; font-weight: 800; color: var(--text)">Familiar <span class="app-version-inline">{{ appVersion }}</span></p>
           </div>
         </div>
         <nav style="flex: 1; padding: 6px 8px">
@@ -279,7 +277,6 @@
           >
             <BaseIcon name="logout" :size="18" />Sair
           </button>
-          <p class="app-version-badge">Versão v{{ appVersion }}</p>
         </div>
       </div>
     </div>
@@ -583,17 +580,18 @@ const toggleGroup = (id: string) => {
   box-shadow: 2px 2px 0 var(--ds-shadow-color);
 }
 
-.app-version-badge {
-  margin: 6px 10px 2px;
-  padding: 6px 8px;
+.app-version-inline {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 1px 4px;
   border: 1px solid var(--border);
   background: var(--surface2);
   color: var(--text3);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-align: center;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  vertical-align: 1px;
 }
 
 .app-drawer {
