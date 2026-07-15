@@ -9,6 +9,11 @@ on:
         description: Novidades exibidas no aplicativo
         required: false
         type: string
+      allow_native_changes:
+        description: Publicar mesmo após uma mudança nativa já coberta por APK novo
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: capgo-production
@@ -54,4 +59,9 @@ jobs:
 
       - name: Publicar atualização na produção
         if: steps.capgo.outputs.configured == 'true'
-        run: npx @capgo/cli@latest bundle upload --apikey "$CAPGO_TOKEN" --channel production --bundle "1.0.${{ github.run_number }}" --comment "$OTA_RELEASE_NOTES" --no-delta --fail-on-incompatible
+        run: |
+          UPLOAD_ARGS=(--no-delta)
+          if [ "${{ inputs.allow_native_changes }}" != "true" ]; then
+            UPLOAD_ARGS+=(--fail-on-incompatible)
+          fi
+          npx @capgo/cli@latest bundle upload --apikey "$CAPGO_TOKEN" --channel production --bundle "1.0.${{ github.run_number }}" --comment "$OTA_RELEASE_NOTES" "${UPLOAD_ARGS[@]}"
