@@ -492,6 +492,20 @@ watch(() => store.settings.themeMode, () => {
 
 const updateMobile = () => { isMobile.value = window.innerWidth < 768 }
 
+const syncPublishedVersion = async () => {
+  if (Capacitor.isNativePlatform()) return
+
+  const url = config.public.updateManifestUrl as string
+  if (!url) return
+
+  try {
+    const release = await $fetch<{ version?: string }>(url, { cache: 'no-store' })
+    if (release.version) appVersion.value = release.version
+  } catch {
+    // Mantem a versao local quando a consulta estiver indisponivel.
+  }
+}
+
 let backButtonListener: PluginListenerHandle | undefined
 
 const handleNativeBack = async () => {
@@ -525,6 +539,8 @@ onMounted(() => {
     void App.addListener('backButton', handleNativeBack).then((listener) => {
       backButtonListener = listener
     })
+  } else {
+    void syncPublishedVersion()
   }
 })
 

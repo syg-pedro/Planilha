@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { execFileSync } from 'node:child_process'
+
 const envSupabaseUrl =
   process.env.SUPABASE_URL ||
   process.env.NUXT_PUBLIC_SUPABASE_URL ||
@@ -18,6 +20,20 @@ const envSupabasePublishableKey =
   ''
 
 const envNitroOutputDir = process.env.NITRO_OUTPUT_DIR || ''
+const resolveWebBuildVersion = () => {
+  const versionFromEnvironment = process.env.NUXT_PUBLIC_WEB_BUILD_VERSION ||
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.GITHUB_SHA
+  if (versionFromEnvironment) return versionFromEnvironment.slice(0, 7)
+
+  try {
+    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+}
+
+const webBuildVersion = resolveWebBuildVersion()
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -57,7 +73,9 @@ export default defineNuxtConfig({
     dataFilePath: process.env.DATA_FILE_PATH || '',
     public: {
       appName: 'Financeiro Familiar',
-      appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.0.0',
+      appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.1.0',
+      webBuildVersion,
+      webVersionUrl: '/api/web-version',
       updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || 'https://planilha-cyan.vercel.app/api/android-release',
       otaNotesUrl: process.env.NUXT_PUBLIC_OTA_NOTES_URL || 'https://planilha-cyan.vercel.app/api/ota-notes',
       defaultEditKey: process.env.EDIT_KEY || 'demo-finance-key',

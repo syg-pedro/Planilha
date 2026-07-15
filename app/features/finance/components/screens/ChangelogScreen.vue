@@ -27,6 +27,7 @@
 import { onMounted, ref } from 'vue'
 import { App } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
+import { isVersionNewer } from '#shared/version'
 
 const config = useRuntimeConfig()
 const version = config.public.appVersion as string
@@ -52,19 +53,6 @@ const releases = [
   }
 ]
 
-const newer = (candidate: string, current: string) => {
-  const latest = candidate.split('.').map(Number)
-  const installed = current.split('.').map(Number)
-  const size = Math.max(latest.length, installed.length)
-
-  for (let index = 0; index < size; index += 1) {
-    const difference = (latest[index] || 0) - (installed[index] || 0)
-    if (difference !== 0) return difference > 0
-  }
-
-  return false
-}
-
 onMounted(async () => {
   if (Capacitor.isNativePlatform()) {
     installedVersion.value = (await App.getInfo()).version
@@ -75,7 +63,7 @@ onMounted(async () => {
 
   try {
     const manifest = await $fetch<{ version: string; notes?: string; apkUrl?: string }>(url, { cache: 'no-store' })
-    if (newer(manifest.version, installedVersion.value)) update.value = manifest
+    if (isVersionNewer(manifest.version, installedVersion.value)) update.value = manifest
   } finally {
     checked.value = true
   }
