@@ -43,6 +43,7 @@ const requiresAuthentication = Boolean(
 const pendingOtaUpdate = ref<{ version: string; notes: string[] } | null>(null)
 const dismissedOtaVersion = ref<string | null>(null)
 let otaUpdateListener: PluginListenerHandle | undefined
+const activeScreen = useState('finance-screen', () => 'dashboard')
 
 const layoutName = computed(() => {
   if (route.path === '/login' || route.path === '/signup') {
@@ -132,6 +133,17 @@ watch(user, async (newUser, oldUser) => {
     store.notifyUpcoming()
   }
 }, { immediate: false })
+
+watch(
+  () => `${store.initialized}-${store.settings.onboarding.status}-${store.accounts.length}-${store.categories.length}-${store.rules.length}-${store.entries.length}`,
+  () => {
+    const isEmptyFinancialSpace = store.accounts.length === 0 && store.categories.length === 0 && store.rules.length === 0 && store.entries.length === 0
+    if (store.initialized && store.settings.onboarding.status === 'new' && isEmptyFinancialSpace && activeScreen.value === 'dashboard') {
+      activeScreen.value = 'onboarding'
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   if (isNativePlatform) {

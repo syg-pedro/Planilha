@@ -7,6 +7,7 @@ import { computeKpis } from '../../shared/finance'
 import { parseDadosText } from '../../shared/parser'
 import { buildEntriesFromRules } from '../../shared/rules'
 import { makeId } from '../../shared/id'
+import { createDefaultOnboardingState, normalizeOnboardingKey } from '../../shared/onboarding'
 import type {
   Account,
   BootstrapResponse,
@@ -15,6 +16,10 @@ import type {
   FinanceEntry,
   FinanceRule,
   HouseholdSettings,
+  OnboardingImportPayload,
+  OnboardingImportPreview,
+  OnboardingImportSummary,
+  OnboardingState,
   ThemeSettingsRequest,
   WishItem,
   WishPriority,
@@ -29,6 +34,9 @@ interface Repository {
   saveTheme: (payload: ThemeSettingsRequest) => Promise<HouseholdSettings>
   saveDashboard: (payload: DashboardSettingsRequest) => Promise<HouseholdSettings>
   importCsv: (csvText: string, accountId: string | null) => Promise<{ inserted: number; warnings: string[] }>
+  previewOnboardingImport: (payload: OnboardingImportPayload) => Promise<OnboardingImportPreview>
+  importOnboardingWorkbook: (payload: OnboardingImportPayload) => Promise<OnboardingImportPreview>
+  saveOnboarding: (onboarding: OnboardingState) => Promise<HouseholdSettings>
   saveRules: (upserts: Partial<FinanceRule>[], deletes: string[]) => Promise<FinanceRule[]>
   saveAccounts: (upserts: Partial<Account>[], deletes: string[]) => Promise<Account[]>
   getWishItems: () => Promise<WishItem[]>
@@ -104,6 +112,134 @@ const parseCsvRows = (csvText: string): Array<Record<string, string>> => {
 
   return rows
 }
+
+const hasFinancialData = (state: Pick<MemoryState, 'accounts' | 'categories' | 'rules' | 'entries'>): boolean =>
+  state.accounts.length > 0 || state.categories.length > 0 || state.rules.length > 0 || state.entries.length > 0
+
+interface PreparedOnboardingImport {
+  accounts: Account[]
+  categories: Category[]
+  rules: FinanceRule[]
+  entries: FinanceEntry[]
+  summary: OnboardingImportSummary
+}
+
+const prepareOnboardingImport = (
+  payload: OnboardingImportPayload,
+  householdId: string,
+  horizonMonths: number
+): PreparedOnboardingImport => {
+  const now = new Date().toISOString()
+  const today = now.slice(0, 10)
+  const accountByName = new Map<string, string>()
+  const categoryByName = new Map<string, string>()
+
+  const accounts = payload.accounts.map((input) => {
+    const id = makeId('account')
+    accountByName.set(normalizeOnboardingKey(input.name), id)
+    return {
+      id,
+      householdId,
+      name: input.name,
+      owner: input.owner || 'Família',
+      type: input.type,
+      limitTotal: input.limitTotal,
+      closingDay: input.closingDay,
+      dueDay: input.dueDay,
+      active: true,
+    }
+  })
+
+  const categories = payload.categories.map((input) => {
+    const id = makeId('category')
+    categoryByName.set(normalizeOnboardingKey(input.name), id)
+    return {
+      id,
+      householdId,
+      name: input.name,
+      kind: input.kind,
+      color: input.color,
+    }
+  })
+
+  const lookupReference = (name: string | null, lookup: Map<string, string>, label: string, sourceRow: number) => {
+    if (!name) return null
+    const id = lookup.get(normalizeOnboardingKey(name))
+    if (!id) {
+      throw new Error(`Linha ${sourceRow}: ${label} "${name}" não foi encontrada na planilha.`)
+    }
+    return id
+  }
+
+  const rules = payload.rules.map((input) => ({
+    id: makeId('rule'),
+    householdId,
+    title: input.title,
+    description: 'Importado pelo modelo inicial',
+    accountId: lookupReference(input.accountName, accountByName, 'A conta', input.sourceRow),
+    categoryId: lookupReference(input.categoryName, categoryByName, 'A categoria', input.sourceRow),
+    amount: input.amount,
+    kind: input.kind,
+    dueDay: input.dueDay,
+    frequency: 'monthly' as const,
+    startsAt: today,
+    endsAt: null,
+    autoGenerate: true,
+    metadata: { source: 'onboarding-workbook', sourceRow: input.sourceRow },
+  }))
+
+  const generatedEntries = buildEntriesFromRules(rules, householdId, horizonMonths).map((entry) => ({
+    ...entry,
+    metadata: { ...entry.metadata, source: 'onboarding-workbook' },
+  }))
+
+  const entries = payload.entries.map((input) => ({
+    id: makeId('entry'),
+    householdId,
+    ruleId: null,
+    accountId: lookupReference(input.accountName, accountByName, 'A conta', input.sourceRow),
+    categoryId: lookupReference(input.categoryName, categoryByName, 'A categoria', input.sourceRow),
+    title: input.title,
+    description: 'Importado pelo modelo inicial',
+    amount: input.amount,
+    kind: input.kind,
+    dueDate: input.dueDate,
+    competenceDate: input.dueDate,
+    installmentIndex: input.installmentIndex,
+    installmentTotal: input.installmentTotal,
+    status: input.status,
+    origin: 'imported' as const,
+    excludeFromCalc: false,
+    metadata: { source: 'onboarding-workbook', sourceRow: input.sourceRow },
+    createdAt: now,
+    updatedAt: now,
+  }))
+
+  return {
+    accounts,
+    categories,
+    rules,
+    entries: [...generatedEntries, ...entries],
+    summary: {
+      accounts: accounts.length,
+      categories: categories.length,
+      rules: rules.length,
+      generatedEntries: generatedEntries.length,
+      entries: entries.length,
+    },
+  }
+}
+
+const makeImportPreview = (
+  prepared: PreparedOnboardingImport,
+  hasExistingData: boolean
+): OnboardingImportPreview => ({
+  ...prepared.summary,
+  canImport: !hasExistingData,
+  warnings: hasExistingData
+    ? ['A importação inicial só pode ser usada em uma conta sem dados para evitar duplicações.']
+    : [],
+})
 
 const createMemoryState = async (): Promise<MemoryState> => {
   const config = useRuntimeConfig()
@@ -309,6 +445,48 @@ const makeMemoryRepo = (): Repository => ({
     return { inserted, warnings }
   },
 
+  async previewOnboardingImport(payload) {
+    const state = await getMemoryState()
+    const prepared = prepareOnboardingImport(payload, DEFAULT_HOUSEHOLD_ID, state.settings.horizonMonths)
+    return makeImportPreview(prepared, hasFinancialData(state))
+  },
+
+  async importOnboardingWorkbook(payload) {
+    const state = await getMemoryState()
+    const prepared = prepareOnboardingImport(payload, DEFAULT_HOUSEHOLD_ID, state.settings.horizonMonths)
+    const preview = makeImportPreview(prepared, hasFinancialData(state))
+    if (!preview.canImport) {
+      throw new Error(preview.warnings[0])
+    }
+
+    state.accounts = [...state.accounts, ...prepared.accounts]
+    state.categories = [...state.categories, ...prepared.categories]
+    state.rules = [...state.rules, ...prepared.rules]
+    state.entries = [...state.entries, ...prepared.entries].sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    state.settings = {
+      ...state.settings,
+      onboarding: {
+        ...state.settings.onboarding,
+        status: 'completed',
+        completedSteps: ['import-workbook', 'accounts', 'fixed-items'],
+        updatedAt: new Date().toISOString(),
+      },
+      updatedAt: new Date().toISOString(),
+    }
+
+    return preview
+  },
+
+  async saveOnboarding(onboarding) {
+    const state = await getMemoryState()
+    state.settings = {
+      ...state.settings,
+      onboarding,
+      updatedAt: new Date().toISOString(),
+    }
+    return state.settings
+  },
+
   async saveRules(upserts, deletes) {
     const state = await getMemoryState()
     const index = new Map(state.rules.map(r => [r.id, r]))
@@ -419,6 +597,7 @@ const mapSettingToRow = (settings: HouseholdSettings) => ({
   notification_time: settings.notificationTime,
   color_tokens: settings.colorTokens,
   dashboard_config: settings.dashboardConfig,
+  onboarding_state: settings.onboarding,
   updated_at: settings.updatedAt
 })
 
@@ -494,6 +673,10 @@ const mapSettingFromRow = (row: Record<string, any>): HouseholdSettings => ({
   notificationTime: row.notification_time ?? '09:00',
   colorTokens: { ...DEFAULT_COLORS, ...(row.color_tokens ?? {}) },
   dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG, ...(row.dashboard_config ?? {}) },
+  onboarding: {
+    ...createDefaultOnboardingState(),
+    ...(row.onboarding_state ?? {}),
+  },
   updatedAt: row.updated_at
 })
 
@@ -858,6 +1041,44 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
     }
 
     return { inserted: rows.length, warnings }
+  },
+
+  async previewOnboardingImport(payload) {
+    const snapshot = await this.bootstrap()
+    const prepared = prepareOnboardingImport(payload, householdId, snapshot.settings.horizonMonths)
+    return makeImportPreview(prepared, hasFinancialData(snapshot))
+  },
+
+  async importOnboardingWorkbook(payload) {
+    const snapshot = await this.bootstrap()
+    const prepared = prepareOnboardingImport(payload, householdId, snapshot.settings.horizonMonths)
+    const preview = makeImportPreview(prepared, hasFinancialData(snapshot))
+    if (!preview.canImport) {
+      throw new Error(preview.warnings[0])
+    }
+
+    const client = getSupabaseClient()
+    const { error } = await client.rpc('import_onboarding_workbook', {
+      p_household_id: householdId,
+      p_accounts: prepared.accounts.map(mapAccountToRow),
+      p_categories: prepared.categories.map(mapCategoryToRow),
+      p_rules: prepared.rules.map(mapRuleToRow),
+      p_entries: prepared.entries.map(mapEntryToRow),
+    })
+    if (error) throw error
+    return preview
+  },
+
+  async saveOnboarding(onboarding) {
+    const client = getSupabaseClient()
+    const { data, error } = await client
+      .from('household_settings')
+      .update({ onboarding_state: onboarding, updated_at: new Date().toISOString() })
+      .eq('id', householdId)
+      .select('*')
+      .single()
+    if (error) throw error
+    return mapSettingFromRow(data)
   },
 
   async saveRules(upserts, deletes) {

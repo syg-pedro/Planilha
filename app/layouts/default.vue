@@ -447,7 +447,7 @@ import { App } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import BaseIcon from '~/components/base/BaseIcon.vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import { NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, DS_ITEM, HELP_ITEM, CHANGELOG_ITEM } from '~/features/finance/constants/ui'
+import { NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, DS_ITEM, ONBOARDING_ITEM, HELP_ITEM, CHANGELOG_ITEM } from '~/features/finance/constants/ui'
 import { helpForScreen } from '~/features/finance/constants/helpContent'
 
 const store = useFinanceStore()
@@ -469,7 +469,7 @@ const now = new Date()
 const currentMonthName = MONTH_NAMES[now.getMonth()]
 const currentYear = now.getFullYear()
 
-const BOTTOM_ITEMS = [HELP_ITEM, CHANGELOG_ITEM, DS_ITEM, SETTINGS_ITEM]
+const BOTTOM_ITEMS = [ONBOARDING_ITEM, HELP_ITEM, CHANGELOG_ITEM, DS_ITEM, SETTINGS_ITEM]
 const ALL_ITEMS = [...NAV_GROUPS.flatMap(g => g.items), ...BOTTOM_ITEMS]
 const currentItemLabel = computed(() => ALL_ITEMS.find(i => i.id === activeScreen.value)?.label ?? 'Dashboard')
 

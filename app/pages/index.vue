@@ -21,6 +21,7 @@
       <PlanejamentoScreen v-else-if="activeScreen === 'planning'"      key="planning"     />
       <RelatoriosScreen   v-else-if="activeScreen === 'reports'"       key="reports"      />
       <AlertasScreen      v-else-if="activeScreen === 'alerts'"        key="alerts"        @navigate="goTo" />
+      <PrimeirosPassosScreen v-else-if="activeScreen === 'onboarding'" key="onboarding" @navigate="goTo" />
       <AjudaScreen        v-else-if="activeScreen === 'help'"          key="help"         />
       <ChangelogScreen    v-else-if="activeScreen === 'changelog'"     key="changelog"    />
       <DesignSystemScreen v-else-if="activeScreen === 'design-system'" key="design-system"/>
@@ -42,6 +43,7 @@ import DividasScreen       from '~/features/finance/components/screens/DividasSc
 import PlanejamentoScreen  from '~/features/finance/components/screens/PlanejamentoScreen.vue'
 import RelatoriosScreen    from '~/features/finance/components/screens/RelatoriosScreen.vue'
 import AlertasScreen       from '~/features/finance/components/screens/AlertasScreen.vue'
+import PrimeirosPassosScreen from '~/features/finance/components/screens/PrimeirosPassosScreen.vue'
 import DesignSystemScreen  from '~/features/finance/components/screens/DesignSystemScreen.vue'
 import ConfiguracoesScreen    from '~/features/finance/components/screens/ConfiguracoesScreen.vue'
 import CartoesScreen         from '~/features/finance/components/screens/CartoesScreen.vue'

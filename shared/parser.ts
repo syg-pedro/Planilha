@@ -1,6 +1,7 @@
 import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG, DEFAULT_HOUSEHOLD_ID, MONTH_ALIASES } from './constants'
 import { makeId } from './id'
 import { buildEntriesFromRules } from './rules'
+import { createDefaultOnboardingState } from './onboarding'
 import type { Account, Category, FinanceEntry, FinanceRule, HouseholdSettings } from './types'
 
 const normalize = (value: string): string =>
@@ -84,6 +85,7 @@ const makeSettings = (): HouseholdSettings => ({
   horizonMonths: 18,
   notificationDays: [3, 1],
   notificationTime: '09:00',
+  onboarding: createDefaultOnboardingState(),
   colorTokens: { ...DARK_COLORS },
   dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG },
   updatedAt: new Date().toISOString()

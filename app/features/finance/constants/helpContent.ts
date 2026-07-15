@@ -31,6 +31,33 @@ export interface HelpGroup {
 
 export const HELP_CONTENT: HelpGroup[] = [
   {
+    screenId: 'onboarding',
+    label: 'Primeiros passos',
+    icon: 'sparkle',
+    intro: 'Escolha como deseja começar: importar o modelo Excel ou cadastrar as informações essenciais pelo aplicativo.',
+    topics: [
+      {
+        id: 'modelo-excel',
+        title: 'Importar o modelo Excel',
+        steps: [
+          { icon: 'export', text: 'Baixe o modelo e preencha as abas de contas, categorias, itens fixos e lançamentos.' },
+          { icon: 'grid', text: 'Mantenha os títulos das colunas e use os nomes de contas e categorias exatamente como foram cadastrados nas abas correspondentes.' },
+          { icon: 'check', text: 'Envie o arquivo preenchido, revise o resumo e confirme. Nada é salvo antes da confirmação.' },
+        ],
+        tip: 'A importação inicial protege contra duplicação: ela só fica disponível enquanto seu espaço ainda não tiver dados.',
+      },
+      {
+        id: 'começar-manual',
+        title: 'Começar pelo aplicativo',
+        steps: [
+          { icon: 'card', text: 'Cadastre primeiro os cartões, contas bancárias e benefícios que sua família utiliza.' },
+          { icon: 'subscription', text: 'Inclua receitas e despesas fixas em Assinaturas para que os próximos meses sejam criados automaticamente.' },
+          { icon: 'grid', text: 'Use a Planilha ou a Lista para registrar movimentações avulsas e acompanhar os pagamentos.' },
+        ],
+      },
+    ],
+  },
+  {
     screenId: 'planilha',
     label: 'Planilha',
     icon: 'grid',

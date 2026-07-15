@@ -4,6 +4,14 @@ export type PeriodMode = 'due_date' | 'competence'
 export type EntryKind = 'income' | 'expense'
 export type EntryStatus = 'pending' | 'paid' | 'review'
 export type EntryOrigin = 'auto' | 'manual' | 'imported'
+export type OnboardingStatus = 'new' | 'active' | 'dismissed' | 'completed'
+
+export interface OnboardingState {
+  version: 1
+  status: OnboardingStatus
+  completedSteps: string[]
+  updatedAt: string
+}
 
 export interface ColorTokens {
   primary: string
@@ -33,6 +41,7 @@ export interface HouseholdSettings {
   notificationTime: string
   colorTokens: ColorTokens
   dashboardConfig: DashboardConfig
+  onboarding: OnboardingState
   updatedAt: string
 }
 
@@ -137,6 +146,67 @@ export interface DashboardSettingsRequest {
   dashboardConfig: DashboardConfig
   periodMode: PeriodMode
   notificationTime?: string
+}
+
+export interface OnboardingAccountInput {
+  sourceRow: number
+  name: string
+  type: Account['type']
+  owner: string
+  limitTotal: number | null
+  closingDay: number | null
+  dueDay: number | null
+}
+
+export interface OnboardingCategoryInput {
+  sourceRow: number
+  name: string
+  kind: EntryKind
+  color: string
+}
+
+export interface OnboardingRuleInput {
+  sourceRow: number
+  title: string
+  kind: EntryKind
+  amount: number
+  dueDay: number
+  accountName: string | null
+  categoryName: string | null
+}
+
+export interface OnboardingEntryInput {
+  sourceRow: number
+  title: string
+  kind: EntryKind
+  amount: number
+  dueDate: string
+  accountName: string | null
+  categoryName: string | null
+  status: EntryStatus
+  installmentIndex: number | null
+  installmentTotal: number | null
+}
+
+export interface OnboardingImportPayload {
+  version: 1
+  accounts: OnboardingAccountInput[]
+  categories: OnboardingCategoryInput[]
+  rules: OnboardingRuleInput[]
+  entries: OnboardingEntryInput[]
+}
+
+export interface OnboardingImportSummary {
+  accounts: number
+  categories: number
+  rules: number
+  generatedEntries: number
+  entries: number
+}
+
+export interface OnboardingImportPreview extends OnboardingImportSummary {
+  warnings: string[]
+  canImport: boolean
 }
 
 export type WishPriority = 'high' | 'medium' | 'low'

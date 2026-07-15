@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection, computeKpis, excludeBenefitEntries } from '#shared/finance'
 import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
+import { createDefaultOnboardingState } from '#shared/onboarding'
 import type {
   Account,
   BootstrapResponse,
@@ -14,6 +15,9 @@ import type {
   FinanceKpis,
   FinanceRule,
   HouseholdSettings,
+  OnboardingImportPayload,
+  OnboardingImportPreview,
+  OnboardingState,
   ThemeMode
 } from '#shared/types'
 
@@ -27,6 +31,7 @@ const defaultSettings = (): HouseholdSettings => ({
   horizonMonths: 18,
   notificationDays: [3, 1],
   notificationTime: '09:00',
+  onboarding: createDefaultOnboardingState(),
   colorTokens: { ...DARK_COLORS },
   dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG },
   updatedAt: new Date().toISOString()
@@ -409,6 +414,30 @@ export const useFinanceStore = defineStore('finance', () => {
     }
   }
 
+  const previewOnboardingImport = async (payload: OnboardingImportPayload) => {
+    return await fetchApi<OnboardingImportPreview>('/api/onboarding/import/preview', {
+      method: 'POST',
+      body: payload
+    })
+  }
+
+  const importOnboardingWorkbook = async (payload: OnboardingImportPayload) => {
+    const response = await fetchApi<{ summary: OnboardingImportPreview }>('/api/onboarding/import', {
+      method: 'POST',
+      body: payload
+    })
+    await bootstrap()
+    return response.summary
+  }
+
+  const saveOnboarding = async (onboarding: OnboardingState) => {
+    const response = await fetchApi<{ settings: HouseholdSettings }>('/api/onboarding/state', {
+      method: 'POST',
+      body: { onboarding }
+    })
+    settings.value = response.settings
+  }
+
   const scheduleUpcomingNotifications = async () => {
     if (!process.client || !Capacitor.isNativePlatform()) return
     const permission = await LocalNotifications.checkPermissions()
@@ -487,6 +516,9 @@ export const useFinanceStore = defineStore('finance', () => {
     saveTheme,
     saveDashboard,
     importCsv,
+    previewOnboardingImport,
+    importOnboardingWorkbook,
+    saveOnboarding,
     requestNotifications,
     notifyUpcoming,
     monthlyKpis,
