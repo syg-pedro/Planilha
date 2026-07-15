@@ -13,6 +13,9 @@ export const extractEditKey = (event: H3Event): string | null => {
 
 export const assertEditKey = async (event: H3Event): Promise<{ householdId: string }> => {
   const config = useRuntimeConfig(event)
+  const isSupabaseEnabled = Boolean(
+    config.public.supabaseUrl && (config.public.supabaseAnonKey || config.supabaseServiceKey)
+  )
 
   const resolveHousehold = async (userId: string, serviceClient: any): Promise<string | null> => {
     const { data } = await serviceClient
@@ -24,7 +27,7 @@ export const assertEditKey = async (event: H3Event): Promise<{ householdId: stri
   }
 
   // When Supabase is configured, validate via session cookie first
-  if (config.public.supabaseUrl && (config.public.supabaseAnonKey || config.supabaseServiceKey)) {
+  if (isSupabaseEnabled) {
     try {
       const serviceClient = createClient(
         config.supabaseUrl as string,
@@ -70,11 +73,13 @@ export const assertEditKey = async (event: H3Event): Promise<{ householdId: stri
         return { householdId: newHouseholdId }
       }
     } catch {
-      // fall through to edit key
+      // A configuracao de producao exige uma sessao valida; nao abra fallback demo.
     }
+
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
-  // Fallback: edit key (local dev / in-memory mode)
+  // Fallback: edit key apenas no modo local / in-memory.
   const expected = config.editKey as string
   const received = extractEditKey(event)
   if (!received || received !== expected) {

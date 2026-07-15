@@ -1,18 +1,29 @@
 <template>
-  <NuxtLayout>
+  <NuxtLayout :name="layoutName" :key="layoutName">
     <NuxtPage />
   </NuxtLayout>
   <PwaInstallBanner v-if="!isNativePlatform" />
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 
 const store = useFinanceStore()
 const { user } = useAuth()
+const runtime = useRuntimeConfig()
+const route = useRoute()
 const isNativePlatform = Capacitor.isNativePlatform()
+const requiresAuthentication = Boolean(
+  runtime.public.supabaseUrl && runtime.public.supabaseAnonKey
+)
+const layoutName = computed(() => {
+  if (route.path === '/login' || route.path === '/signup') {
+    return 'auth'
+  }
+  return typeof route.meta.layout === 'string' ? route.meta.layout : 'default'
+})
 
 // Ao trocar de conta: resetar store e recarregar dados do novo usuário
 watch(user, async (newUser, oldUser) => {
@@ -29,6 +40,12 @@ watch(user, async (newUser, oldUser) => {
 }, { immediate: false })
 
 onMounted(async () => {
+  // Com Supabase configurado, os dados financeiros so podem ser carregados
+  // depois de uma sessao valida. No modo local sem Supabase, mantemos o demo.
+  if (requiresAuthentication && !user.value) {
+    return
+  }
+
   if (!store.initialized) {
     await store.boot()
     await store.requestNotifications()
