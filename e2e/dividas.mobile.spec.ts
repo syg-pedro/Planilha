@@ -3,7 +3,7 @@ import { openApp } from './app'
 
 test.describe('Dívidas e Parcelas no celular', () => {
   test('mantém as ações dentro do card após expandir uma dívida', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== 'Mobile Chrome', 'Executado na viewport mobile.')
+    test.skip(!['Mobile Chrome', 'Mobile amplo'].includes(testInfo.project.name), 'Executado nas viewports mobile.')
     await openApp(page)
 
     await page.getByRole('button', { name: 'Mais', exact: true }).click()
@@ -16,6 +16,7 @@ test.describe('Dívidas e Parcelas no celular', () => {
 
     const actions = debtGroup.getByTestId('debt-installment-actions').first()
     await expect(actions).toBeVisible()
+    await expect(actions).toHaveCSS('display', 'grid')
     expect(await actions.getByRole('button').count()).toBeGreaterThan(0)
     expect(await debtGroup.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)

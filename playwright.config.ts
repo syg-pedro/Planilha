@@ -16,7 +16,14 @@ export default defineConfig({
   },
   projects: [
     { name: 'Desktop Chrome', use: { ...devices['Desktop Chrome'] } },
-    { name: 'Mobile Chrome', use: { ...devices['Pixel 7'] } }
+    { name: 'Mobile Chrome', use: { ...devices['Pixel 7'] } },
+    {
+      name: 'Mobile amplo',
+      use: {
+        ...devices['Pixel 7'],
+        viewport: { width: 612, height: 1_360 }
+      }
+    }
   ],
   webServer: {
     command: 'npx nuxt dev --dotenv e2e/test.env --host 127.0.0.1 --port 3000',

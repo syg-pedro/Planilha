@@ -381,7 +381,9 @@ const summary = computed(() => {
   color: var(--primary);
   border-color: var(--primary);
 }
-@media (max-width: 600px) {
+/* O WebView de alguns Androids usa uma viewport CSS acima de 600px em retrato.
+   Mantemos este ponto sincronizado com o layout móvel principal (767px). */
+@media (max-width: 767px) {
   .debt-installment {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
