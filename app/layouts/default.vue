@@ -162,6 +162,8 @@
           <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">Sair</span>
         </button>
 
+        <p v-if="!collapsed" class="app-version-badge">Versão v{{ appVersion }}</p>
+
         <!-- Net worth badge -->
         <div
           v-if="!collapsed"
@@ -277,6 +279,7 @@
           >
             <BaseIcon name="logout" :size="18" />Sair
           </button>
+          <p class="app-version-badge">Versão v{{ appVersion }}</p>
         </div>
       </div>
     </div>
@@ -453,6 +456,8 @@ import { helpForScreen } from '~/features/finance/constants/helpContent'
 const store = useFinanceStore()
 const currency = useCurrency()
 const { logout } = useLogout()
+const config = useRuntimeConfig()
+const appVersion = ref(config.public.appVersion as string)
 
 const activeScreen = useState('finance-screen', () => 'dashboard')
 const collapsed = ref(false)
@@ -516,6 +521,10 @@ onMounted(() => {
   window.addEventListener('resize', updateMobile)
 
   if (Capacitor.isNativePlatform()) {
+    void App.getInfo().then(({ version }) => {
+      appVersion.value = version
+    })
+
     void App.addListener('backButton', handleNativeBack).then((listener) => {
       backButtonListener = listener
     })
@@ -572,6 +581,19 @@ const toggleGroup = (id: string) => {
   background: var(--primary-dim) !important;
   border-color: var(--border) !important;
   box-shadow: 2px 2px 0 var(--ds-shadow-color);
+}
+
+.app-version-badge {
+  margin: 6px 10px 2px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text3);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .app-drawer {
