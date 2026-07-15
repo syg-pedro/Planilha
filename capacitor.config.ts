@@ -12,7 +12,7 @@ const config: CapacitorConfig = {
   },
   plugins: {
     LocalNotifications: {
-      smallIcon: 'ic_stat_financeiro',
+      smallIcon: 'ic_stat_notification',
       iconColor: '#d7ff18'
     }
   }
