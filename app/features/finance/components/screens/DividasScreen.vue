@@ -90,23 +90,28 @@
         <div
           v-for="entry in group.entries"
           :key="entry.id"
-          style="display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--border)"
+          class="debt-installment"
           :style="entry.status === 'paid' ? { opacity: 0.55 } : {}"
         >
-          <div
-            :style="{
-              width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
-              background: entry.status === 'paid' ? 'var(--success)' : isOverdue(entry.dueDate) ? 'var(--danger)' : 'var(--warning)'
-            }"
-          />
-          <span style="font-size: 12px; color: var(--text3); min-width: 80px; white-space: nowrap">
-            Parcela {{ entry.installmentIndex }}/{{ entry.installmentTotal }}
-          </span>
-          <span style="font-size: 12px; color: var(--text2); flex: 1">{{ fmtDate(entry.dueDate) }}</span>
-          <span style="font-size: 12px; font-weight: 700" :style="{ color: entry.status === 'paid' ? 'var(--success)' : 'var(--danger)' }">
+          <div class="debt-installment__identity">
+            <div
+              :style="{
+                width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
+                background: entry.status === 'paid' ? 'var(--success)' : isOverdue(entry.dueDate) ? 'var(--danger)' : 'var(--warning)'
+              }"
+            />
+            <div class="debt-installment__details">
+              <span style="font-size: 12px; color: var(--text3); white-space: nowrap">
+                Parcela {{ entry.installmentIndex }}/{{ entry.installmentTotal }}
+              </span>
+              <span style="font-size: 12px; color: var(--text2); white-space: nowrap">{{ fmtDate(entry.dueDate) }}</span>
+            </div>
+          </div>
+          <span class="debt-installment__amount" style="font-size: 12px; font-weight: 700" :style="{ color: entry.status === 'paid' ? 'var(--success)' : 'var(--danger)' }">
             {{ fmt(entry.amount) }}
           </span>
           <span
+            class="debt-installment__status"
             :style="{
               fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '99px',
               background: entry.status === 'paid'
@@ -121,7 +126,7 @@
           </span>
 
           <!-- Ações -->
-          <div style="display: flex; gap: 6px; flex-shrink: 0">
+          <div class="debt-installment__actions" data-testid="debt-installment-actions">
             <button
               v-if="entry.status !== 'paid'"
               class="action-btn action-pay"
@@ -328,6 +333,37 @@ const summary = computed(() => {
   touch-action: manipulation;
   white-space: nowrap;
 }
+.debt-installment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.debt-installment__identity,
+.debt-installment__details,
+.debt-installment__actions {
+  display: flex;
+  align-items: center;
+}
+.debt-installment__identity {
+  min-width: 0;
+  gap: 10px;
+}
+.debt-installment__details {
+  min-width: 0;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.debt-installment__amount,
+.debt-installment__status {
+  white-space: nowrap;
+}
+.debt-installment__actions {
+  gap: 6px;
+  flex-shrink: 0;
+}
 .action-pay {
   background: color-mix(in srgb, var(--success) 12%, transparent);
   color: var(--success);
@@ -344,5 +380,26 @@ const summary = computed(() => {
   background: var(--primary-dim);
   color: var(--primary);
   border-color: var(--primary);
+}
+@media (max-width: 600px) {
+  .debt-installment {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 12px;
+  }
+  .debt-installment__identity { grid-column: 1; }
+  .debt-installment__amount { grid-column: 2; }
+  .debt-installment__status { grid-column: 1; justify-self: start; }
+  .debt-installment__actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .debt-installment__actions .action-btn {
+    min-width: 0;
+    justify-content: center;
+  }
+  .debt-installment__actions .action-btn:only-child { grid-column: 1 / -1; }
 }
 </style>

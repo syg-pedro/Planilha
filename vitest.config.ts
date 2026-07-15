@@ -13,6 +13,7 @@ export default defineConfig({
       '.claude/**',
       '.agents/**',
       '.codex/**',
+      'e2e/**',
     ],
   },
 })

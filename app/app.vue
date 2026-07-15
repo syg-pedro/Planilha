@@ -2,6 +2,7 @@
   <NuxtLayout :key="layoutName" :name="layoutName">
     <NuxtPage />
   </NuxtLayout>
+  <span v-if="appReady" data-testid="app-ready" hidden aria-hidden="true" />
   <PwaInstallBanner v-if="!isNativePlatform" />
 
   <Teleport to="body">
@@ -79,6 +80,7 @@ const isNativePlatform = Capacitor.isNativePlatform()
 const requiresAuthentication = Boolean(
   runtime.public.supabaseUrl && runtime.public.supabaseAnonKey
 )
+const appReady = ref(false)
 const pendingOtaUpdate = ref<OtaUpdate | null>(null)
 const pendingApkUpdate = ref<ApkUpdate | null>(null)
 const pendingWebUpdate = ref<WebUpdate | null>(null)
@@ -322,11 +324,13 @@ onMounted(async () => {
   // Com Supabase configurado, os dados financeiros so podem ser carregados
   // depois de uma sessao valida. No modo local sem Supabase, mantemos o demo.
   if (requiresAuthentication && !user.value) {
+    appReady.value = true
     return
   }
 
   if (!store.initialized) {
     await store.boot()
+    appReady.value = true
     await store.requestNotifications()
     store.notifyUpcoming()
     void notifyAboutUpdate(visibleUpdate.value)
@@ -338,6 +342,7 @@ onMounted(async () => {
       store.applyTheme()
     }
   })
+  appReady.value = true
 })
 
 onUnmounted(() => {

@@ -490,7 +490,7 @@ watch(() => store.settings.themeMode, () => {
   store.applyTheme()
 }, { immediate: true })
 
-const updateMobile = () => { isMobile.value = window.innerWidth < 768 }
+const updateMobile = () => { isMobile.value = window.matchMedia('(max-width: 767px)').matches }
 
 const syncPublishedVersion = async () => {
   if (Capacitor.isNativePlatform()) return
@@ -507,6 +507,7 @@ const syncPublishedVersion = async () => {
 }
 
 let backButtonListener: PluginListenerHandle | undefined
+let mobileMediaQuery: MediaQueryList | undefined
 
 const handleNativeBack = async () => {
   if (drawerOpen.value) {
@@ -528,8 +529,11 @@ const handleNativeBack = async () => {
 }
 
 onMounted(() => {
+  mobileMediaQuery = window.matchMedia('(max-width: 767px)')
   updateMobile()
   window.addEventListener('resize', updateMobile)
+  mobileMediaQuery.addEventListener('change', updateMobile)
+  requestAnimationFrame(updateMobile)
 
   if (Capacitor.isNativePlatform()) {
     void App.getInfo().then(({ version }) => {
@@ -546,6 +550,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateMobile)
+  mobileMediaQuery?.removeEventListener('change', updateMobile)
   void backButtonListener?.remove()
 })
 

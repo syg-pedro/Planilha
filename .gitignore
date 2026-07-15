@@ -7,6 +7,9 @@
 dist
 .nuxt-storybook
 storybook-static
+playwright-report
+test-results
+blob-report
 
 # Node dependencies
 node_modules
