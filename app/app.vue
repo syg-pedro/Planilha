@@ -69,17 +69,39 @@ const formatOtaNotes = (comment?: string) => {
   return notes.length > 0 ? notes : ['Melhorias de estabilidade e correções para uma experiência mais fluida.']
 }
 
+const fetchOtaNotes = async () => {
+  const url = runtime.public.otaNotesUrl as string
+  if (!url) return []
+
+  const response = await $fetch<{ notes?: string[] }>(url, { cache: 'no-store' })
+  return Array.isArray(response.notes) ? response.notes : []
+}
+
 const showOtaUpdate = async (version: string) => {
   if (dismissedOtaVersion.value === version || pendingOtaUpdate.value) return
 
   let comment: string | undefined
+  let notes: string[]
   try {
     comment = (await CapacitorUpdater.getLatest()).comment
   } catch {
     // O pacote já foi baixado; a nota é opcional para o aviso.
   }
 
-  pendingOtaUpdate.value = { version, notes: formatOtaNotes(comment) }
+  if (comment) {
+    notes = formatOtaNotes(comment)
+  } else {
+    try {
+      notes = await fetchOtaNotes()
+    } catch {
+      notes = []
+    }
+  }
+
+  pendingOtaUpdate.value = {
+    version,
+    notes: notes?.length ? notes : formatOtaNotes()
+  }
 }
 
 const dismissOtaUpdate = () => {
