@@ -58,7 +58,7 @@ const notifyNativeBundleReady = () => {
 
 const formatOtaNotes = (comment?: string) => {
   const notes = (comment || '')
-    .split(/\r?\n/)
+    .split(/\r?\n|\\n/)
     .map((note) => note
       .replace(/^\s*(?:[-*]|\d+\.)\s*/, '')
       .replace(/^(?:feat|fix|docs|refactor|chore|test)(?:\([^)]*\))?:\s*/i, '')

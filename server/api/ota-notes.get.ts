@@ -8,7 +8,7 @@ interface GitHubCommit {
 const COMMIT_URL = 'https://api.github.com/repos/syg-pedro/Planilha/commits/main'
 
 const formatNotes = (message: string) => message
-  .split(/\r?\n/)
+  .split(/\r?\n|\\n/)
   .map((line) => line
     .replace(/^\s*(?:[-*]|\d+\.)\s*/, '')
     .replace(/^(?:feat|fix|docs|refactor|chore|test)(?:\([^)]*\))?:\s*/i, '')
