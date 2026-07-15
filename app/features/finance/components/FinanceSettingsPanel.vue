@@ -2,7 +2,7 @@
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px">
 
     <!-- Instalar App -->
-    <div v-if="!$pwaInstalled" class="panel">
+    <div v-if="!isNativePlatform && !$pwaInstalled" class="panel">
       <div class="panel-header">
         <h3 class="panel-title">Instalar aplicativo</h3>
       </div>
@@ -370,6 +370,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { Capacitor } from '@capacitor/core'
 import { WIDGET_OPTIONS, DEFAULT_COLORS, DARK_COLORS } from '#shared/constants'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import type { ThemeMode, Account } from '#shared/types'
@@ -378,6 +379,7 @@ const store = useFinanceStore()
 const currency = useCurrency()
 const { user: authUser } = useAuth()
 const { logout } = useLogout()
+const isNativePlatform = computed(() => process.client && Capacitor.isNativePlatform())
 
 const config = useRuntimeConfig()
 const isSupabaseConfigured = computed(() => !!(config.public.supabaseUrl && config.public.supabaseAnonKey))
@@ -913,5 +915,20 @@ const copyInviteLink = async () => {
 }
 .btn-danger:hover { filter: brightness(1.1); }
 .btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .panel-header {
+    padding: 12px 14px;
+  }
+
+  .panel-body {
+    padding: 12px 14px;
+  }
+
+  .theme-btn {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>

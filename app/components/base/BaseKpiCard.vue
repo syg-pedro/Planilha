@@ -162,4 +162,47 @@ withDefaults(defineProps<{
   font-size: 11px;
   font-weight: 600;
 }
+
+@media (max-width: 640px) {
+  .base-kpi {
+    gap: 7px;
+    padding: 11px 12px 10px;
+    border-radius: var(--radius-sm);
+    box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  }
+
+  .base-kpi__accent {
+    right: -18px;
+    top: -25px;
+    width: 68px;
+    height: 54px;
+  }
+
+  .base-kpi__icon {
+    width: 30px;
+    height: 30px;
+    border-width: 2px;
+    box-shadow: 1px 1px 0 var(--ds-shadow-color);
+  }
+
+  .base-kpi__icon :deep(svg) {
+    width: 15px;
+    height: 15px;
+  }
+
+  .base-kpi__label {
+    margin-bottom: 2px;
+    font-size: 9px;
+    letter-spacing: 0.07em;
+  }
+
+  .base-kpi__value {
+    font-size: clamp(16px, 4.6vw, 20px);
+  }
+
+  .base-kpi__sub {
+    margin-top: 3px;
+    font-size: 10px;
+  }
+}
 </style>

@@ -41,11 +41,11 @@
       <div class="alert-card__icon">
         <BaseIcon :name="TONE_ICONS[alert.tone]" :size="16" :color="TONE_COLORS[alert.tone].accent" />
       </div>
-      <div style="flex: 1; min-width: 0">
-        <p style="font-size: 13px; font-weight: 700; color: var(--text)">{{ alert.title }}</p>
-        <p style="font-size: 12px; color: var(--text3); margin-top: 3px">{{ alert.body }}</p>
-        <p v-if="alert.sub" style="font-size: 11px; color: var(--text3); margin-top: 4px; font-style: italic">{{ alert.sub }}</p>
-        <p v-if="isClickable(alert)" style="font-size: 11px; color: var(--primary); margin-top: 6px; font-weight: 600">
+      <div class="alert-card__content">
+        <p class="alert-card__title">{{ alert.title }}</p>
+        <p class="alert-card__body">{{ alert.body }}</p>
+        <p v-if="alert.sub" class="alert-card__sub">{{ alert.sub }}</p>
+        <p v-if="isClickable(alert)" class="alert-card__action">
           {{ alert.entryId ? 'Clique para ver detalhes e opções →' : 'Clique para ir à tela →' }}
         </p>
       </div>
@@ -378,5 +378,67 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
 .alert-card__close:active {
   box-shadow: none;
   transform: translate(2px, 2px);
+}
+
+.alert-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-card__title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.alert-card__body {
+  margin-top: 3px;
+  color: var(--text3);
+  font-size: 12px;
+}
+
+.alert-card__sub {
+  margin-top: 4px;
+  color: var(--text3);
+  font-size: 11px;
+  font-style: italic;
+}
+
+.alert-card__action {
+  margin-top: 6px;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .alert-card {
+    gap: 9px;
+    padding: 10px 11px;
+    border-left-width: 7px;
+    border-radius: var(--radius-sm);
+    box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  }
+
+  .alert-card__icon {
+    width: 30px;
+    height: 30px;
+    box-shadow: 1px 1px 0 var(--ds-shadow-color);
+  }
+
+  .alert-card__title {
+    font-size: 12px;
+  }
+
+  .alert-card__body {
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .alert-card__sub,
+  .alert-card__action {
+    margin-top: 3px;
+    font-size: 10px;
+  }
 }
 </style>

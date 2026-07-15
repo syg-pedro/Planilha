@@ -246,7 +246,7 @@ const savingsRateLabel = computed(() =>
 @media (max-width: 640px) {
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 7px;
   }
 
   .charts-grid,
