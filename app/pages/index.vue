@@ -22,6 +22,7 @@
       <RelatoriosScreen   v-else-if="activeScreen === 'reports'"       key="reports"      />
       <AlertasScreen      v-else-if="activeScreen === 'alerts'"        key="alerts"        @navigate="goTo" />
       <AjudaScreen        v-else-if="activeScreen === 'help'"          key="help"         />
+      <ChangelogScreen    v-else-if="activeScreen === 'changelog'"     key="changelog"    />
       <DesignSystemScreen v-else-if="activeScreen === 'design-system'" key="design-system"/>
       <ConfiguracoesScreen v-else-if="activeScreen === 'config'"       key="config"       />
       <div v-else key="empty" style="text-align: center; padding: 60px 20px">
@@ -46,6 +47,7 @@ import ConfiguracoesScreen    from '~/features/finance/components/screens/Config
 import CartoesScreen         from '~/features/finance/components/screens/CartoesScreen.vue'
 import ListaDeDesejosScreen  from '~/features/finance/components/screens/ListaDeDesejosScreen.vue'
 import AjudaScreen           from '~/features/finance/components/screens/AjudaScreen.vue'
+import ChangelogScreen       from '~/features/finance/components/screens/ChangelogScreen.vue'
 
 const store = useFinanceStore()
 const activeScreen = useState('finance-screen', () => 'dashboard')

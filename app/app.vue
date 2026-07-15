@@ -2,15 +2,17 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
-  <PwaInstallBanner />
+  <PwaInstallBanner v-if="!isNativePlatform" />
 </template>
 
 <script setup lang="ts">
 import { watch } from 'vue'
+import { Capacitor } from '@capacitor/core'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 
 const store = useFinanceStore()
 const { user } = useAuth()
+const isNativePlatform = Capacitor.isNativePlatform()
 
 // Ao trocar de conta: resetar store e recarregar dados do novo usuário
 watch(user, async (newUser, oldUser) => {

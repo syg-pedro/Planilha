@@ -83,6 +83,7 @@ const makeSettings = (): HouseholdSettings => ({
   periodMode: 'due_date',
   horizonMonths: 18,
   notificationDays: [3, 1],
+  notificationTime: '09:00',
   colorTokens: { ...DARK_COLORS },
   dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG },
   updatedAt: new Date().toISOString()

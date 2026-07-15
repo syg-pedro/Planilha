@@ -51,12 +51,16 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     editKey: process.env.EDIT_KEY || 'demo-finance-key',
+    mobileAllowedOrigins: process.env.MOBILE_ALLOWED_ORIGINS || 'https://localhost',
     supabaseUrl: envSupabaseUrl,
     supabaseServiceKey: envSupabaseServiceKey,
     dataFilePath: process.env.DATA_FILE_PATH || '',
     public: {
       appName: 'Financeiro Familiar',
+      appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.0.0',
+      updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || '',
       defaultEditKey: process.env.EDIT_KEY || 'demo-finance-key',
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '',
       supabaseUrl: envSupabaseUrl,
       supabaseAnonKey: envSupabasePublishableKey
     }

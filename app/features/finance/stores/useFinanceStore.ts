@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+import { Capacitor } from '@capacitor/core'
+import { LocalNotifications } from '@capacitor/local-notifications'
 import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection, computeKpis, excludeBenefitEntries } from '#shared/finance'
 import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
 import type {
@@ -24,6 +26,7 @@ const defaultSettings = (): HouseholdSettings => ({
   periodMode: 'due_date',
   horizonMonths: 18,
   notificationDays: [3, 1],
+  notificationTime: '09:00',
   colorTokens: { ...DARK_COLORS },
   dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG },
   updatedAt: new Date().toISOString()
@@ -99,10 +102,16 @@ export const useFinanceStore = defineStore('finance', () => {
     path: string,
     options: { method?: 'GET' | 'POST'; body?: any } = {}
   ): Promise<T> => {
-    const response = await $fetch(path, {
+    const apiBaseUrl = runtime.public.apiBaseUrl as string
+    const url = apiBaseUrl ? new URL(path, apiBaseUrl).toString() : path
+    const accessToken = await useAuth().getAccessToken()
+    const response = await $fetch(url, {
       method: options.method ?? 'GET',
       body: options.body,
-      headers: { 'x-edit-key': editKey.value }
+      headers: {
+        'x-edit-key': editKey.value,
+        ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {})
+      }
     })
     return response as T
   }
@@ -324,6 +333,7 @@ export const useFinanceStore = defineStore('finance', () => {
       method: 'POST',
       body: {
         periodMode: filters.value.periodMode,
+        notificationTime: settings.value.notificationTime,
         dashboardConfig: settings.value.dashboardConfig
       }
     })
@@ -355,15 +365,25 @@ export const useFinanceStore = defineStore('finance', () => {
   }
 
   const requestNotifications = async () => {
-    if (!process.client || !('Notification' in window)) {
+    if (!process.client) {
       return
     }
+    if (Capacitor.isNativePlatform()) {
+      const status = await LocalNotifications.checkPermissions()
+      if (status.display === 'prompt') await LocalNotifications.requestPermissions()
+      return
+    }
+    if (!('Notification' in window)) return
     if (Notification.permission === 'default') {
       await Notification.requestPermission()
     }
   }
 
   const notifyUpcoming = () => {
+    if (Capacitor.isNativePlatform()) {
+      void scheduleUpcomingNotifications()
+      return
+    }
     if (!process.client || !('Notification' in window) || Notification.permission !== 'granted') {
       return
     }
@@ -387,6 +407,29 @@ export const useFinanceStore = defineStore('finance', () => {
         body: `${upcoming.length} conta(s) em ate 3 dias. Total R$ ${total.toFixed(2)}`
       })
     }
+  }
+
+  const scheduleUpcomingNotifications = async () => {
+    if (!process.client || !Capacitor.isNativePlatform()) return
+    const permission = await LocalNotifications.checkPermissions()
+    if (permission.display !== 'granted') return
+    await LocalNotifications.cancel({ notifications: Array.from({ length: 90 }, (_, id) => ({ id: 700000 + id })) })
+    const [hour, minute] = settings.value.notificationTime.split(':').map(Number)
+    const notificationHour = Number.isFinite(hour) ? Number(hour) : 9
+    const notificationMinute = Number.isFinite(minute) ? Number(minute) : 0
+    const notifications = entries.value
+      .filter(entry => entry.kind === 'expense' && entry.status !== 'paid')
+      .filter(entry => {
+        const due = new Date(`${entry.dueDate}T00:00:00`)
+        return due >= new Date() && due <= new Date(Date.now() + 90 * 86400000)
+      })
+      .slice(0, 90)
+      .map((entry, index) => {
+        const at = new Date(`${entry.dueDate}T00:00:00`)
+        at.setHours(notificationHour, notificationMinute, 0, 0)
+        return { id: 700000 + index, title: 'Vencimento próximo', body: `${entry.title} vence hoje`, schedule: { at }, extra: { entryId: entry.id } }
+      })
+    if (notifications.length) await LocalNotifications.schedule({ notifications })
   }
 
   const resetState = () => {
@@ -449,6 +492,7 @@ export const useFinanceStore = defineStore('finance', () => {
     monthlyKpis,
     applyTheme,
     setThemeMode,
-    flushOfflineQueue
+    flushOfflineQueue,
+    scheduleUpcomingNotifications
   }
 })

@@ -30,6 +30,7 @@ export interface HouseholdSettings {
   periodMode: PeriodMode
   horizonMonths: number
   notificationDays: number[]
+  notificationTime: string
   colorTokens: ColorTokens
   dashboardConfig: DashboardConfig
   updatedAt: string
@@ -135,6 +136,7 @@ export interface ThemeSettingsRequest {
 export interface DashboardSettingsRequest {
   dashboardConfig: DashboardConfig
   periodMode: PeriodMode
+  notificationTime?: string
 }
 
 export type WishPriority = 'high' | 'medium' | 'low'

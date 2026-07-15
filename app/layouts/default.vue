@@ -342,7 +342,7 @@
       <main
         :style="{
           flex: 1,
-          padding: isMobile ? '16px 12px 80px' : activeScreen === 'planilha' ? '12px 16px' : '24px',
+          padding: isMobile ? '16px 12px calc(80px + env(safe-area-inset-bottom, 0px))' : activeScreen === 'planilha' ? '12px 16px' : '24px',
           maxWidth: activeScreen === 'planilha' ? 'none' : '1280px',
           width: '100%',
           margin: '0 auto',
@@ -444,7 +444,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import BaseIcon from '~/components/base/BaseIcon.vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import { NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, DS_ITEM, HELP_ITEM } from '~/features/finance/constants/ui'
+import { NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, DS_ITEM, HELP_ITEM, CHANGELOG_ITEM } from '~/features/finance/constants/ui'
 import { helpForScreen } from '~/features/finance/constants/helpContent'
 
 const store = useFinanceStore()
@@ -464,7 +464,7 @@ const now = new Date()
 const currentMonthName = MONTH_NAMES[now.getMonth()]
 const currentYear = now.getFullYear()
 
-const BOTTOM_ITEMS = [HELP_ITEM, DS_ITEM, SETTINGS_ITEM]
+const BOTTOM_ITEMS = [HELP_ITEM, CHANGELOG_ITEM, DS_ITEM, SETTINGS_ITEM]
 const ALL_ITEMS = [...NAV_GROUPS.flatMap(g => g.items), ...BOTTOM_ITEMS]
 const currentItemLabel = computed(() => ALL_ITEMS.find(i => i.id === activeScreen.value)?.label ?? 'Dashboard')
 
@@ -582,6 +582,11 @@ const toggleGroup = (id: string) => {
 .app-mobile-nav__item--active {
   color: var(--text) !important;
   background: var(--primary-dim) !important;
+}
+
+@media (max-width: 767px) {
+  .app-topbar { padding-inline: 10px !important; gap: 8px !important; }
+  .app-balance-chip { padding-inline: 7px !important; }
 }
 
 @keyframes slideInLeft {

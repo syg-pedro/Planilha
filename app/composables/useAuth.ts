@@ -55,5 +55,12 @@ export const useAuth = () => {
     }
   }
 
-  return { user, init, signIn, signUp, signOut }
+  const getAccessToken = async (): Promise<string | null> => {
+    const client = getBrowserClient()
+    if (!client) return null
+    const { data } = await client.auth.getSession()
+    return data.session?.access_token ?? null
+  }
+
+  return { user, init, signIn, signUp, signOut, getAccessToken }
 }

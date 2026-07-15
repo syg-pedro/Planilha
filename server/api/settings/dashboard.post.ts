@@ -5,6 +5,7 @@ import { getRepository } from '../../utils/repo'
 
 const schema = z.object({
   periodMode: z.enum(['due_date', 'competence']),
+  notificationTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
   dashboardConfig: z.object({
     visibleWidgets: z.array(z.string()),
     sortMode: z.enum(['date_asc', 'date_desc', 'amount_desc']),

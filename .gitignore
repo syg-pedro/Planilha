@@ -20,6 +20,7 @@ logs
 .fleet
 .idea
 .agents
+android/screenshot-*.png
 
 # Local env files
 .env

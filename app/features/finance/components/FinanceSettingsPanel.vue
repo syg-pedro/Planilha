@@ -1,5 +1,5 @@
 <template>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px">
 
     <!-- Instalar App -->
     <div v-if="!$pwaInstalled" class="panel">
@@ -21,6 +21,14 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/><path d="M20 20H4"/></svg>
           {{ $pwaPrompt ? 'Instalar agora' : 'Como instalar' }}
         </button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h3 class="panel-title">Lembretes de vencimento</h3><p class="panel-sub">No Android, os avisos são agendados no horário escolhido.</p></div>
+      <div class="panel-body" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
+        <label class="field" style="flex:1;min-width:140px"><span class="field-label">Horário</span><input v-model="store.settings.notificationTime" type="time" class="input-field" /></label>
+        <button class="btn-primary" :disabled="reminderSaving" @click="saveReminderTime">{{ reminderSaving ? 'Salvando...' : 'Salvar lembretes' }}</button>
       </div>
     </div>
 
@@ -386,6 +394,18 @@ const doSignOut = async () => {
 const csvText = ref('')
 const importAccountId = ref('')
 const reseedBusy = ref(false)
+const reminderSaving = ref(false)
+
+const saveReminderTime = async () => {
+  reminderSaving.value = true
+  try {
+    await store.saveDashboard()
+    await store.requestNotifications()
+    await store.scheduleUpcomingNotifications()
+  } finally {
+    reminderSaving.value = false
+  }
+}
 
 const { $pwaPrompt, $pwaInstalled } = useNuxtApp()
 const showPwaManual = useState('pwa-show-manual', () => false)

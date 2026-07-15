@@ -44,8 +44,15 @@
                 @mouseleave="hideTooltip"
               >
                 <div class="col-head">
-                  <span class="col-title">{{ truncate(col) }}</span>
-                  <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('expense', col, $event)">⋮</button>
+                  <div class="col-head-main">
+                    <span class="col-title">{{ truncate(col) }}</span>
+                    <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('expense', col, $event)">⋮</button>
+                  </div>
+                  <span
+                    v-if="getColumnDueDay('expense', col)"
+                    class="due-day-badge"
+                    :title="`Vencimento recorrente: dia ${getColumnDueDay('expense', col)}`"
+                  >vence {{ getColumnDueDay('expense', col) }}</span>
                 </div>
               </th>
               <th :style="headCell('right')" style="min-width: 90px">Soma ↓</th>
@@ -461,6 +468,28 @@ function buildColumns(kind: EntryKind): string[] {
   return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t)
 }
 
+const columnDueDayMap = computed(() => {
+  const daysByColumn = new Map<string, Set<number>>()
+
+  for (const entry of store.entries) {
+    const key = `${entry.kind}__${entry.title}`
+    const days = daysByColumn.get(key) ?? new Set<number>()
+    days.add(Number.parseInt(entry.dueDate.slice(8, 10), 10))
+    daysByColumn.set(key, days)
+  }
+
+  const result = new Map<string, number>()
+  for (const [key, days] of daysByColumn) {
+    if (days.size === 1) {
+      result.set(key, [...days][0]!)
+    }
+  }
+  return result
+})
+
+const getColumnDueDay = (kind: EntryKind, title: string): number | null =>
+  columnDueDayMap.value.get(`${kind}__${title}`) ?? null
+
 // ─── cell lookup maps ────────────────────────────────────────────────────────
 
 const amountMap = computed(() => {
@@ -865,10 +894,18 @@ const inputStyle = () => ({
 /* ── Column header ───────────────────────────────── */
 .col-head {
   display: flex;
-  align-items: center;
-  padding: 6px 4px 6px 10px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 42px;
+  padding: 4px 5px 4px 10px;
   gap: 2px;
   height: 100%;
+}
+.col-head-main {
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 .col-title {
   flex: 1;
@@ -877,6 +914,20 @@ const inputStyle = () => ({
   white-space: nowrap;
   text-align: right;
   cursor: default;
+}
+.due-day-badge {
+  align-self: flex-end;
+  border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--border));
+  border-radius: var(--radius-xs);
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  color: var(--danger);
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.1;
+  padding: 1px 4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 .col-menu-btn {
   flex-shrink: 0;
@@ -904,6 +955,16 @@ th:hover .col-menu-btn {
   background: var(--surface);
   border-color: var(--border);
   color: var(--primary);
+}
+
+@media (max-width: 767px) {
+  .matrix-table {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-color: var(--primary) var(--surface2);
+    scrollbar-width: thin;
+  }
+  .col-menu-btn { opacity: 1; }
 }
 
 /* ── Row clear-values button ─────────────────────── */

@@ -49,10 +49,12 @@ export const BOTTOM_NAV_ITEMS = [
 export const SETTINGS_ITEM = { id: 'config', label: 'Configurações', icon: 'settings' } as const
 export const DS_ITEM = { id: 'design-system', label: 'Design System', icon: 'sparkle' } as const
 export const HELP_ITEM = { id: 'help', label: 'Ajuda', icon: 'help' } as const
+export const CHANGELOG_ITEM = { id: 'changelog', label: 'Novidades', icon: 'refresh' } as const
 
 export const ALL_NAV_ITEMS = [
   ...NAV_GROUPS.flatMap(g => g.items),
   HELP_ITEM,
+  CHANGELOG_ITEM,
   SETTINGS_ITEM,
   DS_ITEM,
 ] as const

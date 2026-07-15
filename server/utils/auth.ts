@@ -14,27 +14,38 @@ export const extractEditKey = (event: H3Event): string | null => {
 export const assertEditKey = async (event: H3Event): Promise<{ householdId: string }> => {
   const config = useRuntimeConfig(event)
 
+  const resolveHousehold = async (userId: string, serviceClient: any): Promise<string | null> => {
+    const { data } = await serviceClient
+      .from('household_members')
+      .select('household_id')
+      .eq('user_id', userId)
+      .single()
+    return data?.household_id ?? null
+  }
+
   // When Supabase is configured, validate via session cookie first
   if (config.public.supabaseUrl && (config.public.supabaseAnonKey || config.supabaseServiceKey)) {
     try {
+      const serviceClient = createClient(
+        config.supabaseUrl as string,
+        config.supabaseServiceKey as string,
+        { auth: { persistSession: false } }
+      )
+      const authorization = getHeader(event, 'authorization')
+      const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1]
+      if (token) {
+        const { data: { user } } = await serviceClient.auth.getUser(token)
+        if (user) {
+          const householdId = await resolveHousehold(user.id, serviceClient)
+          if (householdId) return { householdId }
+        }
+      }
+
       const client = createSupabaseServerClient(event)
       const { data: { user } } = await client.auth.getUser()
       if (user) {
-        // Look up the user's household using the service key (bypasses RLS)
-        const serviceClient = createClient(
-          config.supabaseUrl as string,
-          config.supabaseServiceKey as string,
-          { auth: { persistSession: false } }
-        )
-        const { data } = await serviceClient
-          .from('household_members')
-          .select('household_id')
-          .eq('user_id', user.id)
-          .single()
-
-        if (data?.household_id) {
-          return { householdId: data.household_id }
-        }
+        const householdId = await resolveHousehold(user.id, serviceClient)
+        if (householdId) return { householdId }
 
         // User authenticated but no household yet (edge case) — create one
         const newHouseholdId = `hh-${crypto.randomUUID()}`

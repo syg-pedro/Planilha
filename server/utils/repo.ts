@@ -257,6 +257,7 @@ const makeMemoryRepo = (): Repository => ({
       ...state.settings,
       dashboardConfig: payload.dashboardConfig,
       periodMode: payload.periodMode,
+      notificationTime: payload.notificationTime ?? state.settings.notificationTime,
       updatedAt: new Date().toISOString()
     }
     return state.settings
@@ -415,6 +416,7 @@ const mapSettingToRow = (settings: HouseholdSettings) => ({
   period_mode: settings.periodMode,
   horizon_months: settings.horizonMonths,
   notification_days: settings.notificationDays,
+  notification_time: settings.notificationTime,
   color_tokens: settings.colorTokens,
   dashboard_config: settings.dashboardConfig,
   updated_at: settings.updatedAt
@@ -489,6 +491,7 @@ const mapSettingFromRow = (row: Record<string, any>): HouseholdSettings => ({
   periodMode: row.period_mode,
   horizonMonths: row.horizon_months,
   notificationDays: row.notification_days ?? [3, 1],
+  notificationTime: row.notification_time ?? '09:00',
   colorTokens: { ...DEFAULT_COLORS, ...(row.color_tokens ?? {}) },
   dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG, ...(row.dashboard_config ?? {}) },
   updatedAt: row.updated_at
@@ -795,6 +798,7 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
     const updates = {
       dashboard_config: payload.dashboardConfig,
       period_mode: payload.periodMode,
+      ...(payload.notificationTime ? { notification_time: payload.notificationTime } : {}),
       updated_at: new Date().toISOString()
     }
     const { data, error } = await client

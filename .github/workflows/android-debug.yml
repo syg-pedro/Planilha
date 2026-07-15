@@ -1,0 +1,30 @@
+name: Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - run: npm run android:sync
+        env:
+          NUXT_PUBLIC_API_BASE_URL: ${{ vars.NUXT_PUBLIC_API_BASE_URL }}
+      - run: .\gradlew.bat assembleDebug
+        working-directory: android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: financeiro-familiar-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
