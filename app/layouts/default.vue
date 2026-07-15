@@ -442,6 +442,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import type { PluginListenerHandle } from '@capacitor/core'
+import { App } from '@capacitor/app'
+import { Capacitor } from '@capacitor/core'
 import BaseIcon from '~/components/base/BaseIcon.vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, DS_ITEM, HELP_ITEM, CHANGELOG_ITEM } from '~/features/finance/constants/ui'
@@ -487,12 +490,42 @@ watch(() => store.settings.themeMode, () => {
 
 const updateMobile = () => { isMobile.value = window.innerWidth < 768 }
 
+let backButtonListener: PluginListenerHandle | undefined
+
+const handleNativeBack = async () => {
+  if (drawerOpen.value) {
+    drawerOpen.value = false
+    return
+  }
+
+  if (helpMenuOpen.value) {
+    helpMenuOpen.value = false
+    return
+  }
+
+  if (activeScreen.value !== 'dashboard') {
+    goTo('dashboard')
+    return
+  }
+
+  await App.minimizeApp()
+}
+
 onMounted(() => {
   updateMobile()
   window.addEventListener('resize', updateMobile)
+
+  if (Capacitor.isNativePlatform()) {
+    void App.addListener('backButton', handleNativeBack).then((listener) => {
+      backButtonListener = listener
+    })
+  }
 })
 
-onUnmounted(() => window.removeEventListener('resize', updateMobile))
+onUnmounted(() => {
+  window.removeEventListener('resize', updateMobile)
+  void backButtonListener?.remove()
+})
 
 const goTo = (id: string) => {
   activeScreen.value = id
