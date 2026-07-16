@@ -100,9 +100,7 @@ const closeManual = () => { showManual.value = false }
 .pwa-banner-icon {
   width: 44px;
   height: 44px;
-  border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 3px 3px 0 var(--ds-shadow-color);
   flex-shrink: 0;
 }
 
@@ -165,9 +163,7 @@ const closeManual = () => { showManual.value = false }
 .pwa-manual-icon {
   width: 48px;
   height: 48px;
-  border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 3px 3px 0 var(--ds-shadow-color);
   flex-shrink: 0;
 }
 
