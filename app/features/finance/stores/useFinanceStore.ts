@@ -409,7 +409,8 @@ export const useFinanceStore = defineStore('finance', () => {
     if (upcoming.length > 0) {
       const total = upcoming.reduce((sum, entry) => sum + entry.amount, 0)
       new Notification('Vencimentos proximos', {
-        body: `${upcoming.length} conta(s) em ate 3 dias. Total R$ ${total.toFixed(2)}`
+        body: `${upcoming.length} conta(s) em ate 3 dias. Total R$ ${total.toFixed(2)}`,
+        icon: '/icon-192.png'
       })
     }
   }

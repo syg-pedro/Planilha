@@ -162,7 +162,7 @@ const notifyAboutUpdate = async (update: AvailableUpdate | null) => {
     }
 
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { body })
+      new Notification(title, { body, icon: '/icon-192.png' })
     }
   } catch {
     // A notificacao e complementar; o modal continua sendo o aviso principal.
