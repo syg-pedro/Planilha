@@ -460,7 +460,7 @@ const activeScreen = useState('finance-screen', () => 'dashboard')
 const collapsed = ref(false)
 const drawerOpen = ref(false)
 const isMobile = ref(false)
-const openGroups = ref(['overview', 'finance', 'control', 'commitments', 'analysis'])
+const openGroups = ref<string[]>([])
 
 const alertCount = 3
 

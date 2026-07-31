@@ -37,6 +37,7 @@ test.describe('navegação do Financeiro Familiar', () => {
     await openApp(page)
     await page.getByRole('button', { name: 'Planilha', exact: true }).click()
 
+    await expect(page.locator('.matrix-table').first().getByText('Total', { exact: true })).toBeVisible()
     await page.getByRole('button', { name: 'Lista', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Matriz', exact: true })).toBeVisible()
   })

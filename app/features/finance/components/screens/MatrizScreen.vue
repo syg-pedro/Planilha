@@ -120,6 +120,16 @@
               <td :style="{ ...BASE_CELL, background: 'transparent' }" />
             </tr>
           </tbody>
+          <tfoot>
+            <tr>
+              <td :style="{ ...expenseTotalCell, position: 'sticky', left: 0, zIndex: 1, textAlign: 'left' }">Total</td>
+              <td v-for="col in expenseColumns" :key="col" :style="expenseTotalCell">
+                {{ expenseColumnTotal(col) > 0 ? fmt(expenseColumnTotal(col)) : '—' }}
+              </td>
+              <td :style="expenseTotalCell">{{ expenseTotal > 0 ? fmt(expenseTotal) : '—' }}</td>
+              <td :style="{ ...expenseTotalCell, borderRight: 'none' }" />
+            </tr>
+          </tfoot>
         </table>
       </div>
 
@@ -540,6 +550,8 @@ const toggleStatus = async (kind: string, title: string, month: string) => {
 
 const monthExpenseTotal = (month: string) => expenseColumns.value.reduce((s, c) => s + getAmount('expense', c, month), 0)
 const monthIncomeTotal  = (month: string) => incomeColumns.value.reduce((s, c)  => s + getAmount('income',  c, month), 0)
+const expenseColumnTotal = (column: string) => months.value.reduce((sum, month) => sum + getAmount('expense', column, month), 0)
+const expenseTotal = computed(() => expenseColumns.value.reduce((sum, column) => sum + expenseColumnTotal(column), 0))
 const sobra = (month: string) => monthIncomeTotal(month) - monthExpenseTotal(month)
 
 // ─── inline cell editing ─────────────────────────────────────────────────────
@@ -834,6 +846,15 @@ const somaCell = (kind: 'expense' | 'income', month: string) => {
       : 'transparent',
     padding: '5px 10px',
   }
+}
+
+const expenseTotalCell = {
+  ...BASE_CELL,
+  borderTop: '2px solid var(--border)',
+  fontWeight: '800',
+  color: 'var(--danger)',
+  background: 'color-mix(in srgb, var(--danger) 8%, var(--surface))',
+  padding: '7px 10px',
 }
 
 const sobsCell = (value: number) => ({
