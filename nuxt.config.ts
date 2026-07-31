@@ -77,7 +77,6 @@ export default defineNuxtConfig({
       webBuildVersion,
       webVersionUrl: '/api/web-version',
       updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || 'https://planilha-cyan.vercel.app/api/android-release',
-      otaNotesUrl: process.env.NUXT_PUBLIC_OTA_NOTES_URL || 'https://planilha-cyan.vercel.app/api/ota-notes',
       defaultEditKey: process.env.EDIT_KEY || 'demo-finance-key',
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '',
       supabaseUrl: envSupabaseUrl,

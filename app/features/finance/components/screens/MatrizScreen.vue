@@ -42,10 +42,12 @@
                 :style="headCell()"
                 @mouseenter="showTooltip(col, $event)"
                 @mouseleave="hideTooltip"
+                @dragover.prevent
+                @drop.prevent="dropColumn('expense', col)"
               >
                 <div class="col-head">
                   <div class="col-head-main">
-                    <span class="col-title">{{ truncate(col) }}</span>
+                    <span class="col-title" draggable="true" @dragstart="startColumnDrag('expense', col, $event)">{{ truncate(col) }}</span>
                     <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('expense', col, $event)">⋮</button>
                   </div>
                   <span
@@ -147,9 +149,11 @@
                 :style="headCell()"
                 @mouseenter="showTooltip(col, $event)"
                 @mouseleave="hideTooltip"
+                @dragover.prevent
+                @drop.prevent="dropColumn('income', col)"
               >
                 <div class="col-head">
-                  <span class="col-title">{{ truncate(col) }}</span>
+                  <span class="col-title" draggable="true" @dragstart="startColumnDrag('income', col, $event)">{{ truncate(col) }}</span>
                   <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('income', col, $event)">⋮</button>
                 </div>
               </th>
@@ -267,6 +271,8 @@
         :style="{ left: colMenu.x + 'px', top: colMenu.y + 'px' }"
         @click.stop
       >
+        <button v-if="canMoveColumn(-1)" class="menu-item" @click="moveColumn(-1)">← Mover para esquerda</button>
+        <button v-if="canMoveColumn(1)" class="menu-item" @click="moveColumn(1)">Mover para direita →</button>
         <button class="menu-item" @click="startRename()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Renomear
@@ -410,7 +416,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, nextTick } from 'vue'
+import { computed, ref, nextTick, onMounted, watch } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import FinanceEntryGrid from '~/features/finance/components/FinanceEntryGrid.vue'
 import type { EntryKind, EntryStatus, FinanceEntry } from '#shared/types'
@@ -469,14 +475,47 @@ const nextMonth = () => {
 const expenseColumns = computed(() => buildColumns('expense'))
 const incomeColumns  = computed(() => buildColumns('income'))
 
+const COLUMN_ORDER_KEY = 'finance-matrix-column-order'
+const columnOrder = ref<Record<EntryKind, string[]>>({ expense: [], income: [] })
+const columnOrderReady = ref(false)
+
 function buildColumns(kind: EntryKind): string[] {
-  const totals = new Map<string, number>()
+  const titles: string[] = []
   for (const e of store.entries) {
-    if (e.kind !== kind) continue
-    totals.set(e.title, (totals.get(e.title) ?? 0) + e.amount)
+    if (e.kind === kind && !titles.includes(e.title)) titles.push(e.title)
   }
-  return [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t)
+  const saved = [...new Set(columnOrder.value[kind].filter(title => titles.includes(title)))]
+  return [...saved, ...titles.filter(title => !saved.includes(title))]
 }
+
+const persistColumnOrder = () => {
+  if (import.meta.client) localStorage.setItem(COLUMN_ORDER_KEY, JSON.stringify(columnOrder.value))
+}
+
+onMounted(() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(COLUMN_ORDER_KEY) ?? '{}') as Partial<Record<EntryKind, unknown>>
+    columnOrder.value = {
+      expense: Array.isArray(saved.expense) ? saved.expense.filter((title): title is string => typeof title === 'string') : [],
+      income: Array.isArray(saved.income) ? saved.income.filter((title): title is string => typeof title === 'string') : [],
+    }
+  } catch {
+    // Mantém a ordem dos lançamentos se a preferência local estiver inválida.
+  }
+  columnOrderReady.value = true
+})
+
+watch([columnOrderReady, expenseColumns, incomeColumns], ([ready, expenses, incomes]) => {
+  if (!ready) return
+  const sync = (kind: EntryKind, columns: string[]) => [
+    ...new Set(columnOrder.value[kind].filter(column => columns.includes(column))),
+    ...columns.filter(column => !columnOrder.value[kind].includes(column)),
+  ]
+  const next = { expense: sync('expense', expenses), income: sync('income', incomes) }
+  if (next.expense.join('\0') === columnOrder.value.expense.join('\0') && next.income.join('\0') === columnOrder.value.income.join('\0')) return
+  columnOrder.value = next
+  persistColumnOrder()
+}, { immediate: true })
 
 const columnDueDayMap = computed(() => {
   const daysByColumn = new Map<string, Set<number>>()
@@ -647,6 +686,48 @@ const openColMenu = (kind: EntryKind, col: string, e: MouseEvent) => {
 }
 const closeColMenu = () => { colMenu.value = null }
 
+const saveColumnOrder = (kind: EntryKind, columns: string[]) => {
+  columnOrder.value = { ...columnOrder.value, [kind]: columns }
+  persistColumnOrder()
+}
+
+const canMoveColumn = (direction: number) => {
+  if (!colMenu.value) return false
+  const index = buildColumns(colMenu.value.kind).indexOf(colMenu.value.col)
+  return index + direction >= 0 && index + direction < buildColumns(colMenu.value.kind).length
+}
+
+const moveColumn = (direction: number) => {
+  if (!colMenu.value) return
+  const { kind, col } = colMenu.value
+  const columns = buildColumns(kind)
+  const index = columns.indexOf(col)
+  const target = index + direction
+  if (target < 0 || target >= columns.length) return
+  columns.splice(index, 1)
+  columns.splice(target, 0, col)
+  saveColumnOrder(kind, columns)
+  closeColMenu()
+}
+
+const draggedColumn = ref<{ kind: EntryKind; col: string } | null>(null)
+
+const startColumnDrag = (kind: EntryKind, col: string, event: DragEvent) => {
+  draggedColumn.value = { kind, col }
+  event.dataTransfer?.setData('text/plain', col)
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+}
+
+const dropColumn = (kind: EntryKind, target: string) => {
+  const dragged = draggedColumn.value
+  draggedColumn.value = null
+  if (!dragged || dragged.kind !== kind || dragged.col === target) return
+  const columns = buildColumns(kind)
+  columns.splice(columns.indexOf(dragged.col), 1)
+  columns.splice(columns.indexOf(target), 0, dragged.col)
+  saveColumnOrder(kind, columns)
+}
+
 // ─── rename ───────────────────────────────────────────────────────────────────
 
 const renameInputRef = ref<HTMLInputElement | null>(null)
@@ -665,6 +746,7 @@ const confirmRename = async () => {
   if (!trimmed || trimmed === oldTitle) { renameState.value.open = false; return }
   const entries = store.entries.filter(e => e.kind === kind && e.title === oldTitle)
   await store.saveEntriesBatch({ upserts: entries.map(e => ({ ...e, title: trimmed })), deletes: [] })
+  saveColumnOrder(kind, columnOrder.value[kind].map(title => title === oldTitle ? trimmed : title))
   renameState.value.open = false
 }
 
@@ -702,6 +784,7 @@ const confirmDelete = async () => {
   const { kind, title } = deleteState.value
   const entries = store.entries.filter(e => e.kind === kind && e.title === title)
   await store.saveEntriesBatch({ upserts: [], deletes: entries.map(e => e.id) })
+  saveColumnOrder(kind, columnOrder.value[kind].filter(column => column !== title))
   deleteState.value.open = false
 }
 
@@ -934,8 +1017,9 @@ const inputStyle = () => ({
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: right;
-  cursor: default;
+  cursor: grab;
 }
+.col-title:active { cursor: grabbing; }
 .due-day-badge {
   align-self: flex-end;
   border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--border));

@@ -20,14 +20,13 @@
           <div class="ota-update-dialog__actions">
             <button type="button" class="ota-update-dialog__later" @click="dismissAvailableUpdate">Depois</button>
             <a
-              v-if="apkDownloadUrl"
-              :href="apkDownloadUrl"
+              v-if="releasePageUrl"
+              :href="releasePageUrl"
               class="ota-update-dialog__apply"
               target="_blank"
               rel="noopener noreferrer"
-            >Baixar APK</a>
-            <button v-else-if="isWebUpdate" type="button" class="ota-update-dialog__apply" @click="reloadForWebUpdate">Recarregar página</button>
-            <button v-else type="button" class="ota-update-dialog__apply" @click="closeForOtaUpdate">Fechar para atualizar</button>
+            >Abrir página no GitHub</a>
+            <button v-else type="button" class="ota-update-dialog__apply" @click="reloadForWebUpdate">Recarregar página</button>
           </div>
         </section>
       </div>
@@ -38,24 +37,16 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { App } from '@capacitor/app'
-import type { PluginListenerHandle } from '@capacitor/core'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
-import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { isVersionNewer } from '#shared/version'
-
-type OtaUpdate = {
-  type: 'ota'
-  version: string
-  notes: string[]
-}
 
 type ApkUpdate = {
   type: 'apk'
   version: string
   notes: string[]
-  apkUrl: string
+  releaseUrl: string
 }
 
 type WebUpdate = {
@@ -67,10 +58,10 @@ type WebUpdate = {
 type AndroidReleaseManifest = {
   version: string
   notes?: string
-  apkUrl?: string
+  releaseUrl?: string
 }
 
-type AvailableUpdate = OtaUpdate | ApkUpdate | WebUpdate
+type AvailableUpdate = ApkUpdate | WebUpdate
 
 const store = useFinanceStore()
 const { user } = useAuth()
@@ -81,28 +72,23 @@ const requiresAuthentication = Boolean(
   runtime.public.supabaseUrl && runtime.public.supabaseAnonKey
 )
 const appReady = ref(false)
-const pendingOtaUpdate = ref<OtaUpdate | null>(null)
 const pendingApkUpdate = ref<ApkUpdate | null>(null)
 const pendingWebUpdate = ref<WebUpdate | null>(null)
-const dismissedOtaVersion = ref<string | null>(null)
 const dismissedApkVersion = ref<string | null>(null)
 const dismissedWebVersion = ref<string | null>(null)
-const visibleUpdate = computed(() => pendingApkUpdate.value ?? pendingOtaUpdate.value ?? pendingWebUpdate.value)
+const visibleUpdate = computed(() => pendingApkUpdate.value ?? pendingWebUpdate.value)
 const isApkUpdate = computed(() => visibleUpdate.value?.type === 'apk')
 const isWebUpdate = computed(() => visibleUpdate.value?.type === 'web')
-const apkDownloadUrl = computed(() => visibleUpdate.value?.type === 'apk' ? visibleUpdate.value.apkUrl : '')
+const releasePageUrl = computed(() => visibleUpdate.value?.type === 'apk' ? visibleUpdate.value.releaseUrl : '')
 const updateEyebrow = computed(() => isApkUpdate.value
   ? 'NOVA VERSÃO DO APLICATIVO'
-  : isWebUpdate.value ? 'NOVA VERSÃO DISPONÍVEL' : 'ATUALIZAÇÃO PRONTA')
+  : 'NOVA VERSÃO DISPONÍVEL')
 const updateTitle = computed(() => isApkUpdate.value
   ? `Instale a versão ${visibleUpdate.value?.version}`
-  : isWebUpdate.value ? 'Atualize a página' : `Novidades da versão ${visibleUpdate.value?.version}`)
+  : 'Atualize a página')
 const updateInstruction = computed(() => isApkUpdate.value
-  ? 'Esta atualização inclui mudanças nativas. Baixe o APK e instale por cima da versão atual.'
-  : isWebUpdate.value
-    ? 'Uma versão mais recente está disponível. Recarregue para continuar com as melhorias.'
-    : 'Feche e abra o aplicativo para usar esta atualização.')
-let otaUpdateListener: PluginListenerHandle | undefined
+  ? 'Uma nova versão está disponível. Abra a página no GitHub, baixe o APK e instale por cima da versão atual.'
+  : 'Uma versão mais recente está disponível. Recarregue para continuar com as melhorias.')
 let webUpdateTimer: number | undefined
 const activeScreen = useState('finance-screen', () => 'dashboard')
 
@@ -113,12 +99,7 @@ const layoutName = computed(() => {
   return typeof route.meta.layout === 'string' ? route.meta.layout : 'default'
 })
 
-const notifyNativeBundleReady = () => {
-  if (!isNativePlatform) return
-  void CapacitorUpdater.notifyAppReady().catch(() => undefined)
-}
-
-const formatOtaNotes = (comment?: string) => {
+const formatReleaseNotes = (comment?: string) => {
   const notes = (comment || '')
     .split(/\r?\n|\\n/)
     .map((note) => note
@@ -131,25 +112,13 @@ const formatOtaNotes = (comment?: string) => {
   return notes.length > 0 ? notes : ['Melhorias de estabilidade e correções para uma experiência mais fluida.']
 }
 
-const fetchOtaNotes = async () => {
-  const url = runtime.public.otaNotesUrl as string
-  if (!url) return []
-
-  const response = await $fetch<{ notes?: string[] }>(url, { cache: 'no-store' })
-  return Array.isArray(response.notes) ? response.notes : []
-}
-
 const notifyAboutUpdate = async (update: AvailableUpdate | null) => {
   if (!update) return
 
-  const title = update.type === 'apk'
-    ? 'Novo APK disponível'
-    : update.type === 'web' ? 'Atualização disponível' : 'Atualização pronta'
+  const title = update.type === 'apk' ? 'Novo APK disponível' : 'Atualização disponível'
   const body = update.type === 'apk'
-    ? `A versão ${update.version} precisa ser instalada.`
-    : update.type === 'web'
-      ? 'Recarregue a página para usar a nova versão.'
-      : 'Feche e abra o aplicativo para concluir a atualização.'
+    ? `A versão ${update.version} está disponível no GitHub.`
+    : 'Recarregue a página para usar a nova versão.'
 
   try {
     if (isNativePlatform) {
@@ -169,40 +138,6 @@ const notifyAboutUpdate = async (update: AvailableUpdate | null) => {
   }
 }
 
-const showOtaUpdate = async (version: string) => {
-  if (dismissedOtaVersion.value === version || pendingOtaUpdate.value) return
-
-  let comment: string | undefined
-  let notes: string[]
-  try {
-    comment = (await CapacitorUpdater.getLatest()).comment
-  } catch {
-    // O pacote já foi baixado; a nota é opcional para o aviso.
-  }
-
-  if (comment) {
-    notes = formatOtaNotes(comment)
-  } else {
-    try {
-      notes = await fetchOtaNotes()
-    } catch {
-      notes = []
-    }
-  }
-
-  pendingOtaUpdate.value = {
-    type: 'ota',
-    version,
-    notes: notes?.length ? notes : formatOtaNotes()
-  }
-  void notifyAboutUpdate(pendingOtaUpdate.value)
-}
-
-const dismissOtaUpdate = () => {
-  dismissedOtaVersion.value = pendingOtaUpdate.value?.version ?? null
-  pendingOtaUpdate.value = null
-}
-
 const checkForNativeUpdate = async () => {
   if (!isNativePlatform) return
 
@@ -215,14 +150,14 @@ const checkForNativeUpdate = async () => {
       $fetch<AndroidReleaseManifest>(url, { cache: 'no-store' })
     ])
 
-    if (!release.apkUrl || !isVersionNewer(release.version, appInfo.version)) return
+    if (!isVersionNewer(release.version, appInfo.version)) return
     if (dismissedApkVersion.value === release.version) return
 
     pendingApkUpdate.value = {
       type: 'apk',
       version: release.version,
-      notes: formatOtaNotes(release.notes),
-      apkUrl: release.apkUrl
+      notes: formatReleaseNotes(release.notes),
+      releaseUrl: release.releaseUrl || 'https://github.com/syg-pedro/Planilha/releases'
     }
     void notifyAboutUpdate(pendingApkUpdate.value)
   } catch {
@@ -266,21 +201,10 @@ const dismissAvailableUpdate = () => {
     return
   }
 
-  dismissOtaUpdate()
 }
 
 const reloadForWebUpdate = () => {
   window.location.reload()
-}
-
-const closeForOtaUpdate = async () => {
-  await App.minimizeApp().catch(() => undefined)
-}
-
-const listenForOtaUpdates = async () => {
-  otaUpdateListener = await CapacitorUpdater.addListener('updateAvailable', ({ bundle }) => {
-    void showOtaUpdate(bundle.version)
-  })
 }
 
 // Ao trocar de conta: resetar store e recarregar dados do novo usuário
@@ -310,11 +234,6 @@ watch(
 )
 
 onMounted(async () => {
-  if (isNativePlatform) {
-    await listenForOtaUpdates()
-  }
-
-  notifyNativeBundleReady()
   void checkForNativeUpdate()
   void checkForWebUpdate()
   if (!isNativePlatform) {
@@ -346,7 +265,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  void otaUpdateListener?.remove()
   if (webUpdateTimer) window.clearInterval(webUpdateTimer)
 })
 </script>

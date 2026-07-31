@@ -19,9 +19,9 @@
     </header>
 
     <div v-if="update" class="changelog__update" role="status">
-      <strong>{{ update.type === 'apk' ? 'Nova versão do aplicativo' : 'Atualização pronta' }}: v{{ update.version }}</strong>
+      <strong>Nova versão do aplicativo: v{{ update.version }}</strong>
       <span>{{ update.notes || updateFallbackMessage }}</span>
-      <a v-if="update.apkUrl" :href="update.apkUrl" target="_blank" rel="noopener">Baixar atualização</a>
+      <a :href="update.releaseUrl" target="_blank" rel="noopener">Abrir página no GitHub</a>
     </div>
     <div v-else-if="checkError" class="changelog__status changelog__status--error" role="status">{{ checkError }}</div>
     <div v-else-if="checked" class="changelog__status" role="status">Você já está na versão mais recente.</div>
@@ -37,14 +37,12 @@
 import { computed, onMounted, ref } from 'vue'
 import { App } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
-import { CapacitorUpdater } from '@capgo/capacitor-updater'
 import { isVersionNewer } from '#shared/version'
 
 type AvailableUpdate = {
-  type: 'apk' | 'ota'
   version: string
   notes?: string
-  apkUrl?: string
+  releaseUrl: string
 }
 
 const config = useRuntimeConfig()
@@ -54,10 +52,7 @@ const checked = ref(false)
 const checking = ref(false)
 const checkError = ref('')
 const update = ref<AvailableUpdate | null>(null)
-const updateFallbackMessage = computed(() => update.value?.type === 'ota'
-  ? 'A atualização será baixada automaticamente. Feche e abra o aplicativo para aplicá-la.'
-  : 'Uma nova versão está pronta para instalação.'
-)
+const updateFallbackMessage = computed(() => 'Uma nova versão está pronta para instalação.')
 
 const releases = [
   {
@@ -73,7 +68,7 @@ const releases = [
       'Alertas inteligentes, lembretes de vencimento e notificações configuráveis',
       'Login, criação de conta e opção de lembrar o acesso neste aparelho',
       'Aplicativo Android com uso otimizado para telas menores e navegação pelo botão Voltar',
-      'Atualizações automáticas e seguras, sem precisar baixar outro APK para melhorias normais'
+      'Atualizações pelo GitHub: baixe e instale o APK quando houver uma versão nova'
     ]
   }
 ]
@@ -89,22 +84,14 @@ const checkForUpdates = async () => {
   try {
     const url = config.public.updateManifestUrl as string
     const manifest = url
-      ? await $fetch<{ version: string; notes?: string; apkUrl?: string }>(url, { cache: 'no-store' })
+      ? await $fetch<{ version: string; notes?: string; releaseUrl?: string }>(url, { cache: 'no-store' })
       : null
 
     if (manifest && isVersionNewer(manifest.version, installedVersion.value)) {
-      update.value = { type: 'apk', ...manifest }
-      return
-    }
-
-    if (Capacitor.isNativePlatform()) {
-      const latestBundle = await CapacitorUpdater.getLatest()
-      if (latestBundle.url) {
-        update.value = {
-          type: 'ota',
-          version: latestBundle.version,
-          notes: latestBundle.comment
-        }
+      update.value = {
+        version: manifest.version,
+        notes: manifest.notes,
+        releaseUrl: manifest.releaseUrl || 'https://github.com/syg-pedro/Planilha/releases'
       }
     }
   } catch {
