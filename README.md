@@ -1,5 +1,7 @@
 # Financeiro Familiar
 
+<!-- O deploy de produção é validado pela integração do Vercel. -->
+
 Organize receitas, despesas, contas, cartões e vencimentos em um só lugar.
 
 ## Testar pelo navegador
