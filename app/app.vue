@@ -1,5 +1,14 @@
 <template>
-  <NuxtLayout :key="layoutName" :name="layoutName">
+  <main v-if="!appReady" class="app-loading" aria-busy="true" aria-live="polite">
+    <div class="app-loading__content">
+      <span class="app-loading__mark" aria-hidden="true">$</span>
+      <p class="app-loading__eyebrow">FINANCEIRO FAMILIAR</p>
+      <div class="app-loading__bar" aria-hidden="true"><span /></div>
+      <p class="app-loading__message">Preparando seu financeiro...</p>
+    </div>
+  </main>
+
+  <NuxtLayout v-else :key="layoutName" :name="layoutName">
     <NuxtPage />
   </NuxtLayout>
   <span v-if="appReady" data-testid="app-ready" hidden aria-hidden="true" />
@@ -78,7 +87,6 @@ const dismissedApkVersion = ref<string | null>(null)
 const dismissedWebVersion = ref<string | null>(null)
 const visibleUpdate = computed(() => pendingApkUpdate.value ?? pendingWebUpdate.value)
 const isApkUpdate = computed(() => visibleUpdate.value?.type === 'apk')
-const isWebUpdate = computed(() => visibleUpdate.value?.type === 'web')
 const releasePageUrl = computed(() => visibleUpdate.value?.type === 'apk' ? visibleUpdate.value.releaseUrl : '')
 const updateEyebrow = computed(() => isApkUpdate.value
   ? 'NOVA VERSÃO DO APLICATIVO'
@@ -234,6 +242,10 @@ watch(
 )
 
 onMounted(async () => {
+  // O tema padrão precisa ser aplicado no cliente antes de qualquer chamada remota.
+  // Assim, uma sincronização do head durante a hidratação não pode exibir os tokens claros.
+  store.applyTheme()
+
   void checkForNativeUpdate()
   void checkForWebUpdate()
   if (!isNativePlatform) {
@@ -248,11 +260,17 @@ onMounted(async () => {
   }
 
   if (!store.initialized) {
-    await store.boot()
-    appReady.value = true
-    await store.requestNotifications()
-    store.notifyUpcoming()
-    void notifyAboutUpdate(visibleUpdate.value)
+    try {
+      await store.boot()
+      await store.requestNotifications()
+      store.notifyUpcoming()
+      void notifyAboutUpdate(visibleUpdate.value)
+    } catch {
+      // O erro já é registrado no store e será mostrado pela página. Nunca deixe
+      // a tela inicial bloqueada se a API ou a autenticação falharem.
+    } finally {
+      appReady.value = true
+    }
   }
 
   const mq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -270,6 +288,77 @@ onUnmounted(() => {
 </script>
 
 <style>
+.app-loading {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app-loading__content {
+  display: grid;
+  width: min(100%, 320px);
+  justify-items: center;
+  gap: 14px;
+}
+
+.app-loading__mark {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 3px solid var(--border);
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: var(--shadow-md);
+  font-family: var(--ds-font-family-mono);
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.app-loading__eyebrow,
+.app-loading__message {
+  margin: 0;
+  text-align: center;
+}
+
+.app-loading__eyebrow {
+  color: var(--text);
+  font-family: var(--ds-font-family-mono);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.app-loading__message {
+  color: var(--text2);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.app-loading__bar {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+}
+
+.app-loading__bar span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  background: var(--primary);
+  animation: app-loading-progress 1s ease-in-out infinite;
+}
+
+@keyframes app-loading-progress {
+  from { transform: translateX(-105%); }
+  to { transform: translateX(340%); }
+}
+
 .ota-update-backdrop {
   position: fixed;
   inset: 0;
@@ -277,7 +366,7 @@ onUnmounted(() => {
   display: grid;
   place-items: center;
   padding: 20px;
-  background: oklch(0% 0 0 / 0.72);
+  background: var(--overlay);
   backdrop-filter: blur(3px);
 }
 
@@ -353,7 +442,7 @@ onUnmounted(() => {
   justify-content: center;
   background: var(--primary);
   color: var(--bg);
-  box-shadow: 3px 3px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-sm);
   text-decoration: none;
 }
 

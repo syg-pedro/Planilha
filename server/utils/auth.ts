@@ -56,7 +56,7 @@ export const assertEditKey = async (event: H3Event): Promise<{ householdId: stri
           id: newHouseholdId,
           currency: 'BRL',
           timezone: 'America/Sao_Paulo',
-          theme_mode: 'light',
+          theme_mode: 'dark',
           density_mode: 'compact',
           period_mode: 'due_date',
           horizon_months: 18,

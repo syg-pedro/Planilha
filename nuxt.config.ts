@@ -94,8 +94,8 @@ export default defineNuxtConfig({
       name: 'Financeiro Familiar',
       short_name: 'Financeiro',
       description: 'Planejamento financeiro familiar com dashboard, planilha e calendario.',
-      theme_color: '#5b5bf7',
-      background_color: '#f3efe6',
+      theme_color: '#090b10',
+      background_color: '#090b10',
       display: 'standalone',
       start_url: '/',
       id: '/',
@@ -143,6 +143,10 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'Financeiro Familiar',
+      htmlAttrs: {
+        class: 'dark',
+        'data-theme': 'dark'
+      },
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
@@ -152,7 +156,7 @@ export default defineNuxtConfig({
       ],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
-        { name: 'theme-color', content: '#5b5bf7' },
+        { name: 'theme-color', content: '#090b10' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
         { name: 'apple-mobile-web-app-title', content: 'Financeiro' },
