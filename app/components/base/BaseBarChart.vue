@@ -43,7 +43,7 @@
       >{{ d.month }}</span>
 
       <Transition name="bar-tooltip">
-        <div v-if="activeIndex === i" class="bar-tooltip">
+        <div v-if="activeIndex === i" class="bar-tooltip" :class="tooltipClass(i)">
           <div class="bar-tooltip__title">{{ d.month }}</div>
           <div class="bar-tooltip__row">
             <span class="bar-tooltip__dot" :style="{ background: colorIncome }" />
@@ -107,6 +107,13 @@ function formatValue(value: number) {
 function result(d: BarDataPoint) {
   return (d.income ?? 0) - (d.expense ?? 0)
 }
+
+function tooltipClass(index: number) {
+  if (props.data.length <= 1) return 'bar-tooltip--single'
+  if (index === 0) return 'bar-tooltip--start'
+  if (index === props.data.length - 1) return 'bar-tooltip--end'
+  return ''
+}
 </script>
 
 <style scoped>
@@ -117,6 +124,7 @@ function result(d: BarDataPoint) {
   transform: translateX(-50%);
   z-index: 20;
   min-width: 150px;
+  max-width: min(220px, calc(100vw - 32px));
   padding: 10px 12px;
   color: var(--text);
   background: var(--surface);
@@ -124,6 +132,17 @@ function result(d: BarDataPoint) {
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
   pointer-events: none;
+}
+
+.bar-tooltip--start {
+  left: 0;
+  transform: translateX(0);
+}
+
+.bar-tooltip--end {
+  right: 0;
+  left: auto;
+  transform: translateX(0);
 }
 
 .bar-tooltip::after {
@@ -134,6 +153,17 @@ function result(d: BarDataPoint) {
   transform: translateX(-50%);
   border: 5px solid transparent;
   border-top-color: var(--border);
+}
+
+.bar-tooltip--start::after {
+  left: 18px;
+  transform: none;
+}
+
+.bar-tooltip--end::after {
+  right: 18px;
+  left: auto;
+  transform: none;
 }
 
 .bar-tooltip__title {
@@ -186,5 +216,12 @@ function result(d: BarDataPoint) {
 .bar-tooltip-leave-to {
   opacity: 0;
   transform: translateX(-50%) translateY(4px);
+}
+
+.bar-tooltip--start.bar-tooltip-enter-from,
+.bar-tooltip--start.bar-tooltip-leave-to,
+.bar-tooltip--end.bar-tooltip-enter-from,
+.bar-tooltip--end.bar-tooltip-leave-to {
+  transform: translateY(4px);
 }
 </style>
