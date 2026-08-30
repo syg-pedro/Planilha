@@ -12,8 +12,8 @@ export default <Partial<Config>>{
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Space Grotesk', 'Segoe UI', 'system-ui', 'sans-serif'],
-        mono: ['IBM Plex Mono', 'Consolas', 'monospace']
+        sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
+        mono: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif']
       },
       boxShadow: {
         panel: '5px 5px 0 #111111'

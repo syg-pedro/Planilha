@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 const config: CapacitorConfig = {
   appId: 'com.pedro.financeirofamiliar',
   appName: 'Financeiro Familiar',
-  webDir: '.output/public',
+  webDir: process.env.CAPACITOR_WEB_DIR ?? '.output/public',
   server: {
     androidScheme: 'https'
   },

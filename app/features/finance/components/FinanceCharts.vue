@@ -85,8 +85,8 @@
                 <title>{{ s.label }}: {{ fmt(s.value) }}</title>
               </path>
               <circle cx="90" cy="90" r="58" fill="var(--surface)" />
-              <text x="90" y="84" text-anchor="middle" font-size="11" fill="var(--text3)" font-family="Plus Jakarta Sans">Total</text>
-              <text x="90" y="102" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)" font-family="Plus Jakarta Sans">{{ fmtShort(store.monthlyKpis.totalExpense) }}</text>
+              <text x="90" y="84" text-anchor="middle" font-size="11" fill="var(--text3)" font-family="Inter">Total</text>
+              <text x="90" y="102" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text)" font-family="Inter">{{ fmtShort(store.monthlyKpis.totalExpense) }}</text>
             </svg>
             <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:120px">
               <div v-for="(s, i) in donutSegments" :key="i" style="display:flex;align-items:center;gap:8px">
