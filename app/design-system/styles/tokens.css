@@ -11,17 +11,24 @@
   --ds-space-6: 1.5rem;
 
   --ds-radius-xs: 0.125rem;
-  --ds-radius-sm: 0.25rem;
+  --ds-radius-sm: 5px;
   --ds-radius-md: 0.375rem;
   --ds-radius-lg: 0.5rem;
   --ds-radius-xl: 0.75rem;
+  --ds-radius-pill: 99px;
 
   --ds-border-width: 2px;
   --ds-border-width-strong: 3px;
   --ds-shadow-color: #111111;
+  --ds-shadow-xs: 2px 2px 0 var(--ds-shadow-color);
   --ds-shadow-sm: 3px 3px 0 var(--ds-shadow-color);
   --ds-shadow-md: 5px 5px 0 var(--ds-shadow-color);
   --ds-shadow-lg: 8px 8px 0 var(--ds-shadow-color);
+  --ds-shadow-bar-down: 0 4px 0 var(--ds-shadow-color);
+  --ds-shadow-bar-up: 0 -4px 0 var(--ds-shadow-color);
+
+  --ds-color-overlay: rgb(0 0 0 / 0.64);
+  --ds-color-track: var(--ds-shadow-color);
 
   --ds-motion-fast: 100ms;
   --ds-motion-base: 140ms;
@@ -47,6 +54,11 @@
   --ds-color-text-muted: #666666;
   --ds-color-border-default: #171717;
   --ds-color-border-strong: #000000;
+  --ds-color-text-on-primary: #ffffff;
+  --ds-color-text-on-accent: #171717;
+  --ds-color-text-on-danger: #ffffff;
+  --ds-color-text-on-success: #ffffff;
+  --ds-color-text-on-primary-dim: #3b3bd4;
 
   --ds-z-header: 20;
 
@@ -71,6 +83,7 @@
   --danger-light: var(--ds-color-state-danger-light);
   --warning: var(--ds-color-state-warning);
   --warning-light: var(--ds-color-state-warning-light);
+  --shadow-xs: var(--ds-shadow-xs);
   --shadow-sm: var(--ds-shadow-sm);
   --shadow-md: var(--ds-shadow-md);
   --shadow-lg: var(--ds-shadow-lg);
@@ -80,6 +93,16 @@
   --radius: var(--ds-radius-lg);
   --radius-sm: var(--ds-radius-sm);
   --radius-xs: var(--ds-radius-xs);
+  --radius-pill: var(--ds-radius-pill);
+  --on-primary: var(--ds-color-text-on-primary);
+  --on-accent: var(--ds-color-text-on-accent);
+  --on-primary-dim: var(--ds-color-text-on-primary-dim);
+  --on-danger: var(--ds-color-text-on-danger);
+  --on-success: var(--ds-color-text-on-success);
+  --overlay: var(--ds-color-overlay);
+  --track: var(--ds-color-track);
+  --shadow-bar-down: var(--ds-shadow-bar-down);
+  --shadow-bar-up: var(--ds-shadow-bar-up);
 }
 
 :root[data-theme='dark'],
@@ -105,8 +128,12 @@
   --ds-color-text-muted: #969dac;
   --ds-color-border-default: #020306;
   --ds-color-border-strong: #000000;
+  --ds-color-text-on-primary: #000000;
+  --ds-color-text-on-accent: #ffffff;
+  --ds-color-text-on-primary-dim: #5bff7e;
 
   --ds-shadow-color: #05060a;
+  --ds-shadow-xs: 2px 2px 0 var(--ds-shadow-color);
   --ds-shadow-sm: 3px 3px 0 var(--ds-shadow-color);
   --ds-shadow-md: 5px 5px 0 var(--ds-shadow-color);
   --ds-shadow-lg: 8px 8px 0 var(--ds-shadow-color);
@@ -136,8 +163,12 @@
   --ds-color-text-muted: oklch(55% 0.03 295);
   --ds-color-border-default: oklch(76% 0.12 295);
   --ds-color-border-strong: oklch(90% 0.08 295);
+  --ds-color-text-on-primary: #ffffff;
+  --ds-color-text-on-accent: #0d0518;
+  --ds-color-text-on-primary-dim: oklch(85% 0.15 295);
 
   --ds-shadow-color: oklch(5% 0.03 295);
+  --ds-shadow-xs: 2px 2px 0 var(--ds-shadow-color);
   --ds-shadow-sm: 3px 3px 0 var(--ds-shadow-color);
   --ds-shadow-md: 5px 5px 0 var(--ds-shadow-color);
   --ds-shadow-lg: 8px 8px 0 var(--ds-shadow-color);
@@ -168,8 +199,12 @@
   --ds-color-text-muted: oklch(58% 0.04 250);
   --ds-color-border-default: oklch(80% 0.12 230);
   --ds-color-border-strong: oklch(94% 0.12 100);
+  --ds-color-text-on-primary: #ffffff;
+  --ds-color-text-on-accent: #0a0f1a;
+  --ds-color-text-on-primary-dim: oklch(85% 0.12 255);
 
   --ds-shadow-color: oklch(5% 0.03 258);
+  --ds-shadow-xs: 2px 2px 0 var(--ds-shadow-color);
   --ds-shadow-sm: 3px 3px 0 var(--ds-shadow-color);
   --ds-shadow-md: 5px 5px 0 var(--ds-shadow-color);
   --ds-shadow-lg: 8px 8px 0 var(--ds-shadow-color);
@@ -200,8 +235,12 @@
   --ds-color-text-muted: oklch(55% 0.02 25);
   --ds-color-border-default: oklch(78% 0.05 25);
   --ds-color-border-strong: oklch(94% 0.02 25);
+  --ds-color-text-on-primary: #ffffff;
+  --ds-color-text-on-accent: #0d0505;
+  --ds-color-text-on-primary-dim: oklch(78% 0.16 25);
 
   --ds-shadow-color: #050505;
+  --ds-shadow-xs: 2px 2px 0 var(--ds-shadow-color);
   --ds-shadow-sm: 3px 3px 0 var(--ds-shadow-color);
   --ds-shadow-md: 5px 5px 0 var(--ds-shadow-color);
   --ds-shadow-lg: 8px 8px 0 var(--ds-shadow-color);

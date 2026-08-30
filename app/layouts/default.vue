@@ -6,7 +6,7 @@
       v-if="!isMobile"
       class="app-sidebar"
       :style="{
-        width: collapsed ? '68px' : '240px',
+        width: collapsed ? '68px' : '230px',
         minHeight: '100vh',
         position: 'sticky',
         top: 0,
@@ -23,9 +23,9 @@
       }"
     >
       <!-- Logo -->
-      <div :style="{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 14px', borderBottom: '1px solid var(--border)', height: '56px', flexShrink: 0, overflow: 'hidden' }">
+      <div :style="{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 14px', borderBottom: '2px solid var(--border)', height: '58px', flexShrink: 0, overflow: 'hidden' }">
         <div class="app-brand-mark" style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0">
-          <BaseIcon name="balance" :size="17" color="#fff" />
+          <BaseIcon name="balance" :size="17" color="var(--on-primary)" />
         </div>
         <div :style="{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: collapsed ? 0 : 1, transition: 'opacity .15s', pointerEvents: collapsed ? 'none' : 'auto' }">
           <p style="font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">Financeiro</p>
@@ -40,19 +40,12 @@
           <div v-if="gi > 0 && !collapsed" style="height: 1px; background: var(--border); margin: 4px 8px" />
           <div style="margin-bottom: 2px">
             <!-- Group header -->
-            <button
-              v-if="!collapsed"
-              style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 6px 8px 3px; background: none; border: none; cursor: pointer; color: var(--text3); font-family: inherit"
-              @click="toggleGroup(group.id)"
-            >
-              <span style="font-size: 9px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase">{{ group.label }}</span>
-              <span :style="{ display: 'flex', transition: 'transform .2s', transform: openGroups.includes(group.id) ? 'rotate(0)' : 'rotate(-90deg)' }">
-                <BaseIcon name="chevron_down" :size="11" />
-              </span>
-            </button>
+            <p
+              v-if="!collapsed && group.label"
+              style="margin: 4px 8px; color: var(--text3); font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase"
+            >{{ group.label }}</p>
             <!-- Items -->
-            <template v-if="collapsed || openGroups.includes(group.id)">
-              <button
+            <button
                 v-for="item in group.items"
                 :key="item.id"
                 class="app-nav-item"
@@ -87,18 +80,17 @@
                   <BaseIcon :name="item.icon" :size="15" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
                   <span
                     v-if="item.id === 'alerts' && alertCount > 0"
-                    style="position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff"
+                    style="position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: var(--on-danger)"
                   >{{ alertCount }}</span>
                 </span>
                 <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">{{ item.label }}</span>
-              </button>
-            </template>
+            </button>
           </div>
         </template>
       </nav>
 
       <!-- Bottom -->
-      <div style="border-top: 1px solid var(--border); padding: 8px 6px; display: flex; flex-direction: column; gap: 2px">
+      <div style="border-top: var(--border-width) solid var(--border); padding: 8px 6px; display: flex; flex-direction: column; gap: 2px">
         <button
           v-for="item in BOTTOM_ITEMS"
           :key="item.id"
@@ -165,11 +157,11 @@
         <!-- Net worth badge -->
         <div
           v-if="!collapsed"
-          style="margin: 4px 4px 0; padding: 9px 10px; border-radius: var(--radius-xs); background: var(--primary-dim); border: 1px solid var(--primary)"
+          style="margin: 8px 4px 0; padding: 9px 10px; border-radius: var(--radius-sm); background: var(--primary-dim); border: 1px solid var(--primary)"
         >
-          <p style="font-size: 9px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px">{{ currentMonthName }}</p>
-          <p style="font-size: 14px; font-weight: 800; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</p>
-          <p style="font-size: 9px; color: var(--primary); opacity: 0.7">saldo líquido</p>
+          <p style="font-size: 9px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em">{{ currentMonthName }}</p>
+          <p class="ds-money" style="margin-top: 2px; font-size: 14px; font-weight: 800; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</p>
+          <p style="font-size: 9px; color: var(--on-primary-dim); opacity: 0.8">saldo líquido</p>
         </div>
 
         <!-- Collapse button -->
@@ -194,15 +186,15 @@
       style="position: fixed; inset: 0; z-index: 300; display: flex"
       @click="drawerOpen = false"
     >
-      <div style="position: absolute; inset: 0; background: oklch(0% 0 0 / 0.45); backdrop-filter: blur(2px)" />
+      <div style="position: absolute; inset: 0; background: var(--overlay)" />
       <div
         class="app-drawer"
         style="position: relative; width: 280px; height: 100%; background: var(--surface); border-right: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 1; display: flex; flex-direction: column; animation: slideInLeft .22s cubic-bezier(.4,0,.2,1); overflow-y: auto"
         @click.stop
       >
-        <div style="display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); height: 56px; flex-shrink: 0">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); height: 58px; flex-shrink: 0">
           <div class="app-brand-mark" style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center">
-            <BaseIcon name="balance" :size="17" color="#fff" />
+            <BaseIcon name="balance" :size="17" color="var(--on-primary)" />
           </div>
           <div>
             <p style="font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">Financeiro</p>
@@ -212,7 +204,7 @@
         <nav style="flex: 1; padding: 6px 8px">
           <template v-for="(group, gi) in NAV_GROUPS" :key="group.id">
             <div v-if="gi > 0" style="height: 1px; background: var(--border); margin: 4px 4px" />
-            <p style="font-size: 9px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; padding: 6px 6px 2px; margin: 0">{{ group.label }}</p>
+            <p v-if="group.label" style="font-size: 9px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; padding: 6px 6px 2px; margin: 0">{{ group.label }}</p>
             <button
               v-for="item in group.items"
               :key="item.id"
@@ -285,7 +277,7 @@
     <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
 
       <!-- Top bar -->
-      <div class="app-topbar" style="height: 56px; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 90; flex-shrink: 0">
+      <div class="app-topbar" style="height: 58px; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 90; flex-shrink: 0">
         <!-- Mobile: hamburger -->
         <button
           v-if="isMobile"
@@ -301,7 +293,7 @@
 
         <!-- Title -->
         <div style="flex: 1; min-width: 0">
-          <h1 style="font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ currentItemLabel }}</h1>
+          <h1 style="font-size: 16px; font-weight: 800; color: var(--text); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ visibleScreenTitle }}</h1>
           <p v-if="!isMobile" style="font-size: 11px; color: var(--text3)">{{ currentMonthName }} de {{ currentYear }}</p>
         </div>
 
@@ -330,10 +322,10 @@
             @click="goTo('alerts')"
           >
             <BaseIcon name="alerts" :size="20" />
-            <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff">{{ alertCount }}</span>
+            <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: var(--on-danger)">{{ alertCount }}</span>
           </button>
-          <div class="app-balance-chip" style="padding: 4px 10px; border-radius: 99px; background: var(--primary-dim); border: 1px solid var(--primary)">
-            <span style="font-size: 12px; font-weight: 800; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</span>
+          <div class="app-balance-chip" style="padding: 5px 12px; background: var(--primary-dim)">
+            <span class="ds-money" style="font-size: 12px; font-weight: 700; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</span>
           </div>
         </div>
       </div>
@@ -343,7 +335,7 @@
         :style="{
           flex: 1,
           padding: isMobile ? '16px 12px calc(80px + env(safe-area-inset-bottom, 0px))' : activeScreen === 'planilha' ? '12px 16px' : '24px',
-          maxWidth: activeScreen === 'planilha' ? 'none' : '1280px',
+          maxWidth: activeScreen === 'planilha' ? 'none' : '1080px',
           width: '100%',
           margin: '0 auto',
           animation: 'fadeIn .18s ease',
@@ -357,7 +349,7 @@
     <nav
       v-if="isMobile"
       class="app-mobile-nav"
-      style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -4px 20px oklch(0% 0 0 / 0.1); display: flex"
+      style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; background: var(--surface); border-top: 1px solid var(--border); box-shadow: var(--shadow-bar-up); display: flex"
       :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
     >
       <button
@@ -387,11 +379,7 @@
         }"
         @click="goTo(item.id)"
       >
-        <span v-if="activeScreen === item.id" style="position: absolute; top: 0; left: 20%; right: 20%; height: 2px; border-radius: 99px; background: var(--primary)" />
-        <span style="position: relative">
-          <BaseIcon :name="item.icon" :size="22" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
-          <span v-if="item.id === 'alerts' && alertCount > 0" style="position: absolute; top: -3px; right: -4px; width: 13px; height: 13px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 800; color: #fff">{{ alertCount }}</span>
-        </span>
+        <BaseIcon :name="item.icon" :size="21" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
         {{ item.label }}
       </button>
       <button
@@ -460,7 +448,6 @@ const activeScreen = useState('finance-screen', () => 'dashboard')
 const collapsed = ref(false)
 const drawerOpen = ref(false)
 const isMobile = ref(false)
-const openGroups = ref<string[]>([])
 
 const alertCount = 3
 
@@ -472,6 +459,9 @@ const currentYear = now.getFullYear()
 const BOTTOM_ITEMS = [ONBOARDING_ITEM, HELP_ITEM, CHANGELOG_ITEM, DS_ITEM, SETTINGS_ITEM]
 const ALL_ITEMS = [...NAV_GROUPS.flatMap(g => g.items), ...BOTTOM_ITEMS]
 const currentItemLabel = computed(() => ALL_ITEMS.find(i => i.id === activeScreen.value)?.label ?? 'Dashboard')
+const visibleScreenTitle = computed(() =>
+  isMobile.value && activeScreen.value === 'dashboard' ? 'Visão geral' : currentItemLabel.value
+)
 
 // ── Ajuda contextual ──────────────────────────────────────────────────────
 interface HelpFocus { screenId: string; topicId?: string }
@@ -559,13 +549,6 @@ const goTo = (id: string) => {
   drawerOpen.value = false
 }
 
-const toggleGroup = (id: string) => {
-  if (openGroups.value.includes(id)) {
-    openGroups.value = openGroups.value.filter(x => x !== id)
-  } else {
-    openGroups.value = [...openGroups.value, id]
-  }
-}
 </script>
 
 <style>
@@ -581,7 +564,7 @@ const toggleGroup = (id: string) => {
 .app-brand-mark {
   border: 2px solid var(--border);
   border-radius: var(--radius-sm) !important;
-  box-shadow: 3px 3px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .app-nav-item {
@@ -595,10 +578,10 @@ const toggleGroup = (id: string) => {
 }
 
 .app-nav-item--active {
-  color: var(--text) !important;
+  color: var(--primary) !important;
   background: var(--primary-dim) !important;
   border-color: var(--border) !important;
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
 }
 
 .app-version-inline {
@@ -622,7 +605,7 @@ const toggleGroup = (id: string) => {
 
 .app-topbar {
   border-bottom: 3px solid var(--border) !important;
-  box-shadow: 0 4px 0 var(--ds-shadow-color) !important;
+  box-shadow: var(--shadow-bar-down) !important;
 }
 
 .app-icon-button {
@@ -630,7 +613,7 @@ const toggleGroup = (id: string) => {
   background: var(--surface2) !important;
   border: 2px solid var(--border) !important;
   border-radius: var(--radius-sm) !important;
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
 }
 
 .app-icon-button:active {
@@ -640,13 +623,13 @@ const toggleGroup = (id: string) => {
 
 .app-balance-chip {
   border: 2px solid var(--border) !important;
-  border-radius: var(--radius-xs) !important;
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  border-radius: var(--radius-pill) !important;
+  box-shadow: var(--shadow-xs);
 }
 
 .app-mobile-nav {
   border-top: 3px solid var(--border) !important;
-  box-shadow: 0 -4px 0 var(--ds-shadow-color) !important;
+  box-shadow: var(--shadow-bar-up) !important;
 }
 
 .app-mobile-nav__item {
@@ -654,7 +637,7 @@ const toggleGroup = (id: string) => {
 }
 
 .app-mobile-nav__item--active {
-  color: var(--text) !important;
+  color: var(--primary) !important;
   background: var(--primary-dim) !important;
 }
 

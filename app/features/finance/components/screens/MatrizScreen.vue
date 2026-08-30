@@ -1,111 +1,259 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 10px" @click="closeColMenu">
+  <div class="plan-screen" @click="closeColMenu">
 
-    <!-- Toolbar -->
-    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: space-between">
-      <div style="display: inline-flex; background: var(--surface2); border-radius: var(--radius-sm); padding: 3px; gap: 2px">
+    <!-- ── Barra de filtros ─────────────────────────────────────────── -->
+    <div class="plan-toolbar">
+      <label
+        v-if="viewMode === 'matrix'"
+        class="plan-search"
+        :class="{ 'plan-search--focus': searchFocused }"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+        </svg>
+        <input
+          v-model="searchText"
+          type="text"
+          placeholder="Buscar lançamentos..."
+          @focus="searchFocused = true"
+          @blur="searchFocused = false"
+        />
+        <button v-if="searchText" type="button" class="plan-search-clear" title="Limpar busca" @click.stop="searchText = ''">×</button>
+      </label>
+
+      <div class="plan-seg">
         <button
           v-for="v in VIEWS"
           :key="v.id"
-          :style="{
-            padding: '6px 16px', borderRadius: 'calc(var(--radius-sm) - 2px)', border: 'none',
-            cursor: 'pointer', fontFamily: 'inherit', fontSize: '13px', fontWeight: 600,
-            background: viewMode === v.id ? 'var(--surface)' : 'transparent',
-            color: viewMode === v.id ? 'var(--text)' : 'var(--text3)',
-            boxShadow: viewMode === v.id ? 'var(--shadow-sm)' : 'none',
-            transition: 'all .15s',
-          }"
+          type="button"
+          class="plan-seg-btn"
+          :class="{ 'plan-seg-btn--on': viewMode === v.id }"
           @click="viewMode = v.id as 'matrix' | 'list'"
         >{{ v.label }}</button>
       </div>
-      <p v-if="viewMode === 'matrix'" style="font-size: 12px; color: var(--text3)">
-        {{ months.length }} meses · {{ expenseColumns.length }} despesas · {{ incomeColumns.length }} receitas · clique em uma célula para editar
-      </p>
+
+      <button
+        v-if="viewMode === 'matrix'"
+        type="button"
+        class="plan-new-btn"
+        @click.stop="openAdd('expense')"
+      >+ Novo lançamento</button>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!-- MATRIZ VIEW                                                    -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <template v-if="viewMode === 'matrix'">
+    <!-- ── Totalizadores ────────────────────────────────────────────── -->
+    <div v-if="viewMode === 'matrix'" class="plan-totals">
+      <div class="plan-total plan-total--income">
+        <span class="plan-total-label">Receitas</span>
+        <span class="plan-total-value ds-money">{{ fmt(incomeTotal) }}</span>
+      </div>
+      <div class="plan-total plan-total--expense">
+        <span class="plan-total-label">Despesas</span>
+        <span class="plan-total-value ds-money">{{ fmt(expenseTotal) }}</span>
+      </div>
+      <div class="plan-total" :class="netTotal >= 0 ? 'plan-total--income' : 'plan-total--expense'">
+        <span class="plan-total-label plan-total-label--muted">Saldo</span>
+        <span class="plan-total-value ds-money">{{ fmt(netTotal) }}</span>
+      </div>
+    </div>
 
-      <!-- DESPESAS table -->
-    <div class="matrix-table" style="overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface)">
-        <table style="border-collapse: collapse; font-size: 12px; width: max-content; min-width: 100%">
-          <thead>
-            <tr>
-              <th :style="stickyHead()" style="width: 80px; min-width: 80px">
-                <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--danger); font-weight: 800">Despesas</span>
-              </th>
-              <th
-                v-for="col in expenseColumns"
-                :key="col"
-                :style="headCell()"
-                @mouseenter="showTooltip(col, $event)"
-                @mouseleave="hideTooltip"
-                @dragover.prevent
-                @drop.prevent="dropColumn('expense', col)"
-              >
-                <div class="col-head">
-                  <div class="col-head-main">
-                    <span class="col-title" draggable="true" @dragstart="startColumnDrag('expense', col, $event)">{{ truncate(col) }}</span>
-                    <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('expense', col, $event)">⋮</button>
+    <p v-if="viewMode === 'matrix'" class="plan-hint">
+      {{ months.length }} meses · {{ expenseColumns.length }} despesas · {{ incomeColumns.length }} receitas
+      <template v-if="hiddenColumnCount > 0"> · {{ hiddenColumnCount }} coluna(s) ocultas pela busca</template>
+      <template v-else> · clique em uma célula para editar</template>
+    </p>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- MATRIZ VIEW — cards (≤640px)                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <template v-if="viewMode === 'matrix' && isCompact">
+      <section v-for="month in months" :key="`card-${month}`" class="neo-panel mcard">
+        <header class="neo-panel-header mcard-head">
+          <span class="mcard-month">{{ formatMonthLong(month) }}</span>
+          <span class="mcard-net ds-money" :class="sobra(month) >= 0 ? 'is-positive' : 'is-negative'">{{ fmt(sobra(month)) }}</span>
+          <button class="mcard-clear" title="Apagar valores do mês" @click.stop="openClearRow(month)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+          </button>
+        </header>
+
+        <p class="mcard-group">Despesas</p>
+        <div
+          v-for="col in visibleExpenseColumns"
+          :key="`e-${month}-${col}`"
+          class="mcard-row"
+          @click="startEdit('expense', col, month, $event)"
+        >
+          <span class="mcard-swatch mcard-swatch--expense" />
+          <div class="mcard-row-main">
+            <p class="mcard-row-title">{{ col }}</p>
+            <p v-if="getColumnDueDay('expense', col)" class="mcard-row-sub">vence dia {{ getColumnDueDay('expense', col) }}</p>
+          </div>
+          <div class="mcard-row-side">
+            <input
+              v-if="editingKey === cellKey('expense', col, month)"
+              v-model="editValue"
+              type="text"
+              inputmode="decimal"
+              class="mcard-input"
+              @blur="saveCell('expense', col, month)"
+              @keydown.enter.prevent="saveCell('expense', col, month)"
+              @keydown.escape.prevent="cancelEdit"
+              @click.stop
+            />
+            <template v-else>
+              <p class="mcard-amount ds-money" :class="{ 'is-empty': getAmount('expense', col, month) === 0 }">
+                <sup v-if="getCellCount('expense', col, month) > 1" class="cell-count">×{{ getCellCount('expense', col, month) }}</sup>
+                {{ getAmount('expense', col, month) > 0 ? fmt(getAmount('expense', col, month)) : '—' }}
+              </p>
+              <button
+                v-if="getAmount('expense', col, month) > 0"
+                class="plan-pill"
+                :class="pillClass(getStatus('expense', col, month))"
+                @click.stop="toggleStatus('expense', col, month)"
+              >{{ statusLabel('expense', getStatus('expense', col, month)) }}</button>
+            </template>
+          </div>
+        </div>
+        <p v-if="visibleExpenseColumns.length === 0" class="mcard-empty">Nenhuma despesa.</p>
+
+        <p class="mcard-group">Receitas</p>
+        <div
+          v-for="col in visibleIncomeColumns"
+          :key="`i-${month}-${col}`"
+          class="mcard-row"
+          @click="startEdit('income', col, month, $event)"
+        >
+          <span class="mcard-swatch mcard-swatch--income" />
+          <div class="mcard-row-main">
+            <p class="mcard-row-title">{{ col }}</p>
+          </div>
+          <div class="mcard-row-side">
+            <input
+              v-if="editingKey === cellKey('income', col, month)"
+              v-model="editValue"
+              type="text"
+              inputmode="decimal"
+              class="mcard-input"
+              @blur="saveCell('income', col, month)"
+              @keydown.enter.prevent="saveCell('income', col, month)"
+              @keydown.escape.prevent="cancelEdit"
+              @click.stop
+            />
+            <template v-else>
+              <p class="mcard-amount ds-money" :class="{ 'is-empty': getAmount('income', col, month) === 0 }">
+                <sup v-if="getCellCount('income', col, month) > 1" class="cell-count">×{{ getCellCount('income', col, month) }}</sup>
+                {{ getAmount('income', col, month) > 0 ? fmt(getAmount('income', col, month)) : '—' }}
+              </p>
+              <button
+                v-if="getAmount('income', col, month) > 0"
+                class="plan-pill"
+                :class="pillClass(getStatus('income', col, month))"
+                @click.stop="toggleStatus('income', col, month)"
+              >{{ statusLabel('income', getStatus('income', col, month)) }}</button>
+            </template>
+          </div>
+        </div>
+        <p v-if="visibleIncomeColumns.length === 0" class="mcard-empty">Nenhuma receita.</p>
+
+        <footer class="mcard-foot">
+          <span>Despesas <b class="ds-money is-negative">{{ fmt(monthExpenseTotal(month)) }}</b></span>
+          <span>Receitas <b class="ds-money is-positive">{{ fmt(monthIncomeTotal(month)) }}</b></span>
+        </footer>
+      </section>
+
+      <div class="mcard-actions">
+        <button class="plan-ghost-btn" @click.stop="openAdd('expense')">+ Despesa</button>
+        <button class="plan-ghost-btn" @click.stop="openAdd('income')">+ Receita</button>
+      </div>
+    </template>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- MATRIZ VIEW — tabelas (>640px)                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <template v-else-if="viewMode === 'matrix'">
+
+      <!-- DESPESAS -->
+      <section class="neo-panel plan-panel">
+        <header class="neo-panel-header plan-panel-head">
+          <h3 class="plan-panel-title">Despesas</h3>
+          <span class="plan-panel-meta">{{ visibleExpenseColumns.length }} coluna(s)</span>
+          <span class="plan-panel-total ds-money is-negative">{{ fmt(expenseTotal) }}</span>
+        </header>
+
+        <div class="plan-scroll">
+          <table class="plan-table">
+            <thead>
+              <tr>
+                <th class="th-sticky">Vencimento</th>
+                <th
+                  v-for="col in visibleExpenseColumns"
+                  :key="col"
+                  class="th-col"
+                  @mouseenter="showTooltip(col, $event)"
+                  @mouseleave="hideTooltip"
+                  @dragover.prevent
+                  @drop.prevent="dropColumn('expense', col)"
+                >
+                  <div class="col-head">
+                    <div class="col-head-main">
+                      <span class="col-title" draggable="true" @dragstart="startColumnDrag('expense', col, $event)">{{ truncate(col) }}</span>
+                      <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('expense', col, $event)">⋮</button>
+                    </div>
+                    <span
+                      v-if="getColumnDueDay('expense', col)"
+                      class="plan-pill plan-pill--warning due-day-badge"
+                      :title="`Vencimento recorrente: dia ${getColumnDueDay('expense', col)}`"
+                    >vence {{ getColumnDueDay('expense', col) }}</span>
                   </div>
-                  <span
-                    v-if="getColumnDueDay('expense', col)"
-                    class="due-day-badge"
-                    :title="`Vencimento recorrente: dia ${getColumnDueDay('expense', col)}`"
-                  >vence {{ getColumnDueDay('expense', col) }}</span>
-                </div>
-              </th>
-              <th :style="headCell('right')" style="min-width: 90px">Soma ↓</th>
-              <th :style="addColHeadStyle">
-                <button class="add-col-btn" @click.stop="openAdd('expense')">+ Coluna</button>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(month, idx) in months"
-              :key="month"
-              :style="{ borderBottom: '1px solid var(--border)', background: idx % 2 === 0 ? 'transparent' : 'var(--surface2)' }"
-              @mouseenter="hoverMonth = month"
-              @mouseleave="hoverMonth = null"
-            >
-              <td :style="stickyCell(idx % 2 === 0)">
-                <div style="display:flex;align-items:center;gap:4px;justify-content:space-between">
-                  <span>{{ formatMonth(month) }}</span>
-                  <button
-                    class="row-clear-btn"
-                    :style="{ opacity: hoverMonth === month ? '1' : '0' }"
-                    title="Apagar valores do mês"
-                    @click.stop="openClearRow(month)"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-                  </button>
-                </div>
-              </td>
-              <td
-                v-for="col in expenseColumns"
-                :key="col"
-                :style="dataCell(getAmount('expense', col, month), editingKey === cellKey('expense', col, month), getStatus('expense', col, month), 'expense')"
-                @click="startEdit('expense', col, month, $event)"
+                </th>
+                <th class="th-sum">Soma ↓</th>
+                <th class="th-add">
+                  <button class="add-col-btn" @click.stop="openAdd('expense')">+ Coluna</button>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="month in months"
+                :key="month"
+                @mouseenter="hoverMonth = month"
+                @mouseleave="hoverMonth = null"
               >
-                <input
-                  v-if="editingKey === cellKey('expense', col, month)"
-                  v-model="editValue"
-                  type="text"
-                  inputmode="decimal"
-                  :style="inputStyle()"
-                  @blur="saveCell('expense', col, month)"
-                  @keydown.enter.prevent="saveCell('expense', col, month)"
-                  @keydown.escape.prevent="cancelEdit"
-                  @click.stop
-                />
-                <template v-else>
-                  <div class="cell-content">
+                <td class="td-sticky">
+                  <div class="td-sticky-inner">
+                    <span>{{ formatMonth(month) }}</span>
+                    <button
+                      class="row-clear-btn"
+                      :style="{ opacity: hoverMonth === month ? '1' : '0' }"
+                      title="Apagar valores do mês"
+                      @click.stop="openClearRow(month)"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+                    </button>
+                  </div>
+                </td>
+                <td
+                  v-for="col in visibleExpenseColumns"
+                  :key="col"
+                  class="td-data ds-money"
+                  :class="{ 'is-editing': editingKey === cellKey('expense', col, month), 'is-empty': getAmount('expense', col, month) === 0 }"
+                  :style="cellTint(getAmount('expense', col, month), editingKey === cellKey('expense', col, month), getStatus('expense', col, month), 'expense')"
+                  @click="startEdit('expense', col, month, $event)"
+                >
+                  <input
+                    v-if="editingKey === cellKey('expense', col, month)"
+                    v-model="editValue"
+                    type="text"
+                    inputmode="decimal"
+                    class="cell-input ds-money"
+                    @blur="saveCell('expense', col, month)"
+                    @keydown.enter.prevent="saveCell('expense', col, month)"
+                    @keydown.escape.prevent="cancelEdit"
+                    @click.stop
+                  />
+                  <div v-else class="cell-content">
                     <sup v-if="getCellCount('expense', col, month) > 1" class="cell-count">×{{ getCellCount('expense', col, month) }}</sup>
-                    <span v-if="getAmount('expense', col, month) > 0" style="font-variant-numeric: tabular-nums">{{ fmt(getAmount('expense', col, month)) }}</span>
-                    <span v-else style="color: var(--border)">—</span>
+                    <span v-if="getAmount('expense', col, month) > 0">{{ fmt(getAmount('expense', col, month)) }}</span>
+                    <span v-else>—</span>
                     <button
                       v-if="getAmount('expense', col, month) > 0"
                       class="status-dot"
@@ -114,99 +262,106 @@
                       @click.stop="toggleStatus('expense', col, month)"
                     />
                   </div>
-                </template>
-              </td>
-              <td :style="somaCell('expense', month)">
-                {{ monthExpenseTotal(month) > 0 ? fmt(monthExpenseTotal(month)) : '—' }}
-              </td>
-              <td :style="{ ...BASE_CELL, background: 'transparent' }" />
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td :style="{ ...expenseTotalCell, position: 'sticky', left: 0, zIndex: 1, textAlign: 'left' }">Total</td>
-              <td v-for="col in expenseColumns" :key="col" :style="expenseTotalCell">
-                {{ expenseColumnTotal(col) > 0 ? fmt(expenseColumnTotal(col)) : '—' }}
-              </td>
-              <td :style="expenseTotalCell">{{ expenseTotal > 0 ? fmt(expenseTotal) : '—' }}</td>
-              <td :style="{ ...expenseTotalCell, borderRight: 'none' }" />
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+                </td>
+                <td class="td-sum ds-money" :class="monthExpenseTotal(month) > 0 ? 'is-negative' : 'is-muted'">
+                  {{ monthExpenseTotal(month) > 0 ? fmt(monthExpenseTotal(month)) : '—' }}
+                </td>
+                <td class="td-filler" />
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="tfoot-row">
+                <td class="td-sticky td-foot">Total</td>
+                <td v-for="col in visibleExpenseColumns" :key="col" class="td-foot ds-money">
+                  {{ expenseColumnTotal(col) > 0 ? fmt(expenseColumnTotal(col)) : '—' }}
+                </td>
+                <td class="td-foot ds-money">{{ expenseTotal > 0 ? fmt(expenseTotal) : '—' }}</td>
+                <td class="td-foot" />
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
 
-      <!-- RECEITAS table -->
-    <div class="matrix-table" style="overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface)">
-        <table style="border-collapse: collapse; font-size: 12px; width: max-content; min-width: 100%">
-          <thead>
-            <tr>
-              <th :style="stickyHead()" style="width: 80px; min-width: 80px">
-                <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--success); font-weight: 800">Receitas</span>
-              </th>
-              <th
-                v-for="col in incomeColumns"
-                :key="col"
-                :style="headCell()"
-                @mouseenter="showTooltip(col, $event)"
-                @mouseleave="hideTooltip"
-                @dragover.prevent
-                @drop.prevent="dropColumn('income', col)"
+      <!-- RECEITAS -->
+      <section class="neo-panel plan-panel">
+        <header class="neo-panel-header plan-panel-head">
+          <h3 class="plan-panel-title">Receitas</h3>
+          <span class="plan-panel-meta">{{ visibleIncomeColumns.length }} coluna(s)</span>
+          <span class="plan-panel-total ds-money is-positive">{{ fmt(incomeTotal) }}</span>
+        </header>
+
+        <div class="plan-scroll">
+          <table class="plan-table">
+            <thead>
+              <tr>
+                <th class="th-sticky">Vencimento</th>
+                <th
+                  v-for="col in visibleIncomeColumns"
+                  :key="col"
+                  class="th-col"
+                  @mouseenter="showTooltip(col, $event)"
+                  @mouseleave="hideTooltip"
+                  @dragover.prevent
+                  @drop.prevent="dropColumn('income', col)"
+                >
+                  <div class="col-head">
+                    <div class="col-head-main">
+                      <span class="col-title" draggable="true" @dragstart="startColumnDrag('income', col, $event)">{{ truncate(col) }}</span>
+                      <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('income', col, $event)">⋮</button>
+                    </div>
+                  </div>
+                </th>
+                <th class="th-sum">Total ↓</th>
+                <th class="th-sum th-sum--primary">Sobra ↓</th>
+                <th class="th-add">
+                  <button class="add-col-btn" @click.stop="openAdd('income')">+ Coluna</button>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="month in months"
+                :key="month"
+                @mouseenter="hoverMonth = month"
+                @mouseleave="hoverMonth = null"
               >
-                <div class="col-head">
-                  <span class="col-title" draggable="true" @dragstart="startColumnDrag('income', col, $event)">{{ truncate(col) }}</span>
-                  <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('income', col, $event)">⋮</button>
-                </div>
-              </th>
-              <th :style="headCell('right')" style="min-width: 90px">Total ↓</th>
-              <th :style="headCell('right')" style="min-width: 90px; color: var(--primary)">Sobra ↓</th>
-              <th :style="addColHeadStyle">
-                <button class="add-col-btn" @click.stop="openAdd('income')">+ Coluna</button>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(month, idx) in months"
-              :key="month"
-              :style="{ borderBottom: '1px solid var(--border)', background: idx % 2 === 0 ? 'transparent' : 'var(--surface2)' }"
-              @mouseenter="hoverMonth = month"
-              @mouseleave="hoverMonth = null"
-            >
-              <td :style="stickyCell(idx % 2 === 0)">
-                <div style="display:flex;align-items:center;gap:4px;justify-content:space-between">
-                  <span>{{ formatMonth(month) }}</span>
-                  <button
-                    class="row-clear-btn"
-                    :style="{ opacity: hoverMonth === month ? '1' : '0' }"
-                    title="Apagar valores do mês"
-                    @click.stop="openClearRow(month)"
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-                  </button>
-                </div>
-              </td>
-              <td
-                v-for="col in incomeColumns"
-                :key="col"
-                :style="dataCell(getAmount('income', col, month), editingKey === cellKey('income', col, month), getStatus('income', col, month), 'income')"
-                @click="startEdit('income', col, month, $event)"
-              >
-                <input
-                  v-if="editingKey === cellKey('income', col, month)"
-                  v-model="editValue"
-                  type="text"
-                  inputmode="decimal"
-                  :style="inputStyle()"
-                  @blur="saveCell('income', col, month)"
-                  @keydown.enter.prevent="saveCell('income', col, month)"
-                  @keydown.escape.prevent="cancelEdit"
-                  @click.stop
-                />
-                <template v-else>
-                  <div class="cell-content">
+                <td class="td-sticky">
+                  <div class="td-sticky-inner">
+                    <span>{{ formatMonth(month) }}</span>
+                    <button
+                      class="row-clear-btn"
+                      :style="{ opacity: hoverMonth === month ? '1' : '0' }"
+                      title="Apagar valores do mês"
+                      @click.stop="openClearRow(month)"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+                    </button>
+                  </div>
+                </td>
+                <td
+                  v-for="col in visibleIncomeColumns"
+                  :key="col"
+                  class="td-data ds-money"
+                  :class="{ 'is-editing': editingKey === cellKey('income', col, month), 'is-empty': getAmount('income', col, month) === 0 }"
+                  :style="cellTint(getAmount('income', col, month), editingKey === cellKey('income', col, month), getStatus('income', col, month), 'income')"
+                  @click="startEdit('income', col, month, $event)"
+                >
+                  <input
+                    v-if="editingKey === cellKey('income', col, month)"
+                    v-model="editValue"
+                    type="text"
+                    inputmode="decimal"
+                    class="cell-input ds-money"
+                    @blur="saveCell('income', col, month)"
+                    @keydown.enter.prevent="saveCell('income', col, month)"
+                    @keydown.escape.prevent="cancelEdit"
+                    @click.stop
+                  />
+                  <div v-else class="cell-content">
                     <sup v-if="getCellCount('income', col, month) > 1" class="cell-count">×{{ getCellCount('income', col, month) }}</sup>
-                    <span v-if="getAmount('income', col, month) > 0" style="font-variant-numeric: tabular-nums">{{ fmt(getAmount('income', col, month)) }}</span>
-                    <span v-else style="color: var(--border)">—</span>
+                    <span v-if="getAmount('income', col, month) > 0">{{ fmt(getAmount('income', col, month)) }}</span>
+                    <span v-else>—</span>
                     <button
                       v-if="getAmount('income', col, month) > 0"
                       class="status-dot"
@@ -215,17 +370,19 @@
                       @click.stop="toggleStatus('income', col, month)"
                     />
                   </div>
-                </template>
-              </td>
-              <td :style="somaCell('income', month)">{{ monthIncomeTotal(month) > 0 ? fmt(monthIncomeTotal(month)) : '—' }}</td>
-              <td :style="sobra(month) !== 0 ? sobsCell(sobra(month)) : { ...somaCell('income', month), color: 'var(--text3)' }">
-                {{ sobra(month) !== 0 ? fmt(sobra(month)) : '—' }}
-              </td>
-              <td :style="{ ...BASE_CELL, background: 'transparent' }" />
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                </td>
+                <td class="td-sum ds-money" :class="monthIncomeTotal(month) > 0 ? 'is-positive' : 'is-muted'">
+                  {{ monthIncomeTotal(month) > 0 ? fmt(monthIncomeTotal(month)) : '—' }}
+                </td>
+                <td class="td-sum ds-money" :class="sobra(month) === 0 ? 'is-muted' : sobra(month) > 0 ? 'is-positive' : 'is-negative'">
+                  {{ sobra(month) !== 0 ? fmt(sobra(month)) : '—' }}
+                </td>
+                <td class="td-filler" />
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
     </template>
 
@@ -234,20 +391,18 @@
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <template v-else>
       <!-- Seletor de mês -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+      <div class="month-nav">
         <button
+          class="month-nav-btn"
           :disabled="selectedMonthIndex === 0"
-          style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-size:16px;color:var(--text);transition:all .15s"
-          :style="selectedMonthIndex === 0 ? { opacity: '0.35', cursor: 'default' } : {}"
           @click="prevMonth"
         >‹</button>
         <BaseDropdown v-model="selectedMonth" :height="38" style="min-width: 200px">
           <option v-for="m in months" :key="m" :value="m">{{ formatMonthLong(m) }}</option>
         </BaseDropdown>
         <button
+          class="month-nav-btn"
           :disabled="selectedMonthIndex === months.length - 1"
-          style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);cursor:pointer;font-size:16px;color:var(--text);transition:all .15s"
-          :style="selectedMonthIndex === months.length - 1 ? { opacity: '0.35', cursor: 'default' } : {}"
           @click="nextMonth"
         >›</button>
       </div>
@@ -258,7 +413,7 @@
     <Teleport to="body">
       <div
         v-if="tooltip.visible"
-        style="position: fixed; z-index: 9999; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text); box-shadow: 0 4px 20px oklch(0% 0 0 / 0.2); pointer-events: none; white-space: nowrap; max-width: 320px; transform: translateX(-50%)"
+        class="plan-tooltip"
         :style="{ left: tooltip.x + 'px', top: (tooltip.y - 44) + 'px' }"
       >{{ tooltip.text }}</div>
     </Teleport>
@@ -267,7 +422,7 @@
     <Teleport to="body">
       <div
         v-if="colMenu"
-        style="position: fixed; z-index: 9999; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; box-shadow: 0 8px 32px oklch(0% 0 0 / 0.2); min-width: 160px"
+        class="plan-menu"
         :style="{ left: colMenu.x + 'px', top: colMenu.y + 'px' }"
         @click.stop
       >
@@ -416,7 +571,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, nextTick, onMounted, watch } from 'vue'
+import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import FinanceEntryGrid from '~/features/finance/components/FinanceEntryGrid.vue'
 import type { EntryKind, EntryStatus, FinanceEntry } from '#shared/types'
@@ -443,6 +598,24 @@ const formatMonthLong = (key: string) => {
   return `${NAMES[m] ?? ''} de ${y}`
 }
 const truncate = (s: string, n = 14) => s.length > n ? s.slice(0, n - 1) + '…' : s
+
+// ─── viewport compacto (cards no lugar da tabela) ───────────────────────────
+
+const isCompact = ref(false)
+let compactQuery: MediaQueryList | null = null
+const syncCompact = (event: MediaQueryListEvent) => { isCompact.value = event.matches }
+
+onMounted(() => {
+  if (!import.meta.client || typeof window.matchMedia !== 'function') return
+  compactQuery = window.matchMedia('(max-width: 640px)')
+  isCompact.value = compactQuery.matches
+  compactQuery.addEventListener('change', syncCompact)
+})
+
+onBeforeUnmount(() => {
+  compactQuery?.removeEventListener('change', syncCompact)
+  compactQuery = null
+})
 
 // ─── computed columns & months ───────────────────────────────────────────────
 
@@ -474,6 +647,20 @@ const nextMonth = () => {
 
 const expenseColumns = computed(() => buildColumns('expense'))
 const incomeColumns  = computed(() => buildColumns('income'))
+
+// ─── busca (apenas filtra quais colunas aparecem) ───────────────────────────
+
+const searchText = ref('')
+const searchFocused = ref(false)
+const normalizedSearch = computed(() => searchText.value.trim().toLowerCase())
+const matchesSearch = (title: string) =>
+  !normalizedSearch.value || title.toLowerCase().includes(normalizedSearch.value)
+
+const visibleExpenseColumns = computed(() => expenseColumns.value.filter(matchesSearch))
+const visibleIncomeColumns  = computed(() => incomeColumns.value.filter(matchesSearch))
+const hiddenColumnCount = computed(() =>
+  (expenseColumns.value.length - visibleExpenseColumns.value.length)
+  + (incomeColumns.value.length - visibleIncomeColumns.value.length))
 
 const COLUMN_ORDER_KEY = 'finance-matrix-column-order'
 const columnOrder = ref<Record<EntryKind, string[]>>({ expense: [], income: [] })
@@ -587,10 +774,25 @@ const toggleStatus = async (kind: string, title: string, month: string) => {
   await store.saveEntriesBatch({ upserts: entries.map(e => ({ ...e, status: next })), deletes: [] })
 }
 
+// Rótulos/estilos das pills de status (usados no layout de cards).
+const statusLabel = (kind: 'expense' | 'income', status: 'paid' | 'pending' | 'mixed' | null) => {
+  if (status === 'mixed') return 'Parcial'
+  if (status === 'paid') return kind === 'income' ? 'Recebido' : 'Pago'
+  return kind === 'income' ? 'A receber' : 'A pagar'
+}
+
+const pillClass = (status: 'paid' | 'pending' | 'mixed' | null) =>
+  status === 'paid' ? 'plan-pill--success'
+    : status === 'mixed' ? 'plan-pill--warning'
+      : 'plan-pill--danger'
+
 const monthExpenseTotal = (month: string) => expenseColumns.value.reduce((s, c) => s + getAmount('expense', c, month), 0)
 const monthIncomeTotal  = (month: string) => incomeColumns.value.reduce((s, c)  => s + getAmount('income',  c, month), 0)
 const expenseColumnTotal = (column: string) => months.value.reduce((sum, month) => sum + getAmount('expense', column, month), 0)
+const incomeColumnTotal  = (column: string) => months.value.reduce((sum, month) => sum + getAmount('income', column, month), 0)
 const expenseTotal = computed(() => expenseColumns.value.reduce((sum, column) => sum + expenseColumnTotal(column), 0))
+const incomeTotal  = computed(() => incomeColumns.value.reduce((sum, column) => sum + incomeColumnTotal(column), 0))
+const netTotal     = computed(() => incomeTotal.value - expenseTotal.value)
 const sobra = (month: string) => monthIncomeTotal(month) - monthExpenseTotal(month)
 
 // ─── inline cell editing ─────────────────────────────────────────────────────
@@ -605,8 +807,9 @@ const startEdit = (kind: string, title: string, month: string, event: MouseEvent
   editingKey.value = key
   const amount = getAmount(kind, title, month)
   editValue.value = amount > 0 ? String(amount).replace('.', ',') : ''
+  const host = event.currentTarget as HTMLElement | null
   nextTick(() => {
-    const input = (event.currentTarget as HTMLElement).querySelector('input') as HTMLInputElement | null
+    const input = host?.querySelector('input') as HTMLInputElement | null
     input?.focus()
     input?.select()
   })
@@ -838,135 +1041,350 @@ const confirmAdd = async () => {
 
 // ─── style helpers ────────────────────────────────────────────────────────────
 
-const BASE_CELL = {
-  padding: '5px 10px',
-  textAlign: 'right' as const,
-  whiteSpace: 'nowrap' as const,
-  borderRight: '1px solid var(--border)',
-}
-
-const stickyHead = () => ({
-  ...BASE_CELL,
-  position: 'sticky' as const,
-  left: 0, zIndex: 3, top: 0,
-  textAlign: 'left' as const,
-  background: 'var(--surface2)',
-  borderBottom: '2px solid var(--border)',
-  padding: '8px 12px',
-})
-
-const headCell = (align: 'left' | 'right' = 'right') => ({
-  ...BASE_CELL,
-  position: 'sticky' as const,
-  top: 0, zIndex: 2,
-  textAlign: align,
-  background: 'var(--surface2)',
-  borderBottom: '2px solid var(--border)',
-  padding: '0',
-  fontWeight: '700',
-  fontSize: '11px',
-  color: 'var(--text2)',
-  minWidth: '90px',
-  maxWidth: '130px',
-})
-
-const addColHeadStyle = {
-  ...BASE_CELL,
-  position: 'sticky' as const,
-  top: 0, zIndex: 2,
-  background: 'var(--surface2)',
-  borderBottom: '2px solid var(--border)',
-  padding: '4px 8px',
-  minWidth: '90px',
-  borderRight: 'none',
-}
-
-const stickyCell = (even: boolean) => ({
-  ...BASE_CELL,
-  position: 'sticky' as const,
-  left: 0, zIndex: 1,
-  textAlign: 'left' as const,
-  fontWeight: '700',
-  fontSize: '12px',
-  color: 'var(--text2)',
-  background: even ? 'var(--surface)' : 'var(--surface2)',
-  padding: '6px 12px',
-})
-
-const statusBg = (status: 'paid' | 'pending' | 'mixed' | null, kind: 'expense' | 'income') => {
+const statusTint = (status: 'paid' | 'pending' | 'mixed' | null, kind: 'expense' | 'income') => {
   if (!status) return 'transparent'
-  if (status === 'paid') return 'color-mix(in srgb, var(--success) 8%, transparent)'
-  if (status === 'mixed') return 'color-mix(in srgb, var(--warning) 8%, transparent)'
+  if (status === 'paid') return 'color-mix(in srgb, var(--success) 12%, transparent)'
+  if (status === 'mixed') return 'color-mix(in srgb, var(--warning) 12%, transparent)'
   return kind === 'income'
-    ? 'color-mix(in srgb, var(--warning) 8%, transparent)'
-    : 'color-mix(in srgb, var(--danger) 8%, transparent)'
+    ? 'color-mix(in srgb, var(--warning) 12%, transparent)'
+    : 'color-mix(in srgb, var(--danger) 12%, transparent)'
 }
 
-const dataCell = (amount: number, isEditing: boolean, status?: 'paid' | 'pending' | 'mixed' | null, kind?: 'expense' | 'income') => ({
-  ...BASE_CELL,
-  cursor: 'text',
-  userSelect: 'none' as const,
-  minWidth: '80px',
-  maxWidth: '130px',
-  padding: '4px 6px 4px 6px',
-  color: amount > 0 ? 'var(--text)' : 'var(--border)',
+const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending' | 'mixed' | null, kind: 'expense' | 'income') => ({
   background: isEditing
-    ? 'color-mix(in srgb, var(--primary) 8%, var(--surface))'
-    : (amount > 0 && status ? statusBg(status, kind ?? 'expense') : 'transparent'),
-  outline: isEditing ? '2px solid var(--primary)' : 'none',
-  outlineOffset: '-2px',
-})
-
-const somaCell = (kind: 'expense' | 'income', month: string) => {
-  const total = kind === 'expense' ? monthExpenseTotal(month) : monthIncomeTotal(month)
-  const color = kind === 'expense' ? 'var(--danger)' : 'var(--success)'
-  return {
-    ...BASE_CELL,
-    fontWeight: '700',
-    color: total > 0 ? color : 'var(--text3)',
-    background: total > 0
-      ? `color-mix(in srgb, ${kind === 'expense' ? 'var(--danger)' : 'var(--success)'} 6%, var(--surface))`
-      : 'transparent',
-    padding: '5px 10px',
-  }
-}
-
-const expenseTotalCell = {
-  ...BASE_CELL,
-  borderTop: '2px solid var(--border)',
-  fontWeight: '800',
-  color: 'var(--danger)',
-  background: 'color-mix(in srgb, var(--danger) 8%, var(--surface))',
-  padding: '7px 10px',
-}
-
-const sobsCell = (value: number) => ({
-  ...BASE_CELL,
-  fontWeight: '800',
-  color: value >= 0 ? 'var(--success)' : 'var(--danger)',
-  background: value >= 0
-    ? 'color-mix(in srgb, var(--success) 8%, var(--surface))'
-    : 'color-mix(in srgb, var(--danger) 8%, var(--surface))',
-  padding: '5px 10px',
-})
-
-const inputStyle = () => ({
-  width: '80px', border: 'none', outline: 'none',
-  background: 'transparent', fontFamily: 'inherit',
-  fontSize: '12px', fontWeight: '600',
-  textAlign: 'right' as const,
-  color: 'var(--text)', display: 'block', padding: '0',
+    ? 'color-mix(in srgb, var(--primary) 14%, var(--surface))'
+    : (amount > 0 && status ? statusTint(status, kind) : 'transparent'),
 })
 </script>
 
 <style scoped>
-/* ── Cell content layout ─────────────────────────── */
+.plan-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Barra de filtros ────────────────────────────── */
+.plan-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.plan-search {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--surface2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text3);
+  transition: box-shadow var(--ds-motion-fast) linear;
+}
+.plan-search--focus {
+  box-shadow: var(--shadow-xs);
+}
+.plan-search input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.plan-search input::placeholder { color: var(--text3); }
+/* Neutraliza a altura global de inputs em telas pequenas (evita estourar a barra). */
+.plan-search input[type='text'] { height: 100%; }
+@media (max-width: 767px) {
+  .plan-search { height: 44px; }
+}
+.plan-search-clear {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  font-family: inherit;
+}
+.plan-search-clear:hover { color: var(--text); }
+
+.plan-seg {
+  display: flex;
+  gap: 6px;
+}
+.plan-seg-btn {
+  padding: 7px 14px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--shadow-xs);
+  background: var(--surface);
+  color: var(--text2);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+.plan-seg-btn--on {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.plan-seg-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.plan-new-btn {
+  padding: 8px 16px;
+  background: var(--primary);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  color: var(--on-primary);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12.5px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+.plan-new-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+.plan-ghost-btn {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  color: var(--text);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.plan-ghost-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+/* ── Totalizadores ───────────────────────────────── */
+.plan-totals {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.plan-total {
+  padding: 9px 18px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--success);
+  background: var(--success-light);
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+}
+.plan-total--income {
+  border-color: var(--success);
+  background: var(--success-light);
+}
+.plan-total--expense {
+  border-color: var(--danger);
+  background: var(--danger-light);
+}
+.plan-total-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.plan-total--income .plan-total-label,
+.plan-total--income .plan-total-value { color: var(--success); }
+.plan-total--expense .plan-total-label,
+.plan-total--expense .plan-total-value { color: var(--danger); }
+.plan-total-label--muted { color: var(--text3) !important; }
+.plan-total-value {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.plan-hint {
+  font-size: 11.5px;
+  color: var(--text3);
+  font-weight: 600;
+}
+
+/* ── Painel + tabela ─────────────────────────────── */
+.plan-panel {
+  display: flex;
+  flex-direction: column;
+}
+.plan-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+}
+.plan-panel-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+}
+.plan-panel-meta {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text3);
+}
+.plan-panel-total {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.plan-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.plan-table {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+  font-size: 12.5px;
+}
+
+.plan-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface2);
+  border-bottom: var(--border-width) solid var(--border);
+  padding: 10px 14px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text3);
+  font-weight: 700;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.plan-table th.th-sticky {
+  left: 0;
+  z-index: 3;
+  text-align: left;
+  border-right: var(--border-width) solid var(--border);
+  min-width: 94px;
+}
+.plan-table th.th-col {
+  padding: 0;
+  min-width: 96px;
+  max-width: 130px;
+}
+.plan-table th.th-sum { min-width: 96px; }
+.plan-table th.th-sum--primary { color: var(--primary); }
+.plan-table th.th-add {
+  padding: 6px 10px;
+  min-width: 96px;
+  text-align: left;
+}
+
+.plan-table tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+.plan-table tbody tr:hover .td-sticky { background: var(--surface2); }
+
+.plan-table td {
+  padding: 10px 14px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.td-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text2);
+  background: var(--surface);
+  border-right: var(--border-width) solid var(--border);
+  transition: background var(--ds-motion-fast) linear;
+}
+.td-sticky-inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: space-between;
+}
+
+.td-data {
+  cursor: text;
+  user-select: none;
+  min-width: 96px;
+  max-width: 130px;
+  padding: 6px 12px;
+  font-weight: 700;
+}
+.td-data.is-empty { color: var(--text3); font-weight: 600; }
+.td-data.is-editing {
+  outline: var(--border-width) solid var(--primary);
+  outline-offset: calc(-1 * var(--border-width));
+}
+
+.td-sum { font-weight: 800; }
+.td-filler { padding: 0; }
+
+.is-positive { color: var(--success); }
+.is-negative { color: var(--danger); }
+.is-muted    { color: var(--text3); }
+
+.tfoot-row .td-foot {
+  border-top: var(--border-width) solid var(--border);
+  background: var(--danger-light);
+  color: var(--danger);
+  font-weight: 800;
+  padding: 9px 14px;
+}
+.tfoot-row .td-sticky.td-foot {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.cell-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--ds-font-family-mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--text);
+  display: block;
+  padding: 0;
+}
+
+/* ── Conteúdo da célula ──────────────────────────── */
 .cell-content {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
-  min-height: 20px;
+  gap: 5px;
+  min-height: 18px;
 }
 .cell-count {
   font-size: 8px;
@@ -977,15 +1395,15 @@ const inputStyle = () => ({
 /* ── Status dot ──────────────────────────────────── */
 .status-dot {
   flex-shrink: 0;
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border: 1px solid var(--border);
-  border-radius: 0;
+  border-radius: 2px;
   cursor: pointer;
   padding: 0;
   outline: none;
   transition: transform .12s, opacity .12s;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 .status-dot:hover { transform: scale(1.4); opacity: 1; }
 
@@ -995,6 +1413,23 @@ const inputStyle = () => ({
 .status-dot--pending-income  { background: var(--warning); }
 .status-dot--mixed     { background: var(--warning); }
 
+/* ── Pills (Tipo / Status) ───────────────────────── */
+.plan-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: none;
+  cursor: pointer;
+}
+.plan-pill--success { background: var(--success-light); color: var(--success); }
+.plan-pill--danger  { background: var(--danger-light);  color: var(--danger); }
+.plan-pill--warning { background: var(--warning-light); color: var(--warning); }
+
 /* ── Column header ───────────────────────────────── */
 .col-head {
   display: flex;
@@ -1002,8 +1437,8 @@ const inputStyle = () => ({
   align-items: stretch;
   justify-content: center;
   min-height: 42px;
-  padding: 4px 5px 4px 10px;
-  gap: 2px;
+  padding: 8px 10px 8px 14px;
+  gap: 3px;
   height: 100%;
 }
 .col-head-main {
@@ -1022,16 +1457,10 @@ const inputStyle = () => ({
 .col-title:active { cursor: grabbing; }
 .due-day-badge {
   align-self: flex-end;
-  border: 1px solid color-mix(in srgb, var(--danger) 55%, var(--border));
-  border-radius: var(--radius-xs);
-  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
-  color: var(--danger);
+  cursor: default;
   font-size: 9px;
-  font-weight: 800;
-  line-height: 1.1;
-  padding: 1px 4px;
+  padding: 1px 8px;
   text-transform: uppercase;
-  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .col-menu-btn {
@@ -1063,9 +1492,7 @@ th:hover .col-menu-btn {
 }
 
 @media (max-width: 767px) {
-  .matrix-table {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
+  .plan-scroll {
     scrollbar-color: var(--primary) var(--surface2);
     scrollbar-width: thin;
   }
@@ -1095,22 +1522,218 @@ th:hover .col-menu-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  border: 2px dashed var(--border);
+  border: var(--border-width) dashed var(--border);
   border-radius: var(--radius-xs);
   padding: 4px 8px;
   background: transparent;
   color: var(--text3);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
   font-family: inherit;
+  text-transform: none;
+  letter-spacing: 0;
   transition: border-color 0.12s, color 0.12s, background 0.12s;
 }
 .add-col-btn:hover {
   border-color: var(--primary);
   color: var(--primary);
   background: var(--primary-dim);
+}
+
+/* ── Cards (≤640px) ──────────────────────────────── */
+.mcard {
+  display: flex;
+  flex-direction: column;
+}
+.mcard-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+}
+.mcard-month {
+  flex: 1;
+  min-width: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mcard-net {
+  font-size: 13px;
+  font-weight: 800;
+}
+.mcard-clear {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 0;
+}
+.mcard-clear:hover { background: var(--danger-light); color: var(--danger); border-color: var(--border); }
+
+.mcard-group {
+  padding: 8px 14px 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.mcard-empty {
+  padding: 0 14px 10px;
+  font-size: 11.5px;
+  color: var(--text3);
+}
+
+.mcard-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: text;
+}
+.mcard-swatch {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+}
+.mcard-swatch--expense { background: var(--danger); }
+.mcard-swatch--income  { background: var(--success); }
+
+.mcard-row-main { flex: 1; min-width: 0; }
+.mcard-row-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mcard-row-sub {
+  margin-top: 2px;
+  font-size: 10.5px;
+  color: var(--text3);
+}
+
+.mcard-row-side {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.mcard-amount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.mcard-amount.is-empty { color: var(--text3); font-weight: 600; }
+.mcard-input {
+  width: 120px;
+  height: 32px;
+  border: var(--border-width) solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  font-family: var(--ds-font-family-mono);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--text);
+  outline: none;
+  padding: 0 8px;
+}
+
+.mcard-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: var(--border-width) solid var(--border);
+  background: var(--surface2);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text3);
+}
+.mcard-foot b { font-size: 12px; font-weight: 800; margin-left: 4px; }
+
+.mcard-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Seletor de mês (aba Lista) ──────────────────── */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.month-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  background: var(--surface2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+.month-nav-btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; }
+.month-nav-btn:not(:disabled):active { transform: translate(2px, 2px); box-shadow: none; }
+
+/* ── Tooltip / menu flutuante ────────────────────── */
+.plan-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: var(--surface2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  pointer-events: none;
+  white-space: nowrap;
+  max-width: 320px;
+  transform: translateX(-50%);
+}
+
+.plan-menu {
+  position: fixed;
+  z-index: 9999;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: 4px;
+  min-width: 168px;
 }
 
 /* ── Dropdown menu items ─────────────────────────── */
@@ -1120,12 +1743,12 @@ th:hover .col-menu-btn {
   gap: 8px;
   width: 100%;
   padding: 8px 12px;
-  border: 2px solid transparent;
+  border: var(--border-width) solid transparent;
   border-radius: var(--radius-xs);
   background: transparent;
   color: var(--text2);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: inherit;
   cursor: pointer;
   transition: background 0.1s;
@@ -1144,16 +1767,16 @@ th:hover .col-menu-btn {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: oklch(0% 0 0 / 0.64);
+  background: var(--overlay);
 }
 .modal-box {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
   padding: 24px;
   width: 100%;
   max-width: 420px;
-  box-shadow: 0 16px 48px oklch(0% 0 0 / 0.25);
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1170,32 +1793,32 @@ th:hover .col-menu-btn {
 }
 .modal-label {
   display: block;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: var(--text3);
   margin-bottom: 6px;
 }
 .modal-input {
   width: 100%;
   background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 0 12px;
-  height: 44px;
+  height: 42px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 650;
   color: var(--text);
   font-family: inherit;
   outline: none;
   box-sizing: border-box;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: box-shadow 0.15s, transform 0.15s;
   -webkit-appearance: none;
 }
 .modal-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-dim);
+  box-shadow: var(--shadow-sm);
+  transform: translate(-1px, -1px);
 }
 .modal-footer {
   display: flex;
@@ -1205,47 +1828,42 @@ th:hover .col-menu-btn {
 }
 .btn-cancel {
   background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 0 16px;
   height: 40px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 750;
   color: var(--text2);
   cursor: pointer;
   font-family: inherit;
-  transition: filter 0.12s;
 }
-.btn-cancel:hover { filter: brightness(0.95); }
 .btn-save {
   background: var(--primary);
-  border: none;
-  border-radius: 10px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 0 20px;
   height: 40px;
   font-size: 13px;
-  font-weight: 700;
-  color: #fff;
+  font-weight: 800;
+  color: var(--on-primary);
   cursor: pointer;
   font-family: inherit;
-  transition: filter 0.12s;
 }
-.btn-save:hover { filter: brightness(1.1); }
 .btn-save:disabled { opacity: 0.45; cursor: not-allowed; }
 .btn-delete {
   background: var(--danger);
-  border: none;
-  border-radius: 10px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 0 20px;
   height: 40px;
   font-size: 13px;
-  font-weight: 700;
-  color: #fff;
+  font-weight: 800;
+  color: var(--on-danger);
   cursor: pointer;
   font-family: inherit;
-  transition: filter 0.12s;
 }
-.btn-delete:hover { filter: brightness(1.1); }
+.btn-delete:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ── Modal transition ────────────────────────────── */
 .modal-enter-active, .modal-leave-active { transition: opacity var(--ds-motion-base) linear; }

@@ -5,7 +5,7 @@
     <div class="auth-card">
       <div class="auth-card__header">
         <div class="auth-card__logo">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--on-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="1" x2="12" y2="23" />
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
           </svg>
@@ -89,7 +89,7 @@
   background: var(--primary);
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 3px 3px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .auth-card__eyebrow {
@@ -117,7 +117,7 @@
   background: var(--surface) !important;
   border: 2px solid var(--border) !important;
   border-radius: var(--radius-sm) !important;
-  box-shadow: 3px 3px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-sm);
   font-weight: 650;
   transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
 }

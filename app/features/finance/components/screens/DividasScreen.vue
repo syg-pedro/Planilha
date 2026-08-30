@@ -1,8 +1,8 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 16px">
+  <div class="debts">
 
     <!-- KPIs -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px">
+    <div class="debts__kpis">
       <BaseKpiCard icon="debt"     label="Saldo devedor total"  :value="fmt(summary.totalPending)"    color="var(--danger)"  :sub="`${debtGroups.length} compromisso(s)`" />
       <BaseKpiCard icon="calendar" label="Parcelas este mês"    :value="fmt(summary.thisMonth)"        color="var(--warning)" sub="Vencimento mês atual" />
       <BaseKpiCard icon="check"    label="Parcelas pagas"       :value="`${summary.paidCount}/${summary.totalCount}`" color="var(--success)" sub="Total de parcelas" />
@@ -13,143 +13,127 @@
     <BaseEmptyState v-if="debtGroups.length === 0" icon="debt" title="Nenhuma dívida ou parcela" body="Não há lançamentos parcelados no sistema. Lançamentos com mais de 1 parcela aparecem aqui automaticamente." />
 
     <!-- Debt cards -->
-    <div
-      v-for="group in debtGroups"
-      :key="group.key"
-      class="debt-group"
-      style="background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden"
-    >
-      <!-- Header -->
-      <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; gap: 12px">
-        <button
-          style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; background: none; border: none; cursor: pointer; text-align: left; padding: 0"
-          @click="toggleGroup(group.key)"
-        >
-          <div style="flex: 1; min-width: 0">
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
-              <p style="font-size: 14px; font-weight: 700; color: var(--text)">{{ group.title }}</p>
-              <span style="font-size: 11px; font-weight: 700; color: var(--primary); background: var(--primary-dim); padding: 2px 8px; border-radius: 99px">
-                {{ group.paidCount }}/{{ group.totalCount }} parcelas
-              </span>
-              <span v-if="group.paidCount === group.totalCount" style="font-size: 11px; font-weight: 700; color: var(--success); background: color-mix(in srgb, var(--success) 12%, transparent); padding: 2px 8px; border-radius: 99px">
-                Quitado
-              </span>
-            </div>
-            <div style="display: flex; gap: 16px; margin-top: 4px; flex-wrap: wrap">
-              <span style="font-size: 12px; color: var(--text3)">Conta: {{ group.accountName }}</span>
-              <span style="font-size: 12px; color: var(--text3)">Categoria: {{ group.catName }}</span>
-              <span style="font-size: 12px; font-weight: 600" :style="{ color: group.pendingAmount > 0 ? 'var(--danger)' : 'var(--success)' }">
-                Restante: {{ fmt(group.pendingAmount) }}
-              </span>
-            </div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 14px; flex-shrink: 0">
-            <div style="text-align: right">
-              <p style="font-size: 15px; font-weight: 800; color: var(--danger)">{{ fmt(group.pendingAmount) }}</p>
-              <p style="font-size: 11px; color: var(--text3)">de {{ fmt(group.totalAmount) }}</p>
-            </div>
+    <div v-else class="debts__grid">
+      <article
+        v-for="group in debtGroups"
+        :key="group.key"
+        class="debt-group"
+      >
+        <!-- Header -->
+        <header class="neo-panel-header debts__head">
+          <button class="debts__toggle" type="button" @click="toggleGroup(group.key)">
+            <span class="debts__name">{{ group.title }}</span>
+            <span v-if="group.paidCount === group.totalCount" class="debts__badge">Quitado</span>
+            <span class="debts__progress ds-money">{{ group.paidCount }}/{{ group.totalCount }}</span>
             <BaseIcon
               name="chevron_down"
-              :size="16"
-              :style="{ transform: expandedGroups.includes(group.key) ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s', color: 'var(--text3)' }"
+              :size="14"
+              :style="{ transform: expandedGroups.includes(group.key) ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 0.2s', color: 'var(--text3)', flexShrink: 0 }"
             />
-          </div>
-        </button>
+          </button>
 
-        <!-- Botão editar conta -->
-        <button
-          v-if="group.accountId"
-          class="icon-btn"
-          title="Editar conta/cartão"
-          @click.stop="openAccountEditor(group.accountId)"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
-        </button>
-      </div>
+          <!-- Botão editar conta -->
+          <button
+            v-if="group.accountId"
+            class="icon-btn"
+            title="Editar conta/cartão"
+            @click.stop="openAccountEditor(group.accountId)"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+          </button>
+        </header>
 
-      <!-- Progress bar -->
-      <div style="padding: 0 18px 10px">
-        <div style="height: 6px; background: var(--bg2); border-radius: 99px; overflow: hidden">
-          <div
-            :style="{
-              width: `${(group.paidCount / group.totalCount) * 100}%`,
-              height: '100%',
-              borderRadius: '99px',
-              background: group.paidCount === group.totalCount ? 'var(--success)' : 'var(--primary)',
-              transition: 'width 0.6s'
-            }"
-          />
-        </div>
-      </div>
-
-      <!-- Expanded installments -->
-      <div v-if="expandedGroups.includes(group.key)" style="border-top: 1px solid var(--border)">
-        <div
-          v-for="entry in group.entries"
-          :key="entry.id"
-          class="debt-installment"
-          :style="entry.status === 'paid' ? { opacity: 0.55 } : {}"
-        >
-          <div class="debt-installment__identity">
+        <!-- Body -->
+        <div class="debts__body">
+          <div class="debts__track">
             <div
+              class="debts__fill"
               :style="{
-                width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
-                background: entry.status === 'paid' ? 'var(--success)' : isOverdue(entry.dueDate) ? 'var(--danger)' : 'var(--warning)'
+                width: `${(group.paidCount / group.totalCount) * 100}%`,
+                background: group.paidCount === group.totalCount ? 'var(--success)' : 'var(--primary)'
               }"
             />
-            <div class="debt-installment__details">
-              <span style="font-size: 12px; color: var(--text3); white-space: nowrap">
-                Parcela {{ entry.installmentIndex }}/{{ entry.installmentTotal }}
-              </span>
-              <span style="font-size: 12px; color: var(--text2); white-space: nowrap">{{ fmtDate(entry.dueDate) }}</span>
+          </div>
+          <p class="debts__line">
+            Parcela: <span class="debts__line-value ds-money">{{ fmt(group.installmentAmount) }}</span>
+          </p>
+          <p class="debts__line">
+            Restante: <span class="debts__line-value debts__line-value--danger ds-money">{{ fmt(group.pendingAmount) }}</span>
+          </p>
+          <p class="debts__meta">{{ group.accountName }} · {{ group.catName }}</p>
+        </div>
+
+        <!-- Expanded installments -->
+        <div v-if="expandedGroups.includes(group.key)" class="debts__installments">
+          <div
+            v-for="entry in group.entries"
+            :key="entry.id"
+            class="debt-installment"
+            :style="entry.status === 'paid' ? { opacity: 0.55 } : {}"
+          >
+            <div class="debt-installment__identity">
+              <div
+                class="debt-installment__dot"
+                :style="{
+                  background: entry.status === 'paid' ? 'var(--success)' : isOverdue(entry.dueDate) ? 'var(--danger)' : 'var(--warning)'
+                }"
+              />
+              <div class="debt-installment__details">
+                <span class="debt-installment__label">
+                  Parcela {{ entry.installmentIndex }}/{{ entry.installmentTotal }}
+                </span>
+                <span class="debt-installment__date">{{ fmtDate(entry.dueDate) }}</span>
+              </div>
+            </div>
+            <span
+              class="debt-installment__amount ds-money"
+              :style="{ color: entry.status === 'paid' ? 'var(--success)' : 'var(--danger)' }"
+            >
+              {{ fmt(entry.amount) }}
+            </span>
+            <span
+              class="debt-installment__status"
+              :style="{
+                background: entry.status === 'paid'
+                  ? 'var(--success-light)'
+                  : isOverdue(entry.dueDate)
+                    ? 'var(--danger-light)'
+                    : 'var(--warning-light)',
+                color: entry.status === 'paid' ? 'var(--success)' : isOverdue(entry.dueDate) ? 'var(--danger)' : 'var(--warning)'
+              }"
+            >
+              {{ entry.status === 'paid' ? (entry.kind === 'income' ? 'Recebido' : 'Pago') : isOverdue(entry.dueDate) ? 'Vencida' : 'Pendente' }}
+            </span>
+
+            <!-- Ações -->
+            <div class="debt-installment__actions" data-testid="debt-installment-actions">
+              <button
+                v-if="entry.status !== 'paid'"
+                class="action-btn action-pay"
+                @click="quickPay(entry.id)"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {{ entry.kind === 'income' ? 'Receber' : 'Pagar' }}
+              </button>
+              <button
+                class="action-btn action-edit"
+                @click="openEditor(entry)"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                Editar
+              </button>
             </div>
           </div>
-          <span class="debt-installment__amount" style="font-size: 12px; font-weight: 700" :style="{ color: entry.status === 'paid' ? 'var(--success)' : 'var(--danger)' }">
-            {{ fmt(entry.amount) }}
-          </span>
-          <span
-            class="debt-installment__status"
-            :style="{
-              fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '99px',
-              background: entry.status === 'paid'
-                ? 'color-mix(in srgb, var(--success) 12%, transparent)'
-                : isOverdue(entry.dueDate)
-                  ? 'color-mix(in srgb, var(--danger) 12%, transparent)'
-                  : 'color-mix(in srgb, var(--warning) 12%, transparent)',
-              color: entry.status === 'paid' ? 'var(--success)' : isOverdue(entry.dueDate) ? 'var(--danger)' : 'var(--warning)'
-            }"
-          >
-            {{ entry.status === 'paid' ? (entry.kind === 'income' ? 'Recebido' : 'Pago') : isOverdue(entry.dueDate) ? 'Vencida' : 'Pendente' }}
-          </span>
-
-          <!-- Ações -->
-          <div class="debt-installment__actions" data-testid="debt-installment-actions">
-            <button
-              v-if="entry.status !== 'paid'"
-              class="action-btn action-pay"
-              @click="quickPay(entry.id)"
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              {{ entry.kind === 'income' ? 'Receber' : 'Pagar' }}
-            </button>
-            <button
-              class="action-btn action-edit"
-              @click="openEditor(entry)"
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-              Editar
-            </button>
-          </div>
         </div>
-      </div>
+      </article>
     </div>
 
     <!-- Editor de parcela -->
@@ -275,7 +259,8 @@ const debtGroups = computed(() => {
         paidCount,
         totalCount,
         totalAmount,
-        pendingAmount
+        pendingAmount,
+        installmentAmount: totalCount > 0 ? totalAmount / totalCount : 0
       }
     })
     .filter(g => g.pendingAmount > 0 || g.paidCount < g.totalCount)
@@ -298,110 +283,297 @@ const summary = computed(() => {
 </script>
 
 <style scoped>
+.debts {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.debts__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.debts__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.debt-group {
+  overflow: hidden;
+  min-width: 0;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Cabeçalho ───────────────────────────────────────────── */
+.debts__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 16px;
+}
+
+.debts__toggle {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.debts__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.debts__badge {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  background: var(--success-light);
+  border-radius: var(--radius-pill);
+  color: var(--success);
+  font-size: 9.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.debts__progress {
+  flex-shrink: 0;
+  color: var(--text3);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
 .icon-btn {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  width: 34px;
-  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: var(--text3);
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
+  background: var(--surface);
+  color: var(--text3);
+  cursor: pointer;
   touch-action: manipulation;
-  transition: background 0.12s, color 0.12s;
 }
+
 .icon-btn:hover {
   background: var(--primary-dim);
   color: var(--primary);
 }
 
+/* ── Corpo ───────────────────────────────────────────────── */
+.debts__body {
+  padding: 16px;
+}
+
+.debts__track {
+  overflow: hidden;
+  height: 9px;
+  margin-bottom: 11px;
+  background: var(--track);
+  border: 1px solid var(--track);
+  border-radius: var(--radius-pill);
+}
+
+.debts__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 0.45s steps(8, end);
+}
+
+.debts__line {
+  color: var(--text3);
+  font-size: 11px;
+}
+
+.debts__line + .debts__line {
+  margin-top: 4px;
+}
+
+.debts__line-value {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.debts__line-value--danger {
+  color: var(--danger);
+}
+
+.debts__meta {
+  overflow: hidden;
+  margin-top: 8px;
+  color: var(--text3);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Parcelas expandidas ─────────────────────────────────── */
+.debts__installments {
+  border-top: var(--border-width) solid var(--border);
+}
+
+.debt-installment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.debt-installment:last-child {
+  border-bottom: none;
+}
+
+.debt-installment__identity {
+  display: flex;
+  grid-column: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.debt-installment__dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.debt-installment__details {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.debt-installment__label {
+  color: var(--text3);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.debt-installment__date {
+  color: var(--text2);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.debt-installment__amount {
+  grid-column: 2;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.debt-installment__status {
+  grid-column: 1;
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 9.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.debt-installment__actions {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
 .action-btn {
   display: inline-flex;
+  min-width: 0;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  border: none;
-  border-radius: 6px;
+  min-height: 28px;
   padding: 5px 10px;
   cursor: pointer;
-  font-size: 11px;
-  font-weight: 700;
   font-family: inherit;
-  min-height: 28px;
+  font-size: 11px;
+  font-weight: 800;
   touch-action: manipulation;
   white-space: nowrap;
 }
-.debt-installment {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 18px;
-  border-bottom: 1px solid var(--border);
+
+.debt-installment__actions .action-btn:only-child {
+  grid-column: 1 / -1;
 }
-.debt-installment__identity,
-.debt-installment__details,
-.debt-installment__actions {
-  display: flex;
-  align-items: center;
-}
-.debt-installment__identity {
-  min-width: 0;
-  gap: 10px;
-}
-.debt-installment__details {
-  min-width: 0;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.debt-installment__amount,
-.debt-installment__status {
-  white-space: nowrap;
-}
-.debt-installment__actions {
-  gap: 6px;
-  flex-shrink: 0;
-}
+
 .action-pay {
-  background: color-mix(in srgb, var(--success) 12%, transparent);
+  background: var(--success-light);
   color: var(--success);
 }
+
 .action-pay:hover {
-  background: color-mix(in srgb, var(--success) 20%, transparent);
+  background: color-mix(in srgb, var(--success) 22%, transparent);
 }
+
 .action-edit {
   background: var(--surface2);
   color: var(--text2);
-  border: 1px solid var(--border);
 }
+
 .action-edit:hover {
   background: var(--primary-dim);
   color: var(--primary);
-  border-color: var(--primary);
 }
-/* O WebView de alguns Androids usa uma viewport CSS acima de 600px em retrato.
-   Mantemos este ponto sincronizado com o layout móvel principal (767px). */
-@media (max-width: 767px) {
-  .debt-installment {
-    grid-template-columns: minmax(0, 1fr) auto;
+
+/* ── Responsivo ──────────────────────────────────────────── */
+@media (max-width: 1180px) {
+  .debts__kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .debts__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .debts__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .debts__kpis {
     gap: 8px;
+  }
+
+  .debts__body {
+    padding: 14px;
+  }
+
+  .debt-installment {
     padding: 12px;
   }
-  .debt-installment__identity { grid-column: 1; }
-  .debt-installment__amount { grid-column: 2; }
-  .debt-installment__status { grid-column: 1; justify-self: start; }
-  .debt-installment__actions {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-  }
-  .debt-installment__actions .action-btn {
-    min-width: 0;
-    justify-content: center;
-  }
-  .debt-installment__actions .action-btn:only-child { grid-column: 1 / -1; }
 }
 </style>

@@ -320,7 +320,7 @@ const quickPay = async (id: string) => {
   gap: 6px;
   padding: 9px 16px;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
   border: none;
   border-radius: var(--radius-xs);
   font-family: inherit;

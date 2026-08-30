@@ -1,123 +1,126 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 16px">
+  <div class="rep">
 
-    <!-- Period selector -->
-    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
-      <BaseDropdown v-model="period" :height="38" style="min-width: 160px">
-        <option value="month">Este mês</option>
-        <option value="quarter">Últimos 3 meses</option>
-        <option value="6months">Últimos 6 meses</option>
-        <option value="year">Este ano</option>
-      </BaseDropdown>
-
+    <!-- Seletor de período (segmentado) -->
+    <div class="rep__periods" role="group" aria-label="Período do relatório">
       <button
-        style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border)"
-        @click="exportCsv"
+        v-for="opt in PERIOD_OPTIONS"
+        :key="opt.id"
+        type="button"
+        class="rep__seg"
+        :class="{ 'rep__seg--active': period === opt.id }"
+        :aria-pressed="period === opt.id"
+        @click="period = opt.id"
       >
-        <BaseIcon name="export" :size="14" /> Exportar CSV
+        {{ opt.short }}
       </button>
     </div>
 
     <!-- KPIs -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px">
-      <BaseKpiCard icon="income"  label="Total receitas" :value="fmt(kpis.income)"  color="var(--success)" />
-      <BaseKpiCard icon="expense" label="Total despesas" :value="fmt(kpis.expense)" color="var(--danger)"  />
-      <BaseKpiCard icon="balance" label="Saldo período"  :value="fmt(kpis.net)"     :color="kpis.net >= 0 ? 'var(--success)' : 'var(--danger)'" />
-      <BaseKpiCard icon="goal"    label="Taxa poupança"  :value="fmtPct(kpis.savingsRate)" :color="kpis.savingsRate >= 20 ? 'var(--success)' : kpis.savingsRate >= 10 ? 'var(--warning)' : 'var(--danger)'" sub="Meta: 20%" />
-    </div>
-
-    <!-- Charts row -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px">
-
-      <!-- Category breakdown -->
-      <div class="neo-panel">
-        <div class="neo-panel-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border)">
-          <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Despesas por categoria</h3>
-          <p style="font-size: 11px; color: var(--text3); margin-top: 2px">{{ periodLabel }}</p>
-        </div>
-        <div style="padding: 16px 18px">
-          <BaseEmptyState v-if="categoryRows.length === 0" icon="expense" title="Sem despesas" body="Nenhuma despesa no período selecionado." />
-          <div v-for="row in categoryRows" :key="row.id" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px">
-            <span style="font-size: 12px; color: var(--text2); min-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ row.name }}</span>
-            <div style="flex: 1; height: 7px; background: var(--bg2); border-radius: 99px; overflow: hidden">
-              <div :style="{ width: `${row.pct}%`, height: '100%', background: row.color, borderRadius: '99px', transition: 'width 0.6s' }" />
-            </div>
-            <span style="font-size: 12px; font-weight: 700; color: var(--text); min-width: 72px; text-align: right">{{ fmt(row.amount) }}</span>
-          </div>
-        </div>
+    <div class="rep__kpis">
+      <div class="rep__kpi">
+        <p class="rep__kpi-label">Receita total</p>
+        <p class="rep__kpi-value ds-money" style="color: var(--success)">{{ fmt(kpis.income) }}</p>
       </div>
-
-      <!-- Monthly cashflow chart -->
-      <div class="neo-panel">
-        <div class="neo-panel-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border)">
-          <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Comparativo mensal</h3>
-          <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Receitas vs. despesas</p>
-        </div>
-        <div style="padding: 16px 18px">
-          <BaseEmptyState v-if="cashflowChart.length === 0" icon="reports" title="Sem dados" body="Nenhum lançamento no período." />
-          <BaseBarChart v-else :data="cashflowChart" :height="150" :currency="store.settings.currency || 'BRL'" />
-        </div>
+      <div class="rep__kpi">
+        <p class="rep__kpi-label">Despesa total</p>
+        <p class="rep__kpi-value ds-money" style="color: var(--danger)">{{ fmt(kpis.expense) }}</p>
       </div>
-
-      <!-- Per-person -->
-      <div class="neo-panel">
-        <div class="neo-panel-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border)">
-          <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Por pessoa</h3>
-          <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Saldo por titular da conta</p>
-        </div>
-        <div style="padding: 16px 18px; display: flex; flex-direction: column; gap: 16px">
-          <BaseEmptyState v-if="personRows.length === 0" icon="income" title="Sem dados" body="Nenhum lançamento no período." />
-          <div v-for="p in personRows" :key="p.name">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px">
-              <span style="font-size: 13px; font-weight: 700; color: var(--text)">{{ p.name }}</span>
-              <span style="font-size: 12px; font-weight: 700" :style="{ color: p.net >= 0 ? 'var(--success)' : 'var(--danger)' }">{{ fmt(p.net) }}</span>
-            </div>
-            <div style="height: 7px; background: var(--bg2); border-radius: 99px; overflow: hidden">
-              <div :style="{ width: `${Math.min(100, p.expense > 0 && p.income > 0 ? (p.expense / p.income) * 100 : p.expense > 0 ? 100 : 0)}%`, height: '100%', background: 'var(--primary)', borderRadius: '99px' }" />
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-top: 4px">
-              <span style="font-size: 10px; color: var(--text3)">Renda: {{ fmt(p.income) }}</span>
-              <span style="font-size: 10px; color: var(--text3)">Despesa: {{ fmt(p.expense) }}</span>
-            </div>
-          </div>
-        </div>
+      <div class="rep__kpi">
+        <p class="rep__kpi-label">Saldo</p>
+        <p class="rep__kpi-value ds-money" :style="{ color: kpis.net >= 0 ? 'var(--success)' : 'var(--danger)' }">{{ fmt(kpis.net) }}</p>
+      </div>
+      <div class="rep__kpi">
+        <p class="rep__kpi-label">Taxa poupança</p>
+        <p class="rep__kpi-value ds-money" :style="{ color: savingsColor }">{{ fmtPct(kpis.savingsRate) }}</p>
       </div>
     </div>
 
-    <!-- Summary table -->
-    <div class="neo-panel">
-      <div class="neo-panel-header" style="padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center">
-        <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Resumo mensal</h3>
-        <span style="font-size: 12px; color: var(--text3)">{{ cashflowChart.length }} meses</span>
+    <!-- Categorias + Por pessoa -->
+    <div class="rep__row">
+
+      <section class="neo-panel">
+        <header class="neo-panel-header rep__panel-head">
+          <h3 class="rep__panel-title">Despesas por categoria</h3>
+          <p class="rep__panel-sub">{{ periodLabel }}</p>
+        </header>
+        <BaseEmptyState v-if="categoryRows.length === 0" icon="expense" title="Sem despesas" body="Nenhuma despesa no período selecionado." />
+        <div v-else class="rep__cats">
+          <div v-for="row in categoryRows" :key="row.id" class="rep__cat">
+            <div class="rep__cat-head">
+              <span class="rep__cat-name">{{ row.name }}</span>
+              <span class="rep__cat-figure ds-money">{{ fmt(row.amount) }} · {{ Math.round(row.pct) }}%</span>
+            </div>
+            <div class="rep__bar">
+              <div class="rep__bar-fill" :style="{ width: `${Math.min(100, row.pct)}%`, background: row.color }" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="neo-panel rep__people">
+        <header class="neo-panel-header rep__panel-head">
+          <h3 class="rep__panel-title">Por pessoa</h3>
+          <p class="rep__panel-sub">Saldo por titular da conta</p>
+        </header>
+        <BaseEmptyState v-if="personRows.length === 0" icon="income" title="Sem dados" body="Nenhum lançamento no período." />
+        <template v-else>
+          <div v-for="p in personRows" :key="p.name" class="rep__person">
+            <span class="rep__person-name">{{ p.name }}</span>
+            <span class="rep__person-value ds-money" :style="{ color: p.net >= 0 ? 'var(--success)' : 'var(--danger)' }">{{ fmt(p.net) }}</span>
+          </div>
+        </template>
+        <button type="button" class="rep__export" @click="exportCsv">Exportar CSV</button>
+      </section>
+    </div>
+
+    <!-- Comparativo mensal -->
+    <section class="neo-panel">
+      <header class="neo-panel-header rep__panel-head">
+        <h3 class="rep__panel-title">Comparativo mensal</h3>
+        <p class="rep__panel-sub">Receitas vs. despesas</p>
+      </header>
+      <div class="rep__chart">
+        <BaseEmptyState v-if="cashflowChart.length === 0" icon="reports" title="Sem dados" body="Nenhum lançamento no período." />
+        <BaseBarChart v-else :data="cashflowChart" :height="150" :currency="store.settings.currency || 'BRL'" />
       </div>
-      <div style="overflow-x: auto">
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px">
+    </section>
+
+    <!-- Resumo mensal -->
+    <section class="neo-panel">
+      <header class="neo-panel-header rep__panel-head rep__panel-head--row">
+        <h3 class="rep__panel-title">Resumo mensal</h3>
+        <span class="rep__count">{{ cashflowChart.length }} meses</span>
+      </header>
+      <div class="rep__table-wrap">
+        <table class="rep__table">
           <thead>
-            <tr style="background: var(--surface2)">
-              <th style="text-align: left; padding: 10px 18px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Mês</th>
-              <th style="text-align: right; padding: 10px 18px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Receitas</th>
-              <th style="text-align: right; padding: 10px 18px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Despesas</th>
-              <th style="text-align: right; padding: 10px 18px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Saldo</th>
+            <tr>
+              <th class="rep__th">Mês</th>
+              <th class="rep__th rep__th--right">Receitas</th>
+              <th class="rep__th rep__th--right">Despesas</th>
+              <th class="rep__th rep__th--right">Saldo</th>
             </tr>
           </thead>
           <tbody>
             <tr
               v-for="row in cashflowTable"
               :key="row.month"
-              :style="{ background: row.isCurrentMonth ? 'color-mix(in srgb, var(--primary) 6%, transparent)' : 'transparent', borderBottom: '1px solid var(--border)' }"
+              class="rep__tr"
+              :class="{ 'rep__tr--current': row.isCurrentMonth }"
             >
-              <td style="padding: 10px 18px; font-weight: 600; color: var(--text)">
+              <td class="rep__td rep__td--label">
                 {{ row.label }}
-                <span v-if="row.isCurrentMonth" style="font-size: 10px; font-weight: 700; color: var(--primary); margin-left: 6px; background: var(--primary-dim); padding: 1px 6px; border-radius: 99px">Atual</span>
+                <span v-if="row.isCurrentMonth" class="rep__tag">Atual</span>
               </td>
-              <td style="padding: 10px 18px; text-align: right; color: var(--success); font-weight: 600">{{ fmt(row.income) }}</td>
-              <td style="padding: 10px 18px; text-align: right; color: var(--danger);  font-weight: 600">{{ fmt(row.expense) }}</td>
-              <td style="padding: 10px 18px; text-align: right; font-weight: 700" :style="{ color: row.net >= 0 ? 'var(--success)' : 'var(--danger)' }">{{ fmt(row.net) }}</td>
+              <td class="rep__td rep__td--right ds-money" style="color: var(--success)">{{ fmt(row.income) }}</td>
+              <td class="rep__td rep__td--right ds-money" style="color: var(--danger)">{{ fmt(row.expense) }}</td>
+              <td class="rep__td rep__td--right ds-money" :style="{ color: row.net >= 0 ? 'var(--success)' : 'var(--danger)' }">{{ fmt(row.net) }}</td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
   </div>
 </template>
@@ -127,17 +130,24 @@ import { ref, computed } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { buildCashflowSeries, buildCategoryBreakdown } from '#shared/finance'
 import { parseIsoDate } from '#shared/date'
-import BaseKpiCard    from '~/components/base/BaseKpiCard.vue'
 import BaseBarChart   from '~/components/base/BaseBarChart.vue'
-import BaseIcon       from '~/components/base/BaseIcon.vue'
 import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
+
+type ReportPeriod = 'month' | 'quarter' | '6months' | 'year'
 
 const store  = useFinanceStore()
 const currency = useCurrency()
 const fmt = (v: number) => currency.format(v)
 const fmtPct = (v: number) => `${v.toFixed(1)}%`
 
-const period = ref<'month' | 'quarter' | '6months' | 'year'>('month')
+const period = ref<ReportPeriod>('month')
+
+const PERIOD_OPTIONS: { id: ReportPeriod; short: string; label: string }[] = [
+  { id: 'month',    short: 'Mês',      label: 'Este mês' },
+  { id: 'quarter',  short: '3 meses',  label: 'Últimos 3 meses' },
+  { id: '6months',  short: '6 meses',  label: 'Últimos 6 meses' },
+  { id: 'year',     short: 'Ano',      label: 'Este ano' },
+]
 
 const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 const MONTH_FULL  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
@@ -145,10 +155,9 @@ const MONTH_FULL  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julh
 const now = new Date()
 const currentMonthKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
 
-const periodLabel = computed(() => {
-  const labels = { month: 'Este mês', quarter: 'Últimos 3 meses', '6months': 'Últimos 6 meses', year: 'Este ano' }
-  return labels[period.value]
-})
+const periodLabel = computed(() =>
+  PERIOD_OPTIONS.find(o => o.id === period.value)?.label ?? ''
+)
 
 const filteredEntries = computed(() => {
   const entries = store.entries
@@ -178,6 +187,14 @@ const kpis = computed(() => {
   const net     = income - expense
   return { income, expense, net, savingsRate: income > 0 ? (net / income) * 100 : 0 }
 })
+
+const savingsColor = computed(() =>
+  kpis.value.savingsRate >= 20
+    ? 'var(--success)'
+    : kpis.value.savingsRate >= 10
+      ? 'var(--warning)'
+      : 'var(--danger)'
+)
 
 const categoryRows = computed(() => {
   const breakdown = buildCategoryBreakdown(filteredEntries.value)
@@ -251,3 +268,354 @@ const exportCsv = () => {
   URL.revokeObjectURL(url)
 }
 </script>
+
+<style scoped>
+.rep {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Períodos ──────────────────────────────────────────────── */
+.rep__periods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rep__seg {
+  padding: 7px 14px;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.rep__seg--active {
+  color: var(--on-primary);
+  background: var(--primary);
+}
+
+.rep__seg:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+/* ── KPIs ──────────────────────────────────────────────────── */
+.rep__kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.rep__kpi {
+  min-width: 0;
+  padding: 13px 15px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.rep__kpi-label {
+  margin-bottom: 4px;
+  color: var(--text3);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rep__kpi-value {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+/* ── Linha categorias / pessoas ────────────────────────────── */
+.rep__row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.rep__panel-head {
+  padding: 13px 16px;
+}
+
+.rep__panel-head--row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rep__panel-title {
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.rep__panel-sub {
+  margin-top: 2px;
+  color: var(--text3);
+  font-size: 10.5px;
+}
+
+.rep__count {
+  color: var(--text3);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rep__cats {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 18px;
+}
+
+.rep__cat-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.rep__cat-name {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rep__cat-figure {
+  color: var(--text2);
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.rep__bar {
+  height: 9px;
+  overflow: hidden;
+  background: var(--track);
+  border-radius: var(--radius-pill);
+}
+
+.rep__bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 0.45s steps(8, end);
+}
+
+.rep__people {
+  display: flex;
+  flex-direction: column;
+}
+
+.rep__person {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rep__person-name {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rep__person-value {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rep__export {
+  width: 100%;
+  padding: 12px;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.rep__export:active {
+  transform: translate(1px, 1px);
+}
+
+/* ── Comparativo mensal ────────────────────────────────────── */
+.rep__chart {
+  padding: 18px;
+}
+
+/* ── Resumo mensal ─────────────────────────────────────────── */
+.rep__table-wrap {
+  overflow-x: auto;
+}
+
+.rep__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.rep__th {
+  padding: 10px 16px;
+  color: var(--text3);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  background: var(--surface2);
+  border-bottom: var(--border-width) solid var(--border);
+}
+
+.rep__th--right {
+  text-align: right;
+}
+
+.rep__tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.rep__tr--current {
+  background: var(--primary-dim);
+}
+
+.rep__td {
+  padding: 10px 16px;
+  color: var(--text2);
+  font-size: 12.5px;
+}
+
+.rep__td--label {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.rep__td--right {
+  font-weight: 700;
+  text-align: right;
+}
+
+.rep__tag {
+  margin-left: 6px;
+  padding: 1px 8px;
+  color: var(--on-primary);
+  font-size: 9.5px;
+  font-weight: 800;
+  background: var(--primary);
+  border-radius: var(--radius-pill);
+}
+
+@media (max-width: 900px) {
+  .rep__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .rep {
+    gap: 14px;
+  }
+
+  .rep__periods {
+    gap: 6px;
+  }
+
+  .rep__seg {
+    padding: 7px 12px;
+    font-size: 11.5px;
+  }
+
+  .rep__kpis {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .rep__kpi {
+    padding: 11px 13px;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .rep__kpi-label {
+    margin-bottom: 3px;
+    font-size: 9px;
+    letter-spacing: 0.07em;
+  }
+
+  .rep__kpi-value {
+    font-size: 15px;
+  }
+
+  .rep__panel-head {
+    padding: 12px 14px;
+  }
+
+  .rep__panel-title {
+    font-size: 13px;
+  }
+
+  .rep__cats {
+    gap: 11px;
+    padding: 14px;
+  }
+
+  .rep__cat-head {
+    margin-bottom: 4px;
+  }
+
+  .rep__cat-name {
+    font-size: 12px;
+  }
+
+  .rep__cat-figure {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .rep__bar {
+    height: 8px;
+  }
+
+  .rep__person {
+    padding: 11px 14px;
+  }
+
+  .rep__person-name {
+    font-size: 12.5px;
+  }
+
+  .rep__chart {
+    padding: 14px;
+  }
+
+  .rep__th,
+  .rep__td {
+    padding: 9px 12px;
+  }
+}
+</style>

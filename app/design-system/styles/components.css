@@ -119,37 +119,31 @@ textarea.ds-field {
 .ds-badge-paid {
   background: var(--ds-color-state-success-light);
   color: var(--ds-color-state-success);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
-  padding: 3px 9px;
-  font-size: 11px;
-  font-weight: 800;
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-size: 10.5px;
+  font-weight: 700;
   white-space: nowrap;
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
 }
 
 .ds-badge-pending {
   background: var(--ds-color-state-warning-light);
   color: var(--ds-color-state-warning);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
-  padding: 3px 9px;
-  font-size: 11px;
-  font-weight: 800;
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-size: 10.5px;
+  font-weight: 700;
   white-space: nowrap;
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
 }
 
 .ds-badge-review {
   background: var(--ds-color-state-danger-light);
   color: var(--ds-color-state-danger);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
-  padding: 3px 9px;
-  font-size: 11px;
-  font-weight: 800;
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-size: 10.5px;
+  font-weight: 700;
   white-space: nowrap;
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
 }
 
 /* ── AG Grid theme ────────────────────────────────────────── */
@@ -170,20 +164,24 @@ textarea.ds-field {
 /* ── Alert variants ───────────────────────────────────────── */
 .ds-alert-warning {
   border: var(--ds-border-width) solid var(--border);
-  background: color-mix(in srgb, var(--ds-color-brand-accent) 18%, var(--ds-color-surface-card));
-  color: #7c2d12;
+  background: var(--ds-color-state-warning-light);
+  color: var(--ds-color-text-primary);
   box-shadow: var(--ds-shadow-sm);
 }
 
 .ds-alert-warning .ds-text-muted {
-  color: #92400e;
+  color: var(--ds-color-text-muted);
 }
 
 .ds-alert-error {
   border: var(--ds-border-width) solid var(--border);
-  background: color-mix(in srgb, var(--ds-color-state-danger) 14%, var(--ds-color-surface-card));
-  color: #7f1d1d;
+  background: var(--ds-color-state-danger-light);
+  color: var(--ds-color-text-primary);
   box-shadow: var(--ds-shadow-sm);
+}
+
+.ds-alert-error .ds-text-muted {
+  color: var(--ds-color-text-muted);
 }
 
 /* ── Legacy surface bridge ───────────────────────────────────
@@ -222,7 +220,7 @@ textarea.ds-field {
 }
 
 :where(.sheet-overlay, .modal-overlay, .cal-modal-overlay) {
-  background: rgb(0 0 0 / 0.64) !important;
+  background: var(--ds-color-overlay) !important;
   backdrop-filter: none !important;
 }
 
@@ -275,7 +273,7 @@ textarea.ds-field {
 ) {
   border: var(--ds-border-width) solid var(--border) !important;
   border-radius: var(--radius-sm) !important;
-  box-shadow: 3px 3px 0 var(--ds-shadow-color) !important;
+  box-shadow: var(--shadow-sm) !important;
   font-family: var(--ds-font-family-sans) !important;
   font-weight: 750 !important;
   transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear !important;
@@ -316,22 +314,4 @@ textarea.ds-field {
   border-color: var(--border) !important;
   border-radius: var(--radius-sm) !important;
   background: var(--surface) !important;
-}
-
-:root[data-theme='dark'] .ds-alert-warning,
-:root[data-theme='eva'] .ds-alert-warning,
-:root.dark .ds-alert-warning {
-  color: #fde68a;
-}
-
-:root[data-theme='dark'] .ds-alert-warning .ds-text-muted,
-:root[data-theme='eva'] .ds-alert-warning .ds-text-muted,
-:root.dark .ds-alert-warning .ds-text-muted {
-  color: #fef3c7;
-}
-
-:root[data-theme='dark'] .ds-alert-error,
-:root[data-theme='eva'] .ds-alert-error,
-:root.dark .ds-alert-error {
-  color: #fecdd3;
 }

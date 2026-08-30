@@ -1,127 +1,114 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 16px">
+  <div class="subs">
 
-    <!-- KPIs -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px">
-      <BaseKpiCard icon="subscription" label="Mensal total"   :value="fmt(summary.monthly)"  color="var(--primary)" :sub="`${summary.count} ativa(s)`" />
-      <BaseKpiCard icon="reports"      label="Anual estimado" :value="fmt(summary.annual)"    color="var(--warning)" sub="Todas as assinaturas" />
-      <BaseKpiCard icon="calendar"     label="Próx. 7 dias"   :value="fmt(summary.next7)"     color="var(--danger)"  sub="Vencimentos" />
+    <!-- Totalizadores -->
+    <div class="subs__totals">
+      <div class="subs__total subs__total--primary">
+        <p class="subs__total-label">Total mensal</p>
+        <p class="subs__total-value ds-money">{{ fmt(summary.monthly) }}</p>
+      </div>
+      <div class="subs__total">
+        <p class="subs__total-label subs__total-label--muted">Projeção anual</p>
+        <p class="subs__total-value subs__total-value--plain ds-money">{{ fmt(summary.annual) }}</p>
+      </div>
     </div>
 
-    <!-- Actions bar -->
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px">
-      <input
-        v-model="search"
-        placeholder="Buscar assinatura..."
-        style="background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 34px; font-size: 12px; color: var(--text); font-family: inherit; outline: none; min-width: 200px"
-      />
-      <button
-        style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: #fff"
-        @click="openModal(null)"
-      >
-        <BaseIcon name="plus" :size="14" color="#fff" /> Nova assinatura
-      </button>
+    <!-- Barra de ações -->
+    <div class="subs__toolbar">
+      <p class="subs__meta">
+        <span>{{ summary.count }} ativa(s)</span>
+        <span class="subs__meta-sep">·</span>
+        <span>Próx. 7 dias <strong class="subs__meta-strong ds-money">{{ fmt(summary.next7) }}</strong></span>
+      </p>
+      <div class="subs__actions">
+        <input
+          v-model="search"
+          class="subs__search"
+          placeholder="Buscar assinatura..."
+          aria-label="Buscar assinatura"
+        />
+        <BaseButton variant="primary" size="sm" @click="openModal(null)">
+          <BaseIcon name="plus" :size="14" color="var(--on-primary)" /> Nova assinatura
+        </BaseButton>
+      </div>
     </div>
 
     <!-- Empty state -->
-    <BaseEmptyState v-if="subscriptionRows.length === 0" icon="subscription" title="Nenhuma assinatura" body="Adicione assinaturas e serviços recorrentes para acompanhar seus gastos mensais.">
-      <button
-        style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: #fff; margin-top: 12px"
-        @click="openModal(null)"
-      >
-        <BaseIcon name="plus" :size="14" color="#fff" /> Adicionar
-      </button>
+    <BaseEmptyState
+      v-if="subscriptionRows.length === 0"
+      icon="subscription"
+      title="Nenhuma assinatura"
+      body="Adicione assinaturas e serviços recorrentes para acompanhar seus gastos mensais."
+    >
+      <BaseButton variant="primary" class="subs__empty-btn" @click="openModal(null)">
+        <BaseIcon name="plus" :size="14" color="var(--on-primary)" /> Adicionar
+      </BaseButton>
     </BaseEmptyState>
 
-    <!-- Table -->
-    <div v-else class="neo-panel">
-      <table style="width: 100%; border-collapse: collapse; font-size: 13px">
-        <thead>
-          <tr style="background: var(--surface2); border-bottom: 1px solid var(--border)">
-            <th style="text-align: left; padding: 10px 18px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Serviço</th>
-            <th style="text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Categoria</th>
-            <th style="text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Conta</th>
-            <th style="text-align: right; padding: 10px 14px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Mensal</th>
-            <th style="text-align: right; padding: 10px 14px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Anual</th>
-            <th style="text-align: center; padding: 10px 14px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Venc.</th>
-            <th style="padding: 10px 14px"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="row in visibleRows"
-            :key="row.rule.id"
-            style="border-bottom: 1px solid var(--border)"
-          >
-            <td style="padding: 10px 18px">
-              <p style="font-weight: 600; color: var(--text)">{{ row.rule.title }}</p>
-              <p v-if="row.rule.description" style="font-size: 11px; color: var(--text3)">{{ row.rule.description }}</p>
-            </td>
-            <td style="padding: 10px 14px">
-              <span v-if="row.catName" style="font-size: 12px; color: var(--text2)">{{ row.catName }}</span>
-              <span v-else style="font-size: 12px; color: var(--text3)">—</span>
-            </td>
-            <td style="padding: 10px 14px; font-size: 12px; color: var(--text2)">{{ row.accountName }}</td>
-            <td style="padding: 10px 14px; text-align: right; font-weight: 700; color: var(--danger)">{{ fmt(row.rule.amount) }}</td>
-            <td style="padding: 10px 14px; text-align: right; font-size: 12px; color: var(--text3)">{{ fmt(row.rule.amount * 12) }}</td>
-            <td style="padding: 10px 14px; text-align: center; font-size: 12px; color: var(--text2)">
-              {{ row.rule.dueDay ? `Dia ${row.rule.dueDay}` : '—' }}
-            </td>
-            <td style="padding: 10px 14px; text-align: right">
-              <div style="display: flex; gap: 4px; justify-content: flex-end">
-                <button style="background: none; border: none; cursor: pointer; color: var(--text3); padding: 4px" @click="openModal(row.rule)">
-                  <BaseIcon name="settings" :size="14" />
-                </button>
-                <button style="background: none; border: none; cursor: pointer; color: var(--danger); padding: 4px" @click="deleteRule(row.rule)">
-                  <BaseIcon name="close" :size="14" />
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Grid de assinaturas -->
+    <div v-else class="subs__grid">
+      <article v-for="row in visibleRows" :key="row.rule.id" class="subs__card">
+        <span class="subs__mark" :style="{ background: row.color }" />
+        <div class="subs__info">
+          <p class="subs__name">{{ row.rule.title }}</p>
+          <p class="subs__next">Próx. cobrança {{ row.nextCharge }}</p>
+          <p v-if="row.metaLine" class="subs__tags">{{ row.metaLine }}</p>
+        </div>
+        <div class="subs__values">
+          <span class="subs__amount ds-money">{{ fmt(row.rule.amount) }}</span>
+          <span class="subs__annual ds-money">{{ fmt(row.rule.amount * 12) }} / ano</span>
+        </div>
+        <div class="subs__card-actions">
+          <button class="subs__icon-btn" title="Editar" @click="openModal(row.rule)">
+            <BaseIcon name="settings" :size="14" />
+          </button>
+          <button class="subs__icon-btn subs__icon-btn--danger" title="Excluir" @click="deleteRule(row.rule)">
+            <BaseIcon name="close" :size="14" />
+          </button>
+        </div>
+      </article>
     </div>
 
     <!-- Modal: criar/editar assinatura -->
     <BaseModal :open="showModal" :title="editingRule ? 'Editar assinatura' : 'Nova assinatura'" @close="closeModal">
-      <div style="display: flex; flex-direction: column; gap: 14px">
+      <div class="subs__form">
 
         <!-- Nome -->
-        <div>
-          <label :style="labelStyle">Nome do serviço</label>
-          <input v-model="form.title" placeholder="Ex: Netflix, Spotify…" :style="inputStyle" />
+        <div class="subs__field">
+          <label class="subs__label">Nome do serviço</label>
+          <input v-model="form.title" class="subs__input" placeholder="Ex: Netflix, Spotify…" />
         </div>
 
         <!-- Descrição -->
-        <div>
-          <label :style="labelStyle">Descrição (opcional)</label>
-          <input v-model="form.description" placeholder="Ex: Parcela fixa mensal" :style="inputStyle" />
+        <div class="subs__field">
+          <label class="subs__label">Descrição (opcional)</label>
+          <input v-model="form.description" class="subs__input" placeholder="Ex: Parcela fixa mensal" />
         </div>
 
         <!-- Valor + Vencimento -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
-          <div>
-            <label :style="labelStyle">Valor (R$)</label>
-            <input v-model.number="form.amount" type="number" min="0" step="0.01" :style="inputStyle" />
+        <div class="subs__pair">
+          <div class="subs__field">
+            <label class="subs__label">Valor (R$)</label>
+            <input v-model.number="form.amount" class="subs__input ds-money" type="number" min="0" step="0.01" />
           </div>
-          <div>
-            <label :style="labelStyle">Dia de vencimento</label>
-            <input v-model.number="form.dueDay" type="number" min="1" max="31" placeholder="Ex: 5" :style="inputStyle" />
+          <div class="subs__field">
+            <label class="subs__label">Dia de vencimento</label>
+            <input v-model.number="form.dueDay" class="subs__input ds-money" type="number" min="1" max="31" placeholder="Ex: 5" />
           </div>
         </div>
 
         <!-- Categoria + Conta -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
-          <div>
-            <label :style="labelStyle">Categoria</label>
-            <BaseDropdown v-model="form.categoryId" :height="36">
+        <div class="subs__pair">
+          <div class="subs__field">
+            <label class="subs__label">Categoria</label>
+            <BaseDropdown v-model="form.categoryId" :height="38">
               <option value="">Sem categoria</option>
               <option v-for="cat in store.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
             </BaseDropdown>
           </div>
-          <div>
-            <label :style="labelStyle">Conta</label>
-            <BaseDropdown v-model="form.accountId" :height="36">
+          <div class="subs__field">
+            <label class="subs__label">Conta</label>
+            <BaseDropdown v-model="form.accountId" :height="38">
               <option value="">Sem conta</option>
               <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
             </BaseDropdown>
@@ -129,56 +116,46 @@
         </div>
 
         <!-- Erro -->
-        <div
-          v-if="errorMsg"
-          style="padding: 10px 14px; border-radius: 8px; background: var(--danger-light); border: 1px solid var(--danger); font-size: 13px; color: var(--danger); font-weight: 600"
-        >{{ errorMsg }}</div>
+        <p v-if="errorMsg" class="subs__error">{{ errorMsg }}</p>
 
-        <div style="display: flex; gap: 10px; justify-content: flex-end">
-          <button :style="btnCancelStyle" @click="closeModal">Cancelar</button>
-          <button
-            :disabled="!form.title.trim() || form.amount <= 0 || saving"
-            :style="{ ...btnSaveStyle, opacity: (!form.title.trim() || form.amount <= 0 || saving) ? 0.5 : 1 }"
+        <div class="subs__form-actions">
+          <BaseButton variant="ghost" @click="closeModal">Cancelar</BaseButton>
+          <BaseButton
+            variant="primary"
+            :loading="saving"
+            :disabled="!form.title.trim() || form.amount <= 0"
             @click="saveSubscription"
-          >
-            <svg v-if="saving" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-            {{ saving ? 'Salvando...' : (editingRule ? 'Salvar' : 'Criar') }}
-          </button>
+          >{{ saving ? 'Salvando...' : (editingRule ? 'Salvar' : 'Criar') }}</BaseButton>
         </div>
       </div>
     </BaseModal>
 
     <!-- Modal: confirmar exclusão -->
     <BaseModal :open="deleteConfirm.open" title="Excluir assinatura" @close="deleteConfirm.open = false">
-      <div style="display: flex; flex-direction: column; gap: 16px">
-        <p style="font-size: 13px; color: var(--text2); line-height: 1.6">
+      <div class="subs__form">
+        <p class="subs__confirm">
           Excluir <strong>{{ deleteConfirm.title }}</strong>? Esta ação remove a regra e todos os lançamentos automáticos futuros associados.
         </p>
-        <div style="display: flex; gap: 10px; justify-content: flex-end">
-          <button :style="btnCancelStyle" @click="deleteConfirm.open = false">Cancelar</button>
-          <button
-            :style="{ ...btnSaveStyle, background: 'var(--danger)' }"
-            :disabled="deleting"
-            @click="confirmDelete"
-          >{{ deleting ? 'Excluindo...' : 'Excluir' }}</button>
+        <div class="subs__form-actions">
+          <BaseButton variant="ghost" @click="deleteConfirm.open = false">Cancelar</BaseButton>
+          <BaseButton variant="danger" :loading="deleting" @click="confirmDelete">
+            {{ deleting ? 'Excluindo...' : 'Excluir' }}
+          </BaseButton>
         </div>
       </div>
     </BaseModal>
 
   </div>
 </template>
-<style scoped>
-@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
-</style>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { makeId } from '#shared/id'
 import type { FinanceRule } from '#shared/types'
-import BaseKpiCard    from '~/components/base/BaseKpiCard.vue'
 import BaseIcon       from '~/components/base/BaseIcon.vue'
 import BaseModal      from '~/components/base/BaseModal.vue'
+import BaseButton     from '~/components/base/BaseButton.vue'
 import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
 
 const store    = useFinanceStore()
@@ -187,14 +164,33 @@ const fmt      = (v: number) => currency.format(v)
 
 const search = ref('')
 
+// Próxima cobrança a partir do dia de vencimento da regra.
+const nextChargeLabel = (dueDay: number | null) => {
+  if (!dueDay) return 'não definida'
+  const today  = new Date()
+  const offset = dueDay >= today.getUTCDate() ? 0 : 1
+  const first  = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + offset, 1))
+  const lastDay = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate()
+  const target  = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth(), Math.min(dueDay, lastDay)))
+  return target.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' })
+}
+
 const subscriptionRows = computed(() =>
   store.rules
     .filter(r => r.frequency === 'monthly' && r.kind === 'expense')
-    .map(rule => ({
-      rule,
-      catName:     rule.categoryId ? (store.categoryMap.get(rule.categoryId)?.name ?? '') : '',
-      accountName: rule.accountId  ? (store.accountMap.get(rule.accountId)?.name  ?? '—') : '—'
-    }))
+    .map(rule => {
+      const category    = rule.categoryId ? store.categoryMap.get(rule.categoryId) : undefined
+      const catName     = category?.name ?? ''
+      const accountName = rule.accountId ? (store.accountMap.get(rule.accountId)?.name ?? '—') : '—'
+      return {
+        rule,
+        catName,
+        accountName,
+        color:      category?.color || 'var(--primary)',
+        nextCharge: nextChargeLabel(rule.dueDay),
+        metaLine:   [rule.description, catName, accountName === '—' ? '' : accountName].filter(Boolean).join(' · ')
+      }
+    })
     .sort((a, b) => b.rule.amount - a.rule.amount)
 )
 
@@ -297,10 +293,355 @@ const confirmDelete = async () => {
     deleting.value = false
   }
 }
-
-// Style constants
-const labelStyle     = { display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '5px' }
-const inputStyle     = { width: '100%', boxSizing: 'border-box' as const, background: 'var(--surface2)', border: '1.5px solid var(--border)', borderRadius: 'var(--radius-xs)', padding: '0 10px', height: '36px', fontSize: '13px', color: 'var(--text)', fontFamily: 'inherit', outline: 'none' }
-const btnCancelStyle = { padding: '9px 16px', fontSize: '13px', fontWeight: '600', borderRadius: 'var(--radius-sm)', cursor: 'pointer', border: '1.5px solid var(--border)', background: 'var(--surface2)', color: 'var(--text2)' }
-const btnSaveStyle   = { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '9px 16px', fontSize: '13px', fontWeight: '700', borderRadius: 'var(--radius-sm)', cursor: 'pointer', border: 'none', background: 'var(--primary)', color: '#fff' }
 </script>
+
+<style scoped>
+.subs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Totalizadores ─────────────────────────────────────────── */
+.subs__totals {
+  display: flex;
+  gap: 12px;
+}
+
+.subs__total {
+  flex: 1;
+  min-width: 0;
+  padding: 13px 16px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.subs__total--primary {
+  background: var(--primary-dim);
+}
+
+.subs__total-label {
+  margin-bottom: 3px;
+  color: var(--on-primary-dim);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.subs__total-label--muted {
+  color: var(--text3);
+}
+
+.subs__total-value {
+  color: var(--primary);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.subs__total-value--plain {
+  color: var(--text);
+}
+
+/* ── Barra de ações ────────────────────────────────────────── */
+.subs__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.subs__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text3);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.subs__meta-sep {
+  color: var(--border);
+}
+
+.subs__meta-strong {
+  color: var(--text2);
+  font-weight: 700;
+}
+
+.subs__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.subs__search {
+  min-width: 200px;
+  height: 34px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  outline: none;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.subs__search::placeholder {
+  color: var(--text3);
+}
+
+.subs__search:focus {
+  box-shadow: var(--shadow-sm);
+  transform: translate(-1px, -1px);
+}
+
+.subs__empty-btn {
+  margin-top: 12px;
+}
+
+/* ── Grid de cards ─────────────────────────────────────────── */
+.subs__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.subs__card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.subs__card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+.subs__mark {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+}
+
+.subs__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.subs__name {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subs__next {
+  margin-top: 2px;
+  color: var(--text3);
+  font-size: 11px;
+}
+
+.subs__tags {
+  overflow: hidden;
+  margin-top: 2px;
+  color: var(--text3);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subs__values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.subs__amount {
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.subs__annual {
+  margin-top: 2px;
+  color: var(--text3);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.subs__card-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.subs__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: var(--surface2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text3);
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.subs__icon-btn:hover {
+  box-shadow: var(--shadow-xs);
+  transform: translate(-1px, -1px);
+}
+
+.subs__icon-btn--danger {
+  color: var(--danger);
+}
+
+/* ── Formulários / modais ──────────────────────────────────── */
+.subs__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.subs__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.subs__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.subs__label {
+  color: var(--text3);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.subs__input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  outline: none;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.subs__input::placeholder {
+  color: var(--text3);
+}
+
+.subs__input:focus {
+  box-shadow: var(--shadow-sm);
+  transform: translate(-1px, -1px);
+}
+
+.subs__error {
+  padding: 10px 14px;
+  background: var(--danger-light);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--shadow-xs);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.subs__confirm {
+  color: var(--text2);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.subs__form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ── Responsivo ────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .subs__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .subs {
+    gap: 14px;
+  }
+
+  .subs__totals {
+    gap: 8px;
+  }
+
+  .subs__total {
+    padding: 11px 13px;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .subs__total-value {
+    font-size: 16px;
+  }
+
+  .subs__actions {
+    width: 100%;
+  }
+
+  .subs__search {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .subs__card {
+    gap: 11px;
+    padding: 12px 14px;
+  }
+
+  .subs__mark {
+    width: 34px;
+    height: 34px;
+  }
+
+  .subs__pair {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

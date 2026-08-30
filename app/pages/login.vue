@@ -90,7 +90,7 @@
           borderRadius: 'var(--radius-sm)',
           border: 'none',
           background: loading ? 'var(--primary-dim)' : 'var(--primary)',
-          color: loading ? 'var(--primary)' : '#fff',
+          color: loading ? 'var(--primary)' : 'var(--on-primary)',
           fontSize: '14px',
           fontWeight: '700',
           cursor: loading ? 'not-allowed' : 'pointer',

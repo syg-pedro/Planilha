@@ -164,7 +164,7 @@ const onSave = () => {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: oklch(0% 0 0 / 0.55);
+  background: var(--overlay);
   backdrop-filter: blur(4px);
 }
 .sheet-container {
@@ -355,7 +355,7 @@ const onSave = () => {
   height: 46px;
   font-size: 14px;
   font-weight: 700;
-  color: #fff;
+  color: var(--on-primary);
   cursor: pointer;
   font-family: inherit;
   touch-action: manipulation;

@@ -1,155 +1,105 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 20px">
+  <div class="cards">
 
-    <!-- Header -->
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px">
-      <div>
-        <h2 style="font-size: 18px; font-weight: 800; color: var(--text)">Cartões e Contas</h2>
-        <p style="font-size: 13px; color: var(--text3); margin-top: 2px">{{ store.accounts.filter(a => a.active !== false).length }} conta(s) ativa(s)</p>
+    <!-- ── Faixa de resumo ────────────────────────────────────────────── -->
+    <section class="neo-panel cards__summary">
+      <div class="cards__summary-figure">
+        <p class="cards__summary-label">Uso total dos cartões</p>
+        <p class="cards__summary-value ds-money">
+          {{ fmt(totalPending) }}
+          <span class="cards__summary-limit">/ {{ fmt(totalLimit) }}</span>
+        </p>
       </div>
-      <button class="add-btn" @click="openNew">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Nova conta
-      </button>
-    </div>
-
-    <!-- KPI strip -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px">
-      <div class="kpi-card">
-        <span class="kpi-label">Limite total</span>
-        <span class="kpi-value" style="color: var(--primary)">{{ fmt(totalLimit) }}</span>
-        <span class="kpi-sub">{{ creditCards.length }} cartão(ões)</span>
+      <div class="cards__summary-side">
+        <div class="cards__ring ds-money">{{ totalUsagePercent.toFixed(0) }}%</div>
+        <span class="cards__summary-count">{{ activeAccountCount }} conta(s) ativa(s)</span>
+        <button class="add-btn" @click="openNew">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Nova conta
+        </button>
       </div>
-      <div class="kpi-card">
-        <span class="kpi-label">Uso pendente</span>
-        <span class="kpi-value" style="color: var(--danger)">{{ fmt(totalPending) }}</span>
-        <span class="kpi-sub">Faturas em aberto</span>
-      </div>
-      <div class="kpi-card">
-        <span class="kpi-label">Disponível</span>
-        <span class="kpi-value" style="color: var(--success)">{{ fmt(Math.max(0, totalLimit - totalPending)) }}</span>
-        <span class="kpi-sub">Crédito livre</span>
-      </div>
-      <div class="kpi-card">
-        <span class="kpi-label">Contas bancárias</span>
-        <span class="kpi-value" style="color: var(--text)">{{ bankAccounts.length }}</span>
-        <span class="kpi-sub">Banco / VR / Outros</span>
-      </div>
-    </div>
+    </section>
 
     <!-- ── Cartões de crédito ─────────────────────────────────────────── -->
-    <div v-if="creditCards.length > 0">
+    <div v-if="creditCards.length > 0" class="cards__section">
       <p class="section-label">Cartões de crédito</p>
-      <div class="cards-grid">
-        <div
+      <div class="cards__grid">
+        <article
           v-for="card in creditCards"
           :key="card.id"
-          class="credit-card-wrap"
+          class="credit-card"
+          :style="cardGradient(card.id)"
         >
-          <!-- Visual card -->
-          <div class="credit-card" :style="cardGradient(card.id)">
-            <div style="display: flex; align-items: flex-start; justify-content: space-between">
-              <p style="font-size: 13px; font-weight: 800; color: rgba(255,255,255,0.95); letter-spacing: 0.02em">{{ card.name }}</p>
-              <svg width="28" height="20" viewBox="0 0 28 20" fill="none" style="opacity:0.7">
-                <circle cx="10" cy="10" r="9" fill="rgba(255,255,255,0.6)" />
-                <circle cx="18" cy="10" r="9" fill="rgba(255,255,255,0.35)" />
-              </svg>
-            </div>
-            <div style="margin-top: 10px">
-              <p style="font-size: 11px; color: rgba(255,255,255,0.65); font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em">Titular</p>
-              <p style="font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9)">{{ card.owner || '—' }}</p>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 12px">
-              <div>
-                <p style="font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em">Limite</p>
-                <p style="font-size: 16px; font-weight: 800; color: #fff">{{ card.limitTotal ? fmt(card.limitTotal) : 'Sem limite' }}</p>
-              </div>
-              <div style="text-align: right">
-                <p v-if="card.closingDay" style="font-size: 10px; color: rgba(255,255,255,0.6)">Fecha dia {{ card.closingDay }}</p>
-                <p v-if="card.dueDay" style="font-size: 10px; color: rgba(255,255,255,0.6)">Vence dia {{ card.dueDay }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Stats below card -->
-          <div class="card-stats">
-            <!-- Usage bar -->
-            <div v-if="card.limitTotal">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 5px">
-                <span style="font-size: 11px; color: var(--text3); font-weight: 600">Uso pendente</span>
-                <span style="font-size: 11px; font-weight: 700" :style="{ color: usagePercent(card) > 80 ? 'var(--danger)' : usagePercent(card) > 50 ? 'var(--warning)' : 'var(--success)' }">
-                  {{ usagePercent(card).toFixed(0) }}%
-                </span>
-              </div>
-              <div style="height: 6px; background: var(--bg2, var(--surface2)); border-radius: 99px; overflow: hidden">
-                <div
-                  :style="{
-                    width: `${Math.min(100, usagePercent(card))}%`,
-                    height: '100%',
-                    borderRadius: '99px',
-                    background: usagePercent(card) > 80 ? 'var(--danger)' : usagePercent(card) > 50 ? 'var(--warning)' : 'var(--success)',
-                    transition: 'width 0.5s'
-                  }"
-                />
-              </div>
-              <div style="display: flex; justify-content: space-between; margin-top: 5px">
-                <span style="font-size: 11px; color: var(--text3)">{{ fmt(pendingForCard(card.id)) }} usado</span>
-                <span style="font-size: 11px; color: var(--text2); font-weight: 600">{{ fmt(Math.max(0, card.limitTotal - pendingForCard(card.id))) }} livre</span>
-              </div>
-            </div>
-            <div v-else style="font-size: 12px; color: var(--text3); padding: 4px 0">Sem limite cadastrado</div>
-
-            <!-- Pending count -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border)">
-              <span style="font-size: 12px; color: var(--text3)">
-                {{ pendingCountForCard(card.id) }} lançamento(s) pendente(s)
-              </span>
-              <button class="edit-btn" @click="openEdit(card)">
+          <div class="credit-card__top">
+            <p class="credit-card__name">{{ card.name }}</p>
+            <div class="credit-card__owner-wrap">
+              <span class="credit-card__owner">{{ card.owner || '—' }}</span>
+              <button
+                class="credit-card__edit"
+                type="button"
+                :title="`Editar ${card.name}`"
+                :aria-label="`Editar ${card.name}`"
+                @click="openEdit(card)"
+              >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                   <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                 </svg>
-                Editar
               </button>
             </div>
           </div>
-        </div>
+
+          <p class="credit-card__number ds-money">•••• •••• •••• {{ cardLast4(card) }}</p>
+
+          <div class="credit-card__footer">
+            <div class="credit-card__cell">
+              <p class="credit-card__cap">Fatura vence</p>
+              <p class="credit-card__cap-value">{{ card.dueDay ? `Dia ${card.dueDay}` : '—' }}</p>
+            </div>
+            <div class="credit-card__cell credit-card__cell--end">
+              <p class="credit-card__cap">Usado</p>
+              <p class="credit-card__cap-value ds-money">
+                {{ fmt(pendingForCard(card.id)) }}<template v-if="card.limitTotal"> / {{ fmt(card.limitTotal) }}</template>
+              </p>
+            </div>
+          </div>
+
+          <div class="credit-card__track">
+            <div class="credit-card__fill" :style="{ width: `${Math.min(100, usagePercent(card))}%` }" />
+          </div>
+
+          <p class="credit-card__note">
+            {{ pendingCountForCard(card.id) }} lançamento(s) pendente(s)<template v-if="!card.limitTotal"> · sem limite cadastrado</template>
+          </p>
+        </article>
       </div>
     </div>
 
     <!-- ── Outras contas ──────────────────────────────────────────────── -->
-    <div v-if="bankAccounts.length > 0">
+    <div v-if="bankAccounts.length > 0" class="cards__section">
       <p class="section-label">Outras contas</p>
       <div class="neo-panel">
         <div
-          v-for="(acc, idx) in bankAccounts"
+          v-for="acc in bankAccounts"
           :key="acc.id"
-          :style="{
-            display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 18px',
-            borderBottom: idx < bankAccounts.length - 1 ? '1px solid var(--border)' : 'none'
-          }"
+          class="cards__row"
         >
-          <div
-            :style="{
-              width: '40px', height: '40px', borderRadius: '10px', display: 'flex',
-              alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              background: typeColor(acc.type) + '20'
-            }"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="typeColor(acc.type)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="cards__row-icon" :style="{ background: `color-mix(in srgb, ${typeColor(acc.type)} 16%, transparent)` }">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" :stroke="typeColor(acc.type)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path :d="typeIcon(acc.type)" />
             </svg>
           </div>
-          <div style="flex: 1; min-width: 0">
-            <p style="font-size: 14px; font-weight: 700; color: var(--text)">{{ acc.name }}</p>
-            <p style="font-size: 12px; color: var(--text3)">{{ typeLabel(acc.type) }}{{ acc.owner ? ` · ${acc.owner}` : '' }}</p>
+          <div class="cards__row-main">
+            <p class="cards__row-name">{{ acc.name }}</p>
+            <p class="cards__row-sub">{{ typeLabel(acc.type) }}{{ acc.owner ? ` · ${acc.owner}` : '' }}</p>
           </div>
           <span
+            class="cards__row-tag"
             :style="{
-              fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '99px',
-              background: typeColor(acc.type) + '18', color: typeColor(acc.type)
+              background: `color-mix(in srgb, ${typeColor(acc.type)} 16%, transparent)`,
+              color: typeColor(acc.type)
             }"
           >{{ typeLabel(acc.type) }}</span>
           <button class="edit-btn" @click="openEdit(acc)">
@@ -198,6 +148,8 @@ const fmt = (v: number) => currency.format(v)
 const creditCards  = computed(() => store.accounts.filter(a => a.type === 'credit_card' && a.active !== false))
 const bankAccounts = computed(() => store.accounts.filter(a => a.type !== 'credit_card' && a.active !== false))
 
+const activeAccountCount = computed(() => store.accounts.filter(a => a.active !== false).length)
+
 // ─── pending calculations ────────────────────────────────────────────────────
 
 const pendingForCard = (accountId: string) =>
@@ -216,20 +168,36 @@ const usagePercent = (card: Account) =>
 const totalLimit   = computed(() => creditCards.value.reduce((s, c) => s + (c.limitTotal ?? 0), 0))
 const totalPending = computed(() => creditCards.value.reduce((s, c) => s + pendingForCard(c.id), 0))
 
-// ─── card color (deterministic per id) ──────────────────────────────────────
+const totalUsagePercent = computed(() =>
+  totalLimit.value > 0 ? Math.min(100, (totalPending.value / totalLimit.value) * 100) : 0
+)
 
-const CARD_COLORS = [
-  '#5b5bf7',
-  '#e84545',
-  '#13a86b',
-  '#8b5cf6',
-  '#263238',
-  '#c66a00',
+// ─── card presentation helpers ──────────────────────────────────────────────
+
+const MASKED_LAST4 = '••••'
+
+/** Extrai os 4 últimos dígitos presentes no nome da conta ("Itaú final 8235"). */
+const cardLast4 = (card: Account) => {
+  const digits = (card.name.match(/\d/g) ?? []).join('')
+  return digits.length >= 4 ? digits.slice(-4) : MASKED_LAST4
+}
+
+// ─── card gradient (deterministic per id) ───────────────────────────────────
+// Gradientes escuros propositalmente literais: o texto branco sobre eles
+// funciona igual em todos os temas (ver design de referência).
+
+const CARD_GRADIENTS = [
+  'linear-gradient(135deg,#7c1fa8,#bb00ff)',
+  'linear-gradient(135deg,#0a5c2a,#13a86b)',
+  'linear-gradient(135deg,#1b2f8f,#4f6ef7)',
+  'linear-gradient(135deg,#8f1f2b,#e84545)',
+  'linear-gradient(135deg,#11161f,#37465c)',
+  'linear-gradient(135deg,#7a3d00,#d08717)',
 ]
 
 const cardGradient = (id: string) => {
   const hash = id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-  return { background: CARD_COLORS[hash % CARD_COLORS.length] }
+  return { background: CARD_GRADIENTS[hash % CARD_GRADIENTS.length] }
 }
 
 // ─── type helpers ────────────────────────────────────────────────────────────
@@ -280,131 +248,356 @@ const onSave = async (account: Partial<Account>) => {
 </script>
 
 <style scoped>
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.cards__section {
+  min-width: 0;
+}
+
+/* ── Faixa de resumo ─────────────────────────────────────── */
+.cards__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  flex-wrap: wrap;
+}
+
+.cards__summary-figure {
+  min-width: 0;
+}
+
+.cards__summary-label {
+  color: var(--text3);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cards__summary-value {
+  margin-top: 3px;
+  color: var(--text);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.cards__summary-limit {
+  color: var(--text3);
+  font-size: 13px;
+}
+
+.cards__summary-side {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.cards__ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border: 4px solid var(--primary);
+  border-radius: 50%;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cards__summary-count {
+  color: var(--text3);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .add-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 9px 18px;
   background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-xs);
+  color: var(--on-primary);
+  border-radius: var(--radius-sm);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 13px;
   cursor: pointer;
-  transition: filter 0.12s;
   white-space: nowrap;
-}
-.add-btn:hover { filter: brightness(1.1); }
-
-.kpi-card {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 18px;
-}
-.kpi-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.kpi-value {
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-.kpi-sub {
-  font-size: 11px;
-  color: var(--text3);
 }
 
 .section-label {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
   margin-bottom: 10px;
+  color: var(--text3);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.cards-grid {
+/* ── Cartões de crédito ──────────────────────────────────── */
+.cards__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 }
 
-.credit-card-wrap {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-}
-
 .credit-card {
-  padding: 18px 20px 16px;
-  min-height: 140px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-  border-bottom: 2px solid var(--border);
-}
-.credit-card::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 140px;
-  height: 140px;
-  background: var(--accent);
-  border: 3px solid var(--border);
-  transform: rotate(18deg);
-  opacity: 0.8;
-}
-.credit-card::after {
-  content: '';
-  position: absolute;
-  bottom: -50px;
-  left: -20px;
-  width: 180px;
-  height: 180px;
-  background: rgb(255 255 255 / 0.16);
-  border: 3px solid var(--border);
-  transform: rotate(-12deg);
+  min-width: 0;
+  padding: 22px;
+  border: var(--border-width) solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  color: #fff;
 }
 
-.card-stats {
-  padding: 14px 18px;
+.credit-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.credit-card__name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.credit-card__owner-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.credit-card__owner {
+  font-size: 10.5px;
+  font-weight: 700;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+
+.credit-card__edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--ds-radius-md);
+  background: rgb(255 255 255 / 0.18);
+  color: #fff;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background var(--ds-motion-fast) linear;
+}
+
+.credit-card__edit:hover {
+  background: rgb(255 255 255 / 0.32);
+}
+
+.credit-card__number {
+  margin-top: 32px;
+  overflow: hidden;
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.credit-card__footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.credit-card__cell {
+  min-width: 0;
+}
+
+.credit-card__cell--end {
+  text-align: right;
+}
+
+.credit-card__cap {
+  font-size: 9.5px;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.credit-card__cap-value {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.credit-card__track {
+  overflow: hidden;
+  height: 6px;
+  margin-top: 10px;
+  background: rgb(0 0 0 / 0.35);
+  border-radius: var(--radius-pill);
+}
+
+.credit-card__fill {
+  height: 100%;
+  background: #fff;
+  border-radius: var(--radius-pill);
+  transition: width 0.45s steps(8, end);
+}
+
+.credit-card__note {
+  margin-top: 8px;
+  font-size: 9.5px;
+  opacity: 0.7;
+}
+
+/* ── Outras contas ───────────────────────────────────────── */
+.cards__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cards__row:last-child {
+  border-bottom: none;
+}
+
+.cards__row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--ds-radius-md);
+}
+
+.cards__row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.cards__row-name {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cards__row-sub {
+  margin-top: 2px;
+  color: var(--text3);
+  font-size: 11px;
+}
+
+.cards__row-tag {
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .edit-btn {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text2);
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.12s, color 0.12s, border-color 0.12s;
-  white-space: nowrap;
   flex-shrink: 0;
+  padding: 6px 12px;
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
 }
+
 .edit-btn:hover {
   background: var(--primary-dim);
   color: var(--primary);
-  border-color: var(--primary);
+}
+
+/* ── Responsivo ──────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .cards__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .cards {
+    gap: 14px;
+  }
+
+  .cards__summary {
+    padding: 13px 14px;
+  }
+
+  .cards__summary-value {
+    font-size: 18px;
+  }
+
+  .cards__summary-side {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .cards__ring {
+    width: 46px;
+    height: 46px;
+    font-size: 12px;
+  }
+
+  .cards__summary-count {
+    display: none;
+  }
+
+  .credit-card {
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .credit-card__number {
+    margin-top: 26px;
+    font-size: 17px;
+  }
+
+  .credit-card__footer {
+    margin-top: 16px;
+  }
+
+  .cards__row {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+  }
+
+  .cards__row-tag {
+    display: none;
+  }
 }
 </style>

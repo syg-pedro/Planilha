@@ -198,7 +198,7 @@ const ICONS = [
   border: 3px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  color: #ffffff;
+  color: var(--on-primary);
 }
 
 .ds-hero__eyebrow {
@@ -313,7 +313,7 @@ const ICONS = [
   height: 54px;
   margin-bottom: 4px;
   border: 2px solid var(--border);
-  box-shadow: 3px 3px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .ds-swatch strong {
@@ -343,7 +343,7 @@ const ICONS = [
   padding: 3px 9px;
   border: 2px solid var(--border);
   border-radius: var(--radius-xs);
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
   font-size: 11px;
   font-weight: 800;
 }

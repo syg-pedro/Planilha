@@ -272,7 +272,7 @@ const confirmImport = async () => {
 .onboarding__hero { position: relative; overflow: hidden; display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: start; padding: 24px; border: 3px solid var(--border); background: var(--surface); box-shadow: 7px 7px 0 var(--ds-shadow-color); }
 .onboarding__hero::after { content: ''; position: absolute; right: -45px; bottom: -76px; width: 190px; height: 190px; border: 3px solid var(--border); background: var(--primary-dim); transform: rotate(16deg); }
 .onboarding__hero > * { position: relative; z-index: 1; }
-.onboarding__hero-mark, .onboarding__choice-icon, .onboarding__tour-icon { display: grid; place-items: center; flex: 0 0 auto; width: 46px; height: 46px; border: 2px solid var(--border); background: var(--primary); color: var(--bg); box-shadow: 3px 3px 0 var(--ds-shadow-color); }
+.onboarding__hero-mark, .onboarding__choice-icon, .onboarding__tour-icon { display: grid; place-items: center; flex: 0 0 auto; width: 46px; height: 46px; border: 2px solid var(--border); background: var(--primary); color: var(--bg); box-shadow: var(--shadow-sm); }
 .onboarding__eyebrow, .onboarding__choice-kicker, .onboarding__tour-count { margin: 0 0 5px; color: var(--primary); font-size: 10px; font-weight: 900; letter-spacing: .13em; }
 .onboarding__hero h2 { margin: 0; color: var(--text); font-size: clamp(24px, 4vw, 34px); font-weight: 900; line-height: 1; }
 .onboarding__hero p:not(.onboarding__eyebrow) { max-width: 630px; margin: 9px 0 0; color: var(--text2); font-size: 14px; line-height: 1.5; }
@@ -305,8 +305,8 @@ const confirmImport = async () => {
 .onboarding__import-copy { margin: 0 0 14px; color: var(--text3); font-size: 12px; line-height: 1.45; }
 .onboarding__learn { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; align-items: center; background: var(--surface2); }
 .onboarding__learn-grid { display: grid; gap: 8px; }
-.onboarding__learn-grid button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; width: 100%; padding: 11px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; text-align: left; box-shadow: 2px 2px 0 var(--ds-shadow-color); cursor: pointer; }
-.onboarding__learn-grid button:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ds-shadow-color); }
+.onboarding__learn-grid button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; width: 100%; padding: 11px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; text-align: left; box-shadow: var(--shadow-xs); cursor: pointer; }
+.onboarding__learn-grid button:hover { transform: translate(-1px, -1px); box-shadow: var(--shadow-sm); }
 .onboarding__learn-grid span { display: grid; gap: 2px; }
 .onboarding__learn-grid strong { font-size: 13px; }
 .onboarding__learn-grid small { color: var(--text3); font-size: 11px; }

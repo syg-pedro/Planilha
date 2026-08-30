@@ -13,7 +13,7 @@ if (!Object.groupBy) {
 
 export default withNuxt(
   {
-    ignores: ['.claude/**', '.agents/**', '.codex/**', 'android/**']
+    ignores: ['.claude/**', '.agents/**', '.codex/**', 'android/**', 'design/**']
   },
   {
     files: ['app/**/*.{ts,vue}', 'shared/**/*.ts', 'server/**/*.{ts,js}'],

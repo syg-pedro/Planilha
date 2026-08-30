@@ -64,7 +64,7 @@ watch(() => props.open, (val) => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgb(0 0 0 / 0.64);
+  background: var(--overlay);
 }
 
 .base-modal {
@@ -112,7 +112,7 @@ watch(() => props.open, (val) => {
   background: var(--surface);
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
   cursor: pointer;
 }
 

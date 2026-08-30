@@ -1,11 +1,11 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 16px">
+  <div class="alerts">
 
     <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px">
+    <header class="alerts__head">
       <div>
-        <h2 style="font-size: 16px; font-weight: 800; color: var(--text)">Alertas inteligentes</h2>
-        <p style="font-size: 12px; color: var(--text3); margin-top: 2px">{{ activeAlerts.length }} alerta(s) ativo(s)</p>
+        <h2 class="alerts__title">Alertas inteligentes</h2>
+        <p class="alerts__sub">{{ activeAlerts.length }} alerta(s) ativo(s)</p>
       </div>
       <BaseButton
         v-if="activeAlerts.length > 0"
@@ -16,7 +16,7 @@
         <BaseIcon name="close" :size="13" />
         Dispensar todos
       </BaseButton>
-    </div>
+    </header>
 
     <!-- Empty -->
     <BaseEmptyState
@@ -38,9 +38,9 @@
       }"
       @click="onAlertClick(alert)"
     >
-      <div class="alert-card__icon">
-        <BaseIcon :name="TONE_ICONS[alert.tone]" :size="16" :color="TONE_COLORS[alert.tone].accent" />
-      </div>
+      <span class="alert-card__icon">
+        <BaseIcon :name="TONE_ICONS[alert.tone]" :size="19" />
+      </span>
       <div class="alert-card__content">
         <p class="alert-card__title">{{ alert.title }}</p>
         <p class="alert-card__body">{{ alert.body }}</p>
@@ -49,23 +49,19 @@
           {{ alert.entryId ? 'Clique para ver detalhes e opções →' : 'Clique para ir à tela →' }}
         </p>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0">
-        <button
-          class="alert-card__close"
-          aria-label="Dispensar alerta"
-          @click.stop="dismiss(alert.id)"
-        >
-          <BaseIcon name="close" :size="14" />
-        </button>
-      </div>
+      <button
+        type="button"
+        class="alert-card__close"
+        aria-label="Dispensar alerta"
+        @click.stop="dismiss(alert.id)"
+      >
+        <BaseIcon name="close" :size="13" />
+      </button>
     </div>
 
     <!-- Dismissed section -->
-    <div v-if="dismissedCount > 0" style="text-align: center; padding: 8px 0">
-      <button
-        style="background: none; border: none; cursor: pointer; font-size: 12px; color: var(--text3); text-decoration: underline"
-        @click="restoreAll"
-      >
+    <div v-if="dismissedCount > 0" class="alerts__restore">
+      <button type="button" class="alerts__restore-btn" @click="restoreAll">
         Restaurar {{ dismissedCount }} alerta(s) dispensado(s)
       </button>
     </div>
@@ -182,11 +178,11 @@ const onAlertClick = (alert: SmartAlert) => {
   }
 }
 
-const TONE_COLORS: Record<AlertTone, { accent: string; bg: string; border: string }> = {
-  danger:  { accent: 'var(--danger)',  bg: 'color-mix(in srgb, var(--danger)  12%, transparent)', border: 'color-mix(in srgb, var(--danger)  25%, transparent)' },
-  warning: { accent: 'var(--warning)', bg: 'color-mix(in srgb, var(--warning) 12%, transparent)', border: 'color-mix(in srgb, var(--warning) 25%, transparent)' },
-  info:    { accent: 'var(--primary)', bg: 'color-mix(in srgb, var(--primary) 12%, transparent)', border: 'color-mix(in srgb, var(--primary) 25%, transparent)' },
-  success: { accent: 'var(--success)', bg: 'color-mix(in srgb, var(--success) 12%, transparent)', border: 'color-mix(in srgb, var(--success) 25%, transparent)' },
+const TONE_COLORS: Record<AlertTone, { accent: string; bg: string }> = {
+  danger:  { accent: 'var(--danger)',  bg: 'var(--danger-light)'  },
+  warning: { accent: 'var(--warning)', bg: 'var(--warning-light)' },
+  info:    { accent: 'var(--primary)', bg: 'var(--primary-dim)'   },
+  success: { accent: 'var(--success)', bg: 'var(--success-light)' },
 }
 const TONE_ICONS: Record<AlertTone, string> = {
   danger: 'warning', warning: 'warning', info: 'info', success: 'check'
@@ -319,14 +315,56 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
 </script>
 
 <style scoped>
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alerts__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.alerts__title {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.alerts__sub {
+  margin-top: 2px;
+  color: var(--text3);
+  font-size: 11.5px;
+}
+
+.alerts__restore {
+  padding: 6px 0;
+  text-align: center;
+}
+
+.alerts__restore-btn {
+  color: var(--text3);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ── Card de alerta ────────────────────────────────────────── */
 .alert-card {
   display: flex;
-  align-items: flex-start;
   gap: 12px;
-  padding: 14px 16px;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-left: 10px solid var(--alert-accent);
+  padding: 14px 18px;
+  background: var(--alert-bg);
+  border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   cursor: default;
@@ -344,40 +382,15 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
 
 .alert-card--interactive:active {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
 }
 
 .alert-card__icon {
   display: flex;
   flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: var(--alert-bg);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
-}
-
-.alert-card__close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 8px;
-  color: var(--text3);
-  background: var(--surface2);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
-  cursor: pointer;
-}
-
-.alert-card__close:active {
-  box-shadow: none;
-  transform: translate(2px, 2px);
+  align-items: flex-start;
+  margin-top: 1px;
+  color: var(--alert-accent);
 }
 
 .alert-card__content {
@@ -387,51 +400,69 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
 
 .alert-card__title {
   color: var(--text);
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
 }
 
 .alert-card__body {
   margin-top: 3px;
   color: var(--text3);
-  font-size: 12px;
+  font-size: 11.5px;
 }
 
 .alert-card__sub {
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 10.5px;
   font-style: italic;
 }
 
 .alert-card__action {
-  margin-top: 6px;
-  color: var(--primary);
-  font-size: 11px;
-  font-weight: 600;
+  margin-top: 5px;
+  color: var(--alert-accent);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.alert-card__close {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--text3);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.alert-card__close:hover {
+  color: var(--text);
 }
 
 @media (max-width: 640px) {
-  .alert-card {
-    gap: 9px;
-    padding: 10px 11px;
-    border-left-width: 7px;
-    border-radius: var(--radius-sm);
-    box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  .alerts {
+    gap: 10px;
   }
 
-  .alert-card__icon {
-    width: 30px;
-    height: 30px;
-    box-shadow: 1px 1px 0 var(--ds-shadow-color);
+  .alerts__title {
+    font-size: 15px;
+  }
+
+  .alert-card {
+    gap: 10px;
+    padding: 12px 14px;
   }
 
   .alert-card__title {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .alert-card__body {
-    margin-top: 2px;
     font-size: 11px;
   }
 

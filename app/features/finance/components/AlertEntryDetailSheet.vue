@@ -163,7 +163,7 @@ const confirmDelete = () => {
   position: fixed;
   inset: 0;
   z-index: 9000;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--overlay);
   display: flex;
   align-items: flex-end;
 }
@@ -290,7 +290,7 @@ const confirmDelete = () => {
 
 .sheet-btn-primary {
   background: var(--success);
-  color: #fff;
+  color: var(--on-success);
 }
 
 .sheet-actions {

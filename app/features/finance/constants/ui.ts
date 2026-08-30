@@ -1,49 +1,38 @@
 export const NAV_GROUPS = [
   {
     id: 'overview',
-    label: 'Visão Geral',
+    label: 'Visão geral',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-      { id: 'reports', label: 'Relatórios', icon: 'reports' },
-      { id: 'planning', label: 'Planejamento Anual', icon: 'planning' },
-    ],
-  },
-  {
-    id: 'finance',
-    label: 'Finanças',
-    items: [
       { id: 'planilha', label: 'Planilha', icon: 'grid' },
+      { id: 'reports', label: 'Relatórios', icon: 'reports' },
+      { id: 'cartoes', label: 'Cartões', icon: 'card' },
     ],
   },
   {
-    id: 'control',
-    label: 'Controle',
+    id: 'planning',
+    label: 'Planejamento',
     items: [
+      { id: 'planning', label: 'Planejamento Anual', icon: 'planning' },
+      { id: 'debts', label: 'Dívidas', icon: 'debt' },
       { id: 'subscriptions', label: 'Assinaturas', icon: 'subscription' },
-      { id: 'cartoes', label: 'Cartões e Contas', icon: 'card' },
       { id: 'wishlist', label: 'Lista de Desejos', icon: 'wishlist' },
     ],
   },
   {
-    id: 'commitments',
-    label: 'Compromissos',
-    items: [
-      { id: 'debts', label: 'Dívidas e Parcelas', icon: 'debt' },
-    ],
-  },
-  {
     id: 'analysis',
-    label: 'Análise',
+    label: '',
     items: [
-      { id: 'alerts', label: 'Alertas Inteligentes', icon: 'alerts' },
+      { id: 'alerts', label: 'Alertas', icon: 'alerts' },
     ],
   },
 ]
 
 export const BOTTOM_NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { id: 'planilha', label: 'Planilha', icon: 'grid' },
-  { id: 'alerts', label: 'Alertas', icon: 'alerts' },
+  { id: 'dashboard', label: 'Início', icon: 'dashboard' },
+  { id: 'planilha', label: 'Lançamentos', icon: 'grid' },
+  { id: 'reports', label: 'Relatórios', icon: 'reports' },
+  { id: 'cartoes', label: 'Cartões', icon: 'card' },
 ] as const
 
 export const SETTINGS_ITEM = { id: 'config', label: 'Configurações', icon: 'settings' } as const

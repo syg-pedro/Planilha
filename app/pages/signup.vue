@@ -87,7 +87,7 @@
 
       <div
         v-if="successMsg"
-        style="padding: 10px 14px; border-radius: var(--radius-xs); background: var(--success-light, #dcfce7); border: 1px solid var(--success); font-size: 13px; color: var(--success); font-weight: 600"
+        style="padding: 10px 14px; border-radius: var(--radius-xs); background: var(--success-light); border: 1px solid var(--success); font-size: 13px; color: var(--success); font-weight: 600"
       >
         {{ successMsg }}
       </div>
@@ -101,7 +101,7 @@
           borderRadius: 'var(--radius-sm)',
           border: 'none',
           background: canSubmit && !loading ? 'var(--primary)' : 'var(--primary-dim)',
-          color: canSubmit && !loading ? '#fff' : 'var(--primary)',
+          color: canSubmit && !loading ? 'var(--on-primary)' : 'var(--primary)',
           fontSize: '14px',
           fontWeight: '700',
           cursor: canSubmit && !loading ? 'pointer' : 'not-allowed',
@@ -190,9 +190,9 @@ const ruleChipStyle = (met: boolean) => ({
   borderRadius: '99px',
   fontSize: '11px',
   fontWeight: '600',
-  background: met ? 'var(--success-light, #dcfce7)' : 'var(--surface2)',
-  color: met ? 'var(--success, #16a34a)' : 'var(--text3)',
-  border: `1px solid ${met ? 'var(--success, #16a34a)' : 'var(--border)'}`,
+  background: met ? 'var(--success-light)' : 'var(--surface2)',
+  color: met ? 'var(--success)' : 'var(--text3)',
+  border: `1px solid ${met ? 'var(--success)' : 'var(--border)'}`,
   transition: 'all .15s',
 })
 

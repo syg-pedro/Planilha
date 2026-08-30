@@ -1,112 +1,151 @@
 <template>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px">
+  <div class="cfg">
 
-    <!-- Instalar App -->
-    <div v-if="!isNativePlatform && !$pwaInstalled" class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">Instalar aplicativo</h3>
-      </div>
-      <div class="panel-body">
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-          <img src="/icon-192.png" alt="" style="width:52px;height:52px;border-radius:12px;flex-shrink:0" />
+    <!-- ── Topo: conta + tema ─────────────────────────────────── -->
+    <div class="cfg__top">
+      <section class="cfg__account neo-panel">
+        <div class="cfg__avatar">{{ profileInitials }}</div>
+        <div class="cfg__account-info">
+          <p class="cfg__account-name">{{ profileName }}</p>
+          <p class="cfg__account-sub">{{ profileSub }}</p>
+        </div>
+      </section>
+
+      <section class="cfg__themes">
+        <p class="cfg__section-label">Tema</p>
+        <div class="cfg__chips">
+          <button
+            v-for="theme in THEMES"
+            :key="theme.id"
+            class="cfg__chip"
+            :class="{ 'cfg__chip--active': store.settings.themeMode === theme.id }"
+            :title="theme.desc"
+            @click="onThemeModeChange(theme.id)"
+          >
+            <span aria-hidden="true">{{ theme.icon }}</span>{{ theme.name }}
+          </button>
+        </div>
+        <p class="cfg__theme-desc">{{ activeThemeDesc }}</p>
+      </section>
+    </div>
+
+    <!-- ── Instalar app ───────────────────────────────────────── -->
+    <section v-if="!isNativePlatform && !$pwaInstalled" class="neo-panel">
+      <header class="neo-panel-header cfg__panel-head">
+        <h3 class="cfg__panel-title">Instalar aplicativo</h3>
+      </header>
+      <div class="cfg__panel-body">
+        <div class="cfg__install">
+          <img src="/icon-192.png" alt="" class="cfg__install-icon" />
           <div>
-            <p style="font-size:13px;font-weight:700;color:var(--text)">Financeiro Familiar</p>
-            <p style="font-size:12px;color:var(--text3);margin-top:2px">Acesso rápido, funciona offline</p>
+            <p class="cfg__row-label">Financeiro Familiar</p>
+            <p class="cfg__row-sub">Acesso rápido, funciona offline</p>
           </div>
         </div>
-        <button
-          style="width:100%;padding:10px 16px;font-size:13px;font-weight:700;border-radius:var(--radius-sm);border:none;cursor:pointer;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px"
-          @click="installPwa"
-        >
+        <button class="cfg__btn cfg__btn--primary cfg__btn--block" @click="installPwa">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/><path d="M20 20H4"/></svg>
           {{ $pwaPrompt ? 'Instalar agora' : 'Como instalar' }}
         </button>
       </div>
-    </div>
+    </section>
 
-    <div class="panel">
-      <div class="panel-header"><h3 class="panel-title">Lembretes de vencimento</h3><p class="panel-sub">No Android, os avisos são agendados no horário escolhido.</p></div>
-      <div class="panel-body" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap">
-        <label class="field" style="flex:1;min-width:140px"><span class="field-label">Horário</span><input v-model="store.settings.notificationTime" type="time" class="input-field" /></label>
-        <button class="btn-primary" :disabled="reminderSaving" @click="saveReminderTime">{{ reminderSaving ? 'Salvando...' : 'Salvar lembretes' }}</button>
-      </div>
-    </div>
+    <!-- ── Preferências ───────────────────────────────────────── -->
+    <section class="neo-panel">
+      <header class="neo-panel-header cfg__panel-head">
+        <h3 class="cfg__panel-title">Preferências</h3>
+      </header>
 
-    <!-- Tema visual -->
-    <div class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">Tema visual</h3>
+      <div class="cfg__row">
+        <span class="cfg__row-label">Moeda</span>
+        <span class="cfg__row-value">{{ currencyLabel }}</span>
       </div>
-      <div class="panel-body">
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <button
-            v-for="theme in THEMES"
-            :key="theme.id"
-            class="theme-btn"
-            :style="{
-              border: store.settings.themeMode === theme.id ? '2px solid var(--primary)' : '2px solid var(--border)',
-              background: store.settings.themeMode === theme.id ? 'var(--primary-dim)' : 'var(--surface2)'
-            }"
-            @click="onThemeModeChange(theme.id)"
-          >
-            <span style="font-size:24px">{{ theme.icon }}</span>
-            <div style="flex:1">
-              <p style="font-size:13px;font-weight:700;color:var(--text)">{{ theme.name }}</p>
-              <p style="font-size:11px;color:var(--text3)">{{ theme.desc }}</p>
-            </div>
-            <svg
-              v-if="store.settings.themeMode === theme.id"
-              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-              style="color:var(--primary);flex-shrink:0;margin-left:auto"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
+
+      <div class="cfg__row">
+        <div class="cfg__row-text">
+          <p class="cfg__row-label">Lembretes de vencimento</p>
+          <p class="cfg__row-sub">No Android, os avisos são agendados no horário escolhido.</p>
+        </div>
+        <div class="cfg__row-control">
+          <input v-model="store.settings.notificationTime" type="time" class="cfg__input cfg__input--time" aria-label="Horário dos lembretes" />
+          <button class="cfg__btn cfg__btn--primary" :disabled="reminderSaving" @click="saveReminderTime">
+            {{ reminderSaving ? 'Salvando...' : 'Salvar' }}
           </button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Cores personalizadas -->
-    <div class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">
-          Cores personalizadas
-          <span v-if="isCustomActive" class="active-badge">Ativo</span>
-        </h3>
-        <p class="panel-sub">Escolha as cores de destaque sobre uma base e veja exemplos antes de aplicar</p>
+    <!-- ── Dashboard ──────────────────────────────────────────── -->
+    <section class="neo-panel">
+      <header class="neo-panel-header cfg__panel-head">
+        <h3 class="cfg__panel-title">Configurações do dashboard</h3>
+      </header>
+
+      <div class="cfg__row">
+        <span class="cfg__row-label">Regra de período</span>
+        <div class="cfg__row-control cfg__row-control--select">
+          <BaseDropdown v-model="store.filters.periodMode" :height="34">
+            <option value="due_date">Por vencimento</option>
+            <option value="competence">Por competência</option>
+          </BaseDropdown>
+        </div>
       </div>
-      <div class="panel-body">
+
+      <div v-for="widget in WIDGETS" :key="widget.id" class="cfg__row">
+        <span class="cfg__row-label">{{ widget.label }}</span>
+        <button
+          class="cfg__toggle"
+          :class="{ 'cfg__toggle--on': isWidgetOn(widget.id) }"
+          type="button"
+          role="switch"
+          :aria-checked="isWidgetOn(widget.id)"
+          :aria-label="widget.label"
+          @click="toggleWidget(widget.id)"
+        >
+          <span class="cfg__toggle-knob" />
+        </button>
+      </div>
+
+      <div class="cfg__panel-foot">
+        <button class="cfg__btn cfg__btn--primary" @click="saveDashboard">Salvar configurações</button>
+      </div>
+    </section>
+
+    <!-- ── Cores personalizadas ───────────────────────────────── -->
+    <section class="neo-panel">
+      <header class="neo-panel-header cfg__panel-head">
+        <h3 class="cfg__panel-title">
+          Cores personalizadas
+          <span v-if="isCustomActive" class="cfg__badge cfg__badge--active">Ativo</span>
+        </h3>
+        <p class="cfg__panel-sub">Escolha as cores de destaque sobre uma base e veja exemplos antes de aplicar</p>
+      </header>
+
+      <div class="cfg__panel-body">
         <!-- Base -->
-        <div class="field" style="margin-bottom:14px">
-          <label class="field-label">Base</label>
-          <div style="display:flex;gap:8px">
-            <button
-              v-for="b in [{ id: 'light', label: '☀️ Clara' }, { id: 'dark', label: '🌙 Escura' }]"
-              :key="b.id"
-              class="base-btn"
-              :style="{
-                border: customDraft.base === b.id ? '2px solid var(--primary)' : '1.5px solid var(--border)',
-                background: customDraft.base === b.id ? 'var(--primary-dim)' : 'var(--surface2)',
-                color: customDraft.base === b.id ? 'var(--primary)' : 'var(--text2)',
-              }"
-              @click="customDraft.base = (b.id as 'light' | 'dark')"
-            >{{ b.label }}</button>
-          </div>
+        <p class="cfg__section-label">Base</p>
+        <div class="cfg__base-row">
+          <button
+            v-for="b in BASE_OPTIONS"
+            :key="b.id"
+            class="cfg__btn cfg__btn--seg"
+            :class="{ 'cfg__btn--seg-on': customDraft.base === b.id }"
+            @click="customDraft.base = b.id"
+          >{{ b.label }}</button>
         </div>
 
         <!-- Seletores de cor -->
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div v-for="f in COLOR_FIELDS" :key="f.key" class="color-row">
-            <span class="color-row-label">{{ f.label }}</span>
-            <div class="color-input">
-              <input v-model="customDraft[f.key]" type="color" class="color-swatch" />
-              <input v-model="customDraft[f.key]" type="text" class="hex-input" spellcheck="false" />
+        <div class="cfg__colors">
+          <div v-for="f in COLOR_FIELDS" :key="f.key" class="cfg__color-row">
+            <span class="cfg__row-label">{{ f.label }}</span>
+            <div class="cfg__color-input">
+              <input v-model="customDraft[f.key]" type="color" class="cfg__swatch" :aria-label="f.label" />
+              <input v-model="customDraft[f.key]" type="text" class="hex-input" spellcheck="false" :aria-label="`${f.label} (hex)`" />
             </div>
           </div>
         </div>
 
         <!-- Pré-visualização -->
-        <p class="field-label" style="margin:16px 0 6px">Pré-visualização</p>
+        <p class="cfg__section-label cfg__section-label--spaced">Pré-visualização</p>
         <div class="cc-preview" :style="previewVars">
           <div class="cc-prow">
             <button class="cc-btn">Salvar</button>
@@ -124,246 +163,142 @@
         </div>
 
         <!-- Ações -->
-        <div style="display:flex;gap:8px;margin-top:14px">
-          <button class="btn-ghost" @click="resetCustom">Restaurar</button>
-          <button class="btn-primary" style="flex:1" @click="applyCustom">Aplicar cores</button>
+        <div class="cfg__actions">
+          <button class="cfg__btn cfg__btn--ghost" @click="resetCustom">Restaurar</button>
+          <button class="cfg__btn cfg__btn--primary cfg__btn--grow" @click="applyCustom">Aplicar cores</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Configurações do dashboard -->
-    <div class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">Configurações do dashboard</h3>
-      </div>
-      <div class="panel-body">
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div class="field">
-            <label class="field-label">Regra de período</label>
-            <BaseDropdown v-model="store.filters.periodMode" :height="38">
-              <option value="due_date">Por vencimento</option>
-              <option value="competence">Por competência</option>
-            </BaseDropdown>
-          </div>
-
-          <div>
-            <p style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">Widgets visíveis</p>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <div
-                v-for="widget in WIDGETS"
-                :key="widget.id"
-                style="padding:8px 12px;background:var(--surface2);border-radius:var(--radius-xs);border:1px solid var(--border)"
-              >
-                <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-                  <div
-                    style="width:18px;height:18px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s;cursor:pointer"
-                    :style="{
-                      border: isWidgetOn(widget.id) ? '2px solid var(--primary)' : '2px solid var(--border-strong)',
-                      background: isWidgetOn(widget.id) ? 'var(--primary)' : 'var(--surface2)'
-                    }"
-                    @click="toggleWidget(widget.id)"
-                  >
-                    <svg v-if="isWidgetOn(widget.id)" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </div>
-                  <span style="font-size:13px;color:var(--text)">{{ widget.label }}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <button class="btn-primary" @click="saveDashboard">Salvar configurações</button>
+    <!-- ── Importar CSV ───────────────────────────────────────── -->
+    <section class="neo-panel">
+      <header class="neo-panel-header cfg__panel-head">
+        <h3 class="cfg__panel-title">Importar CSV</h3>
+        <p class="cfg__panel-sub">Cabeçalhos aceitos: date, amount, title</p>
+      </header>
+      <div class="cfg__panel-body cfg__stack">
+        <textarea
+          v-model="csvText"
+          class="textarea-field"
+          rows="5"
+          placeholder="date,amount,title&#10;2026-05-25,120.50,Supermercado"
+        />
+        <div class="cfg__field">
+          <label class="cfg__section-label">Conta destino</label>
+          <BaseDropdown v-model="importAccountId" :height="38">
+            <option value="">Sem conta</option>
+            <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
+          </BaseDropdown>
         </div>
+        <button class="cfg__btn cfg__btn--primary cfg__btn--block" @click="runImport">Importar CSV</button>
       </div>
-    </div>
+    </section>
 
-    <!-- Importar CSV -->
-    <div class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">Importar CSV</h3>
-        <p class="panel-sub">Cabeçalhos aceitos: date, amount, title</p>
-      </div>
-      <div class="panel-body">
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <textarea
-            v-model="csvText"
-            class="textarea-field"
-            rows="5"
-            placeholder="date,amount,title&#10;2026-05-25,120.50,Supermercado"
-          />
-          <div class="field">
-            <label class="field-label">Conta destino</label>
-            <BaseDropdown v-model="importAccountId" :height="38">
-              <option value="">Sem conta</option>
-              <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
-            </BaseDropdown>
-          </div>
-          <button class="btn-primary" @click="runImport">Importar CSV</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Dados e recuperação -->
-    <div class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">Dados e recuperação</h3>
-        <p class="panel-sub">Use quando os lançamentos estiverem incorretos ou precisar restaurar o estado inicial</p>
-      </div>
-      <div class="panel-body">
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:12px 14px">
-            <p style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px">Restaurar dados iniciais</p>
-            <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Apaga todos os lançamentos e recria do zero a partir do dados.txt (incluindo correções recentes).</p>
-            <button
-              class="btn-danger"
-              :disabled="reseedBusy"
-              @click="doReseed"
-            >
-              <svg v-if="reseedBusy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.86"/></svg>
-              {{ reseedBusy ? 'Restaurando...' : 'Restaurar dados iniciais' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sair da conta -->
-    <div class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">Conta</h3>
-        <p class="panel-sub">{{ authUser?.email ?? 'Modo demonstração' }}</p>
-      </div>
-      <div class="panel-body">
-        <button
-          class="btn-danger"
-          :disabled="signingOut"
-          @click="doSignOut"
-        >
-          <svg v-if="signingOut" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-          <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          {{ signingOut ? 'Saindo...' : 'Sair da conta' }}
+    <!-- ── Dados e recuperação ────────────────────────────────── -->
+    <section class="neo-panel">
+      <header class="neo-panel-header cfg__panel-head">
+        <h3 class="cfg__panel-title">Dados e recuperação</h3>
+        <p class="cfg__panel-sub">Use quando os lançamentos estiverem incorretos ou precisar restaurar o estado inicial</p>
+      </header>
+      <div class="cfg__panel-body">
+        <p class="cfg__row-label">Restaurar dados iniciais</p>
+        <p class="cfg__row-sub cfg__row-sub--block">Apaga todos os lançamentos e recria do zero a partir do dados.txt (incluindo correções recentes).</p>
+        <button class="cfg__btn cfg__btn--danger" :disabled="reseedBusy" @click="doReseed">
+          <svg v-if="reseedBusy" class="cfg__spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.86"/></svg>
+          {{ reseedBusy ? 'Restaurando...' : 'Restaurar dados iniciais' }}
         </button>
       </div>
-    </div>
+    </section>
 
-    <!-- Contas cadastradas -->
-    <div class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">Contas cadastradas</h3>
-      </div>
-      <div class="panel-body">
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div
-            v-for="account in store.accounts"
-            :key="account.id"
-            style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-xs);border:1px solid var(--border)"
-          >
-            <div
-              style="width:8px;height:8px;border-radius:50%;flex-shrink:0"
-              :style="{ background: accountTypeColor(account.type) }"
-            />
-            <div style="flex:1;min-width:0">
-              <p
-                style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
-                :style="{ color: account.active === false ? 'var(--text3)' : 'var(--text)' }"
-              >{{ account.name }}</p>
-              <p style="font-size:11px;color:var(--text3)">
-                {{ accountTypeLabel(account.type) }}<span v-if="account.limitTotal"> · Limite {{ currency.format(account.limitTotal) }}</span>
-              </p>
-            </div>
-            <span
-              v-if="account.active === false"
-              style="font-size:10px;color:var(--danger);background:var(--danger-light);border-radius:99px;padding:1px 8px;font-weight:700;flex-shrink:0"
-            >Inativo</span>
+    <!-- ── Contas cadastradas ─────────────────────────────────── -->
+    <section class="neo-panel">
+      <header class="neo-panel-header cfg__panel-head">
+        <h3 class="cfg__panel-title">Contas cadastradas</h3>
+      </header>
+      <div
+        v-for="account in store.accounts"
+        :key="account.id"
+        class="cfg__row"
+      >
+        <div class="cfg__row-main">
+          <span class="cfg__dot" :style="{ background: accountTypeColor(account.type) }" />
+          <div class="cfg__row-text">
+            <p class="cfg__row-label" :class="{ 'cfg__row-label--muted': account.active === false }">{{ account.name }}</p>
+            <p class="cfg__row-sub">
+              {{ accountTypeLabel(account.type) }}<span v-if="account.limitTotal"> · Limite <span class="ds-money">{{ currency.format(account.limitTotal) }}</span></span>
+            </p>
           </div>
         </div>
+        <span v-if="account.active === false" class="cfg__badge cfg__badge--danger">Inativo</span>
       </div>
-    </div>
+    </section>
 
-    <!-- Compartilhamento / Household -->
-    <div v-if="isSupabaseConfigured" class="panel">
-      <div class="panel-header">
-        <h3 class="panel-title">Compartilhamento</h3>
-        <p class="panel-sub">Gerencie quem tem acesso aos seus dados financeiros</p>
+    <!-- ── Compartilhamento / Household ───────────────────────── -->
+    <section v-if="isSupabaseConfigured" class="neo-panel">
+      <header class="neo-panel-header cfg__panel-head">
+        <h3 class="cfg__panel-title">Compartilhamento</h3>
+        <p class="cfg__panel-sub">Gerencie quem tem acesso aos seus dados financeiros</p>
+      </header>
+
+      <div v-if="householdLoading" class="cfg__row">
+        <span class="cfg__row-value">Carregando membros...</span>
       </div>
-      <div class="panel-body" style="display:flex;flex-direction:column;gap:14px">
 
-        <!-- Membros atuais -->
-        <div v-if="householdLoading" style="font-size:13px;color:var(--text3)">Carregando membros...</div>
-        <div v-else-if="members.length > 0">
-          <p style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">Membros</p>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <div
-              v-for="m in members"
-              :key="m.userId"
-              style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border)"
-            >
-              <div style="width:30px;height:30px;border-radius:50%;background:var(--primary-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <span style="font-size:12px;font-weight:700;color:var(--primary)">{{ m.email[0]?.toUpperCase() }}</span>
-              </div>
-              <div style="flex:1;min-width:0">
-                <p style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.email }}</p>
-                <p style="font-size:11px;color:var(--text3)">{{ m.role === 'owner' ? 'Proprietário' : 'Membro' }}</p>
-              </div>
+      <template v-else>
+        <div v-for="m in members" :key="m.userId" class="cfg__row">
+          <div class="cfg__row-main">
+            <span class="cfg__member-avatar">{{ m.email[0]?.toUpperCase() }}</span>
+            <div class="cfg__row-text">
+              <p class="cfg__row-label cfg__row-label--ellipsis">{{ m.email }}</p>
+              <p class="cfg__row-sub">{{ m.role === 'owner' ? 'Proprietário' : 'Membro' }}</p>
             </div>
           </div>
         </div>
+      </template>
 
-        <!-- Convites pendentes -->
-        <div v-if="pendingInvites.length > 0">
-          <p style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">Convites pendentes</p>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <div
-              v-for="inv in pendingInvites"
-              :key="inv.id"
-              style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:color-mix(in srgb,var(--warning) 8%,transparent);border-radius:var(--radius-sm);border:1px solid color-mix(in srgb,var(--warning) 25%,transparent)"
-            >
-              <div style="flex:1;min-width:0">
-                <p style="font-size:13px;font-weight:600;color:var(--text)">{{ inv.email }}</p>
-                <p style="font-size:11px;color:var(--text3)">Expira {{ fmtDate(inv.expiresAt) }}</p>
-              </div>
-              <span style="font-size:10px;font-weight:700;color:var(--warning);background:color-mix(in srgb,var(--warning) 15%,transparent);padding:2px 7px;border-radius:99px">Aguardando</span>
-            </div>
-          </div>
+      <div v-for="inv in pendingInvites" :key="inv.id" class="cfg__row">
+        <div class="cfg__row-text">
+          <p class="cfg__row-label cfg__row-label--ellipsis">{{ inv.email }}</p>
+          <p class="cfg__row-sub">Expira {{ fmtDate(inv.expiresAt) }}</p>
         </div>
-
-        <!-- Formulário de convite -->
-        <div>
-          <p style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">Convidar por e-mail</p>
-          <div style="display:flex;gap:8px">
-            <input
-              v-model="inviteEmail"
-              type="email"
-              placeholder="email@exemplo.com"
-              style="flex:1;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-xs);padding:0 12px;height:38px;font-size:13px;color:var(--text);outline:none;font-family:inherit"
-              @keydown.enter="sendInvite"
-            />
-            <button
-              class="btn-primary"
-              style="flex-shrink:0"
-              :disabled="inviteSending || !inviteEmail"
-              @click="sendInvite"
-            >
-              {{ inviteSending ? '...' : 'Convidar' }}
-            </button>
-          </div>
-          <div v-if="inviteLink" style="margin-top:10px;padding:10px 12px;background:color-mix(in srgb,var(--success) 8%,transparent);border:1px solid color-mix(in srgb,var(--success) 25%,transparent);border-radius:var(--radius-sm)">
-            <p style="font-size:11px;font-weight:700;color:var(--success);margin-bottom:4px">Convite gerado! Compartilhe o link:</p>
-            <div style="display:flex;gap:6px;align-items:center">
-              <code style="font-size:11px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ inviteLink }}</code>
-              <button
-                style="font-size:11px;font-weight:700;color:var(--primary);background:transparent;border:none;cursor:pointer;flex-shrink:0"
-                @click="copyInviteLink"
-              >{{ linkCopied ? 'Copiado!' : 'Copiar' }}</button>
-            </div>
-          </div>
-          <p v-if="inviteError" style="font-size:12px;color:var(--danger);margin-top:6px">{{ inviteError }}</p>
-        </div>
-
+        <span class="cfg__badge cfg__badge--warning">Aguardando</span>
       </div>
-    </div>
+
+      <div class="cfg__panel-body">
+        <p class="cfg__section-label">Convidar por e-mail</p>
+        <div class="cfg__invite">
+          <input
+            v-model="inviteEmail"
+            type="email"
+            placeholder="email@exemplo.com"
+            class="cfg__input cfg__input--grow"
+            aria-label="E-mail do convidado"
+            @keydown.enter="sendInvite"
+          />
+          <button class="cfg__btn cfg__btn--primary" :disabled="inviteSending || !inviteEmail" @click="sendInvite">
+            {{ inviteSending ? '...' : 'Convidar' }}
+          </button>
+        </div>
+
+        <div v-if="inviteLink" class="cfg__invite-link">
+          <p class="cfg__invite-link-title">Convite gerado! Compartilhe o link:</p>
+          <div class="cfg__invite-link-row">
+            <code class="cfg__invite-code">{{ inviteLink }}</code>
+            <button class="cfg__link-btn" @click="copyInviteLink">{{ linkCopied ? 'Copiado!' : 'Copiar' }}</button>
+          </div>
+        </div>
+
+        <p v-if="inviteError" class="cfg__error">{{ inviteError }}</p>
+      </div>
+    </section>
+
+    <!-- ── Sair ───────────────────────────────────────────────── -->
+    <button class="cfg__signout" :disabled="signingOut" @click="doSignOut">
+      <svg v-if="signingOut" class="cfg__spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      {{ signingOut ? 'Saindo...' : 'Sair' }}
+    </button>
 
   </div>
 </template>
@@ -442,6 +377,36 @@ const onThemeModeChange = async (value: string) => {
   }
 }
 
+const activeThemeDesc = computed(() => {
+  if (store.settings.themeMode === 'custom') return 'Cores personalizadas aplicadas'
+  return THEMES.find(t => t.id === store.settings.themeMode)?.desc ?? ''
+})
+
+// ─── Identidade exibida no cartão de conta ───────────────────────────────────
+
+const initialsOf = (raw: string) => {
+  const parts = raw.split(/[^\p{L}\p{N}]+/u).filter(Boolean)
+  const first = parts[0] ?? ''
+  const second = parts[1] ?? ''
+  const a = first[0] ?? 'F'
+  const b = second[0] ?? first[1] ?? 'F'
+  return (a + b).toUpperCase()
+}
+
+const profileName = computed(() => authUser.value?.email ?? 'Modo demonstração')
+const profileInitials = computed(() => initialsOf(authUser.value?.email ?? 'Financeiro Familiar'))
+const profileSub = computed(() => isSupabaseConfigured.value ? 'household · sincronizado' : 'household · modo local')
+
+const CURRENCY_LABELS: Record<string, string> = {
+  BRL: 'BRL (R$)',
+  USD: 'USD ($)',
+  EUR: 'EUR (€)',
+}
+const currencyLabel = computed(() => {
+  const code = store.settings.currency || 'BRL'
+  return CURRENCY_LABELS[code] ?? code
+})
+
 // ─── Cores personalizadas ────────────────────────────────────────────────────
 
 type ColorKey = 'primary' | 'accent' | 'positive' | 'negative'
@@ -451,6 +416,11 @@ const COLOR_FIELDS: { key: ColorKey; label: string }[] = [
   { key: 'accent',   label: 'Destaque' },
   { key: 'positive', label: 'Receita' },
   { key: 'negative', label: 'Despesa' },
+]
+
+const BASE_OPTIONS: { id: 'light' | 'dark'; label: string }[] = [
+  { id: 'light', label: '☀️ Clara' },
+  { id: 'dark',  label: '🌙 Escura' },
 ]
 
 const customDraft = ref<{ base: 'light' | 'dark'; primary: string; accent: string; positive: string; negative: string }>({
@@ -618,123 +588,535 @@ const copyInviteLink = async () => {
 </script>
 
 <style scoped>
-.panel {
-  background: var(--surface);
-  border-radius: var(--radius);
-  border: 2px solid var(--border);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-.panel-header {
-  padding: 14px 20px;
-  background: var(--surface2);
-  border-bottom: 2px solid var(--border);
-}
-.panel-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text);
-}
-.panel-sub {
-  font-size: 12px;
-  color: var(--text3);
-  margin-top: 2px;
-}
-.panel-body {
-  padding: 16px 20px;
-}
-.theme-btn {
+.cfg {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-  text-align: left;
-  width: 100%;
-}
-.theme-btn:hover {
-  filter: brightness(0.97);
+  flex-direction: column;
+  gap: 16px;
 }
 
-/* ── Cores personalizadas ──────────────────────────── */
-.active-badge {
+/* ── Topo: conta + tema ─────────────────────────────────────── */
+.cfg__top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.cfg__account {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+}
+
+.cfg__avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: var(--primary);
+  border: var(--border-width) solid var(--border);
+  border-radius: 50%;
+  color: var(--on-primary);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.cfg__account-info {
+  min-width: 0;
+}
+
+.cfg__account-name {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfg__account-sub {
+  margin-top: 2px;
+  color: var(--text3);
+  font-size: 11.5px;
+}
+
+.cfg__themes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cfg__section-label {
+  color: var(--text3);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cfg__section-label--spaced {
+  margin: 16px 0 6px;
+}
+
+.cfg__chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cfg__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 13px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-xs);
+  color: var(--text2);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.cfg__chip:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translate(-1px, -1px);
+}
+
+.cfg__chip:active {
+  box-shadow: 1px 1px 0 var(--ds-shadow-color);
+  transform: translate(1px, 1px);
+}
+
+.cfg__chip--active {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.cfg__theme-desc {
+  color: var(--text3);
+  font-size: 11px;
+}
+
+/* ── Painéis ────────────────────────────────────────────────── */
+.cfg__panel-head {
+  padding: 14px 18px;
+}
+
+.cfg__panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cfg__panel-sub {
+  margin-top: 2px;
+  color: var(--text3);
+  font-size: 12px;
+}
+
+.cfg__panel-body {
+  padding: 16px 18px;
+}
+
+.cfg__panel-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 18px;
+}
+
+.cfg__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cfg__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* ── Linhas ─────────────────────────────────────────────────── */
+.cfg__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cfg__row:last-child {
+  border-bottom: none;
+}
+
+.cfg__row-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.cfg__row-text {
+  min-width: 0;
+}
+
+.cfg__row-label {
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.cfg__row-label--muted {
+  color: var(--text3);
+}
+
+.cfg__row-label--ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfg__row-sub {
+  margin-top: 2px;
+  color: var(--text3);
+  font-size: 11.5px;
+}
+
+.cfg__row-sub--block {
+  margin-bottom: 10px;
+}
+
+.cfg__row-value {
+  flex-shrink: 0;
+  color: var(--text3);
+  font-size: 12.5px;
+}
+
+.cfg__row-control {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.cfg__row-control--select {
+  width: 190px;
+}
+
+.cfg__dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+
+/* ── Toggle ─────────────────────────────────────────────────── */
+.cfg__toggle {
+  position: relative;
+  flex-shrink: 0;
+  width: 38px;
+  height: 22px;
+  padding: 0;
+  background: var(--surface2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background var(--ds-motion-fast) linear;
+}
+
+.cfg__toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--text3);
+  border-radius: 50%;
+  transition: left var(--ds-motion-base) linear, background var(--ds-motion-fast) linear;
+}
+
+.cfg__toggle--on {
+  background: var(--primary);
+}
+
+.cfg__toggle--on .cfg__toggle-knob {
+  left: 18px;
+  background: var(--on-primary);
+}
+
+/* ── Badges ─────────────────────────────────────────────────── */
+.cfg__badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
   font-size: 10px;
   font-weight: 800;
-  color: var(--primary);
-  background: var(--primary-dim);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
-  padding: 2px 8px;
-  margin-left: 8px;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
-  vertical-align: middle;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
-.base-btn {
-  flex: 1;
-  padding: 9px 12px;
+
+.cfg__badge--active {
+  background: var(--primary-dim);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--on-primary-dim);
+}
+
+.cfg__badge--danger {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.cfg__badge--warning {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+/* ── Botões ─────────────────────────────────────────────────── */
+.cfg__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
   font-family: inherit;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 750;
+  line-height: 1.1;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
 }
-.color-row {
+
+.cfg__btn:not(:disabled):hover {
+  box-shadow: var(--shadow-md);
+  transform: translate(-1px, -1px);
+}
+
+.cfg__btn:not(:disabled):active {
+  box-shadow: 1px 1px 0 var(--ds-shadow-color);
+  transform: translate(2px, 2px);
+}
+
+.cfg__btn:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.45);
+  opacity: 0.58;
+}
+
+.cfg__btn--primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.cfg__btn--ghost {
+  background: var(--surface2);
+  color: var(--text2);
+}
+
+.cfg__btn--danger {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+.cfg__btn--block {
+  width: 100%;
+}
+
+.cfg__btn--grow {
+  flex: 1;
+}
+
+.cfg__btn--seg {
+  flex: 1;
+  background: var(--surface2);
+  color: var(--text2);
+}
+
+.cfg__btn--seg-on {
+  background: var(--primary-dim);
+  color: var(--on-primary-dim);
+}
+
+.cfg__signout {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--danger-light);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--shadow-sm);
+  color: var(--danger);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.cfg__signout:not(:disabled):hover {
+  box-shadow: var(--shadow-md);
+  transform: translate(-1px, -1px);
+}
+
+.cfg__signout:not(:disabled):active {
+  box-shadow: 1px 1px 0 var(--ds-shadow-color);
+  transform: translate(2px, 2px);
+}
+
+.cfg__signout:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+/* ── Campos ─────────────────────────────────────────────────── */
+.cfg__input {
+  box-sizing: border-box;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  outline: none;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.cfg__input::placeholder {
+  color: var(--text3);
+}
+
+.cfg__input:focus {
+  box-shadow: var(--shadow-sm);
+  transform: translate(-1px, -1px);
+}
+
+.cfg__input--time {
+  width: 118px;
+  font-family: var(--ds-font-family-mono);
+}
+
+.cfg__input--grow {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Instalar app ───────────────────────────────────────────── */
+.cfg__install {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.cfg__install-icon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* ── Cores personalizadas ───────────────────────────────────── */
+.cfg__base-row {
+  display: flex;
+  gap: 8px;
+  margin: 6px 0 14px;
+}
+
+.cfg__colors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cfg__color-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 8px 12px;
   background: var(--surface2);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
 }
-.color-row-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
-.color-input {
+
+.cfg__color-input {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.color-swatch {
+
+.cfg__swatch {
   width: 34px;
   height: 30px;
   padding: 0;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
   background: transparent;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--ds-radius-md);
   cursor: pointer;
 }
-.color-swatch::-webkit-color-swatch-wrapper { padding: 3px; }
-.color-swatch::-webkit-color-swatch { border: none; border-radius: 5px; }
+
+.cfg__swatch::-webkit-color-swatch-wrapper { padding: 3px; }
+.cfg__swatch::-webkit-color-swatch { border: none; border-radius: var(--radius-sm); }
+
 .hex-input {
   width: 88px;
-  background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-xs);
-  padding: 0 10px;
   height: 30px;
-  font-size: 12px;
-  font-family: var(--ds-font-family-mono, monospace);
+  padding: 0 10px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
   color: var(--text);
+  font-family: var(--ds-font-family-mono);
+  font-size: 12px;
   outline: none;
   text-transform: lowercase;
 }
-.hex-input:focus { border-color: var(--primary); }
 
+.hex-input:focus {
+  box-shadow: var(--shadow-xs);
+}
+
+.cfg__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* Preview do tema personalizado: cores vindas dos dados (--pv-*). */
 .cc-preview {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  border-radius: var(--radius-sm);
-  border: 3px solid var(--pv-border);
+  border: var(--border-width-strong) solid var(--pv-border);
+  border-radius: var(--radius);
   box-shadow: 6px 6px 0 var(--pv-border);
 }
 .cc-prow {
@@ -744,10 +1126,10 @@ const copyInviteLink = async () => {
 }
 .cc-btn {
   padding: 8px 18px;
-  border: 2px solid var(--pv-border);
+  background: var(--pv-primary);
+  border: var(--border-width) solid var(--pv-border);
   border-radius: var(--radius-sm);
   box-shadow: 3px 3px 0 var(--pv-border);
-  background: var(--pv-primary);
   color: #fff;
   font-family: inherit;
   font-size: 13px;
@@ -756,9 +1138,9 @@ const copyInviteLink = async () => {
 }
 .cc-chip {
   padding: 5px 12px;
-  border: 2px solid var(--pv-border);
-  border-radius: var(--radius-xs);
   background: color-mix(in srgb, var(--pv-accent) 22%, transparent);
+  border: var(--border-width) solid var(--pv-border);
+  border-radius: var(--radius-sm);
   color: var(--pv-accent);
   font-size: 12px;
   font-weight: 700;
@@ -768,21 +1150,21 @@ const copyInviteLink = async () => {
   flex-direction: column;
   gap: 2px;
   padding: 12px 14px;
-  border-radius: var(--radius-sm);
   background: var(--pv-card);
-  border: 2px solid var(--pv-border);
+  border: var(--border-width) solid var(--pv-border);
+  border-radius: var(--radius-sm);
   box-shadow: 3px 3px 0 var(--pv-border);
 }
 .cc-card-label {
+  color: var(--pv-muted);
   font-size: 11px;
   font-weight: 600;
-  color: var(--pv-muted);
 }
 .cc-card-value {
+  color: var(--pv-primary);
+  font-family: var(--ds-font-family-mono);
   font-size: 18px;
   font-weight: 800;
-  font-family: var(--ds-font-family-mono);
-  color: var(--pv-primary);
 }
 .cc-dots {
   display: flex;
@@ -793,142 +1175,162 @@ const copyInviteLink = async () => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  color: var(--pv-text);
   font-size: 12px;
   font-weight: 600;
-  color: var(--pv-text);
 }
 .cc-dot i {
+  display: inline-block;
   width: 9px;
   height: 9px;
   border: 1px solid var(--pv-border);
-  border-radius: 0;
-  display: inline-block;
 }
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 9px 16px;
-  background: var(--surface2);
-  color: var(--text2);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.btn-ghost:hover { filter: brightness(0.97); }
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.field-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-}
-.select-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-xs);
-  padding: 0 12px;
-  height: 38px;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.select-wrap:focus-within {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-dim);
-}
-.select-inner {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-size: 13px;
-  color: var(--text);
-  font-family: inherit;
-  cursor: pointer;
-  appearance: none;
-  min-width: 0;
-}
+
+/* ── Importar CSV ───────────────────────────────────────────── */
 .textarea-field {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-xs);
+  width: 100%;
   padding: 9px 12px;
-  font-size: 13px;
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
   color: var(--text);
-  font-family: inherit;
+  font-family: var(--ds-font-family-mono);
+  font-size: 12.5px;
   outline: none;
   resize: vertical;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  width: 100%;
 }
+
 .textarea-field:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-dim);
+  box-shadow: var(--shadow-sm);
 }
-.btn-primary {
-  display: inline-flex;
+
+/* ── Compartilhamento ───────────────────────────────────────── */
+.cfg__member-avatar {
+  display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 9px 16px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
+  width: 30px;
+  height: 30px;
+  background: var(--primary-dim);
+  border: var(--border-width) solid var(--border);
+  border-radius: 50%;
+  color: var(--on-primary-dim);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cfg__invite {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.cfg__invite-link {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--success-light);
+  border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s;
 }
-.btn-primary:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+
+.cfg__invite-link-title {
+  margin-bottom: 4px;
+  color: var(--success);
+  font-size: 11px;
+  font-weight: 800;
 }
-.btn-danger {
-  display: inline-flex;
+
+.cfg__invite-link-row {
+  display: flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  padding: 9px 16px;
-  background: var(--danger);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.15s;
 }
-.btn-danger:hover { filter: brightness(1.1); }
-.btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.cfg__invite-code {
+  flex: 1;
+  overflow: hidden;
+  color: var(--text2);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfg__link-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cfg__error {
+  margin-top: 6px;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── Utilitários ────────────────────────────────────────────── */
+.cfg__spin {
+  animation: cfg-spin 0.8s linear infinite;
+}
+
+@keyframes cfg-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsivo ─────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .cfg__top {
+    grid-template-columns: 1fr;
+  }
+}
 
 @media (max-width: 640px) {
-  .panel-header {
+  .cfg {
+    gap: 14px;
+  }
+
+  .cfg__account {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .cfg__avatar {
+    width: 46px;
+    height: 46px;
+    font-size: 15px;
+  }
+
+  .cfg__account-name {
+    font-size: 14px;
+  }
+
+  .cfg__panel-head,
+  .cfg__panel-foot {
     padding: 12px 14px;
   }
 
-  .panel-body {
+  .cfg__panel-body {
     padding: 12px 14px;
   }
 
-  .theme-btn {
-    gap: 10px;
-    padding: 10px 12px;
+  .cfg__row {
+    padding: 13px 14px;
+  }
+
+  .cfg__row-control--select {
+    width: 150px;
+  }
+
+  .cfg__signout {
+    width: 100%;
+    justify-content: center;
   }
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 </style>

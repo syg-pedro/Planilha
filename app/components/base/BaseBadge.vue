@@ -28,7 +28,7 @@ const toneClass = computed(() => {
   padding: 3px 9px;
   border: 2px solid var(--border);
   border-radius: var(--radius-xs);
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
   font-size: 11px;
   font-weight: 800;
   line-height: 1.2;

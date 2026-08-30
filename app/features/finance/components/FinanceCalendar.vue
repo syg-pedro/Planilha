@@ -54,7 +54,7 @@
               :style="{
                 fontWeight: isToday(day) ? 800 : 500,
                 background: isToday(day) ? 'var(--accent)' : 'transparent',
-                color: isToday(day) ? '#fff' : 'var(--text)'
+                color: isToday(day) ? 'var(--on-accent)' : 'var(--text)'
               }"
             >{{ day }}</span>
             <div style="display:flex;gap:2px">
@@ -314,7 +314,7 @@ const modalFields = computed(() => {
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: oklch(0% 0 0 / 0.55);
+  background: var(--overlay);
   backdrop-filter: blur(4px);
 }
 

@@ -48,10 +48,10 @@
         </BaseDropdown>
       </div>
       <button
-        style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: #fff"
+        style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: var(--on-primary)"
         @click="openEditor(null)"
       >
-        <BaseIcon name="plus" :size="14" color="#fff" /> Adicionar item
+        <BaseIcon name="plus" :size="14" color="var(--on-primary)" /> Adicionar item
       </button>
     </div>
 
@@ -68,10 +68,10 @@
       body="Adicione itens que você deseja comprar para acompanhar seus desejos e metas."
     >
       <button
-        style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: #fff; margin-top: 12px"
+        style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: var(--on-primary); margin-top: 12px"
         @click="openEditor(null)"
       >
-        <BaseIcon name="plus" :size="14" color="#fff" /> Adicionar
+        <BaseIcon name="plus" :size="14" color="var(--on-primary)" /> Adicionar
       </button>
     </BaseEmptyState>
 
@@ -411,7 +411,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: oklch(0% 0 0 / 0.55);
+  background: var(--overlay);
   backdrop-filter: blur(4px);
 }
 .sheet-container {
@@ -605,7 +605,7 @@
   height: 46px;
   font-size: 14px;
   font-weight: 700;
-  color: #fff;
+  color: var(--on-primary);
   cursor: pointer;
   font-family: inherit;
   touch-action: manipulation;

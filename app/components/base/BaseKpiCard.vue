@@ -13,10 +13,7 @@
     <div v-if="alert" class="base-kpi__alert">
       <BaseIcon name="warning" :size="14" color="var(--warning)" />
     </div>
-    <div class="base-kpi__top">
-      <div class="base-kpi__icon">
-        <BaseIcon :name="icon" :size="17" :color="color" />
-      </div>
+    <div v-if="trend !== undefined" class="base-kpi__top">
       <span
         v-if="trend !== undefined"
         class="base-kpi__trend"
@@ -63,13 +60,13 @@ withDefaults(defineProps<{
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   min-width: 0;
   overflow: hidden;
-  padding: 16px 18px;
+  padding: 14px 15px;
   background: var(--surface);
   border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--ds-radius-md);
   box-shadow: var(--shadow-sm);
   cursor: default;
   transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
@@ -91,14 +88,14 @@ withDefaults(defineProps<{
 
 .base-kpi__accent {
   position: absolute;
-  right: -22px;
-  top: -32px;
-  width: 92px;
-  height: 72px;
+  right: -18px;
+  top: -24px;
+  width: 70px;
+  height: 56px;
   background: var(--kpi-color);
   border: 2px solid var(--border);
   transform: rotate(18deg);
-  opacity: 0.2;
+  opacity: 0.18;
   pointer-events: none;
 }
 
@@ -124,7 +121,7 @@ withDefaults(defineProps<{
   background: var(--surface2);
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
 }
 
 .base-kpi__trend {
@@ -139,27 +136,27 @@ withDefaults(defineProps<{
 }
 
 .base-kpi__label {
-  margin-bottom: 4px;
+  margin-bottom: 5px;
   color: var(--text3);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
 .base-kpi__value {
   color: var(--kpi-color);
   font-family: var(--ds-font-family-mono);
-  font-size: clamp(18px, 2vw, 22px);
+  font-size: 16px;
   font-weight: 700;
   line-height: 1.1;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
 }
 
 .base-kpi__sub {
-  margin-top: 5px;
+  margin-top: 4px;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
 }
 
@@ -168,7 +165,7 @@ withDefaults(defineProps<{
     gap: 7px;
     padding: 11px 12px 10px;
     border-radius: var(--radius-sm);
-    box-shadow: 2px 2px 0 var(--ds-shadow-color);
+    box-shadow: var(--shadow-xs);
   }
 
   .base-kpi__accent {

@@ -128,7 +128,7 @@ const closeManual = () => { showManual.value = false }
   transition: opacity 0.15s;
 }
 .pwa-banner-btn:active { opacity: 0.7 }
-.pwa-banner-install { background: var(--primary); color: #fff }
+.pwa-banner-install { background: var(--primary); color: var(--on-primary) }
 .pwa-banner-dismiss { background: transparent; color: var(--text3); padding: 8px 6px }
 
 /* Manual install modal */
@@ -136,7 +136,7 @@ const closeManual = () => { showManual.value = false }
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgb(0 0 0 / 0.64);
+  background: var(--overlay);
   display: flex;
   align-items: flex-end;
   padding: 16px;
@@ -175,7 +175,7 @@ const closeManual = () => { showManual.value = false }
   background: var(--surface2);
   border: 2px solid var(--border);
   border-radius: var(--radius-xs);
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
   font-size: 16px;
   cursor: pointer;
   color: var(--text3);
@@ -199,9 +199,9 @@ const closeManual = () => { showManual.value = false }
   height: 24px;
   border: 2px solid var(--border);
   border-radius: var(--radius-xs);
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
   font-size: 12px;
   font-weight: 800;
   display: flex;

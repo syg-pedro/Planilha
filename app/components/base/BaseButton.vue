@@ -53,7 +53,7 @@ const buttonClass = computed(() => {
   gap: 8px;
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 3px 3px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-sm);
   color: var(--text);
   font-weight: 750;
   line-height: 1.1;
@@ -79,7 +79,7 @@ const buttonClass = computed(() => {
 
 .base-button--primary {
   background: var(--primary);
-  color: #ffffff;
+  color: var(--on-primary);
 }
 
 .base-button--secondary {
@@ -94,7 +94,7 @@ const buttonClass = computed(() => {
 
 .base-button--danger {
   background: var(--danger);
-  color: #ffffff;
+  color: var(--on-danger);
 }
 
 .base-button--sm {

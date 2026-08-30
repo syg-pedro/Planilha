@@ -46,13 +46,13 @@ const barColor = computed(() => {
 .base-progress__track {
   min-height: 8px;
   overflow: hidden;
-  background: var(--bg2);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
+  background: var(--track);
+  border: 1px solid var(--track);
+  border-radius: 99px;
 }
 
 .base-progress__fill {
   height: 100%;
-  border-right: 2px solid var(--border);
+  border-radius: 99px;
 }
 </style>

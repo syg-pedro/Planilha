@@ -343,7 +343,7 @@ const onDelete = () => {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: oklch(0% 0 0 / 0.55);
+  background: var(--overlay);
   backdrop-filter: blur(4px);
 }
 
@@ -615,6 +615,7 @@ const onDelete = () => {
   box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
 }
 .toggle-switch.toggle-on .toggle-thumb {
+  background: var(--on-primary);
   transform: translateX(20px);
 }
 
@@ -657,7 +658,7 @@ const onDelete = () => {
   height: 46px;
   font-size: 14px;
   font-weight: 700;
-  color: #fff;
+  color: var(--on-primary);
   cursor: pointer;
   font-family: inherit;
   touch-action: manipulation;

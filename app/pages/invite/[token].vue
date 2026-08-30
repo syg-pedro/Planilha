@@ -11,7 +11,7 @@
         <p style="font-size: 14px; color: var(--text2); margin-bottom: 24px">Faça login ou crie uma conta para aceitar o convite e acessar o household compartilhado.</p>
         <div style="display: flex; flex-direction: column; gap: 10px">
           <NuxtLink :to="`/login?redirect=/invite/${token}`">
-            <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer">
+            <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer">
               Entrar com conta existente
             </button>
           </NuxtLink>
@@ -30,7 +30,7 @@
         </p>
         <div style="display: flex; flex-direction: column; gap: 10px">
           <button
-            style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer"
+            style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer"
             :disabled="accepting"
             @click="accept"
           >
@@ -51,7 +51,7 @@
         <h1 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px">Convite aceito!</h1>
         <p style="font-size: 14px; color: var(--text2); margin-bottom: 24px">Você agora faz parte do household compartilhado.</p>
         <NuxtLink to="/">
-          <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer">
+          <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer">
             Ir para o início
           </button>
         </NuxtLink>
@@ -61,7 +61,7 @@
         <h1 style="font-size: 20px; font-weight: 800; color: var(--danger); margin-bottom: 8px">Convite inválido</h1>
         <p style="font-size: 14px; color: var(--text2); margin-bottom: 24px">{{ errorMsg }}</p>
         <NuxtLink to="/">
-          <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer">
+          <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer">
             Voltar ao início
           </button>
         </NuxtLink>

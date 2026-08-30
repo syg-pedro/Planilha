@@ -211,7 +211,7 @@ onBeforeUnmount(removeListeners)
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 2px 2px 0 var(--ds-shadow-color);
+  box-shadow: var(--shadow-xs);
   cursor: pointer;
   font-family: inherit;
   font-size: 14px;
