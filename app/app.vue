@@ -99,9 +99,10 @@ const updateInstruction = computed(() => isApkUpdate.value
   : 'Uma versão mais recente está disponível. Recarregue para continuar com as melhorias.')
 let webUpdateTimer: number | undefined
 const activeScreen = useState('finance-screen', () => 'dashboard')
+const AUTH_ROUTES = new Set(['/login', '/signup'])
 
 const layoutName = computed(() => {
-  if (route.path === '/login' || route.path === '/signup') {
+  if (AUTH_ROUTES.has(route.path)) {
     return 'auth'
   }
   return typeof route.meta.layout === 'string' ? route.meta.layout : 'default'
@@ -255,6 +256,9 @@ onMounted(async () => {
   // Com Supabase configurado, os dados financeiros so podem ser carregados
   // depois de uma sessao valida. No modo local sem Supabase, mantemos o demo.
   if (requiresAuthentication && !user.value) {
+    if (!AUTH_ROUTES.has(route.path)) {
+      await navigateTo('/login')
+    }
     appReady.value = true
     return
   }
