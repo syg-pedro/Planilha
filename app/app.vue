@@ -174,8 +174,15 @@ const checkForNativeUpdate = async () => {
   }
 }
 
+const isRemoteNativeWebShell = () => {
+  if (!import.meta.client || !isNativePlatform) return false
+  return /^https?:$/.test(window.location.protocol) && !['localhost', '127.0.0.1'].includes(window.location.hostname)
+}
+
+const shouldCheckForWebUpdates = () => !isNativePlatform || isRemoteNativeWebShell()
+
 const checkForWebUpdate = async () => {
-  if (isNativePlatform || pendingWebUpdate.value) return
+  if (!shouldCheckForWebUpdates() || pendingWebUpdate.value) return
 
   const currentVersion = runtime.public.webBuildVersion as string
   const url = runtime.public.webVersionUrl as string
@@ -249,7 +256,7 @@ onMounted(async () => {
 
   void checkForNativeUpdate()
   void checkForWebUpdate()
-  if (!isNativePlatform) {
+  if (shouldCheckForWebUpdates()) {
     webUpdateTimer = window.setInterval(() => void checkForWebUpdate(), 10 * 60 * 1000)
   }
 
