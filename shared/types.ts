@@ -1,4 +1,4 @@
-export type ThemeMode = 'light' | 'dark' | 'eva' | 'cyberpunk' | 'arasaka' | 'custom' | 'system'
+export type ThemeMode = 'light' | 'dark' | 'custom' | 'system'
 export type DensityMode = 'compact' | 'comfortable'
 export type PeriodMode = 'due_date' | 'competence'
 export type EntryKind = 'income' | 'expense'

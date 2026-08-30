@@ -1178,6 +1178,12 @@ const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending'
 .plan-ghost-btn:active { transform: translate(2px, 2px); box-shadow: none; }
 
 /* ── Totalizadores ───────────────────────────────── */
+.plan-screen .ds-money {
+  font-family: var(--ds-font-family-grid);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
 .plan-totals {
   display: flex;
   gap: 10px;
@@ -1337,7 +1343,10 @@ const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending'
   min-width: 96px;
   max-width: 130px;
   padding: 6px 12px;
+  font-family: var(--ds-font-family-grid);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
 }
 .td-data.is-empty { color: var(--text3); font-weight: 600; }
 .td-data.is-editing {
@@ -1345,7 +1354,12 @@ const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending'
   outline-offset: calc(-1 * var(--border-width));
 }
 
-.td-sum { font-weight: 800; }
+.td-sum {
+  font-family: var(--ds-font-family-grid);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
 .td-filler { padding: 0; }
 
 .is-positive { color: var(--success); }
@@ -1356,7 +1370,10 @@ const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending'
   border-top: var(--border-width) solid var(--border);
   background: var(--danger-light);
   color: var(--danger);
+  font-family: var(--ds-font-family-grid);
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
   padding: 9px 14px;
 }
 .tfoot-row .td-sticky.td-foot {
@@ -1369,9 +1386,11 @@ const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending'
   border: none;
   outline: none;
   background: transparent;
-  font-family: var(--ds-font-family-mono);
+  font-family: var(--ds-font-family-grid);
   font-size: 12.5px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
   text-align: right;
   color: var(--text);
   display: block;
@@ -1640,8 +1659,11 @@ th:hover .col-menu-btn {
   gap: 3px;
 }
 .mcard-amount {
+  font-family: var(--ds-font-family-grid);
   font-size: 13px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
   color: var(--text);
 }
 .mcard-amount.is-empty { color: var(--text3); font-weight: 600; }
@@ -1651,9 +1673,11 @@ th:hover .col-menu-btn {
   border: var(--border-width) solid var(--primary);
   border-radius: var(--radius-sm);
   background: var(--surface2);
-  font-family: var(--ds-font-family-mono);
+  font-family: var(--ds-font-family-grid);
   font-size: 16px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
   text-align: right;
   color: var(--text);
   outline: none;

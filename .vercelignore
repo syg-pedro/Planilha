@@ -1,0 +1,48 @@
+# Dependencies
+node_modules
+
+# Nuxt/Vite/Nitro build outputs
+.nuxt
+.output
+.nitro
+.cache
+dist
+
+# Storybook and test artifacts
+.nuxt-storybook
+storybook-static
+playwright-report
+test-results
+blob-report
+.playwright-cli
+
+# Local agent/workspace state
+.agents
+.claude
+.codex
+
+# Local environments and Vercel project state
+.env
+.env.*
+.vercel
+
+# Local/generated docs and exports
+docs
+design
+output
+*.zip
+
+# Logs and captured debug artifacts
+logs
+*.log
+console-*.log
+page-*.yml
+
+# Android local secrets/build artifacts
+android/keystore
+android/keystore.properties
+android/screenshot-*.png
+.capgo_key_v2
+
+# Supabase local state
+supabase/.temp

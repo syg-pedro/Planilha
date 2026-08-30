@@ -20,6 +20,7 @@ import type {
   OnboardingImportPreview,
   OnboardingImportSummary,
   OnboardingState,
+  ThemeMode,
   ThemeSettingsRequest,
   WishItem,
   WishPriority,
@@ -660,9 +661,13 @@ const mapEntryToRow = (entry: FinanceEntry) => ({
   updated_at: entry.updatedAt
 })
 
+const normalizeThemeMode = (mode: string): ThemeMode => {
+  if (mode === 'light' || mode === 'dark' || mode === 'custom' || mode === 'system') return mode
+  return 'dark'
+}
+
 const mapSettingFromRow = (row: Record<string, any>): HouseholdSettings => ({
-  // Backward compatibility: legacy persisted theme id `eva_01` now maps to `eva`.
-  themeMode: row.theme_mode === 'eva_01' ? 'eva' : row.theme_mode,
+  themeMode: normalizeThemeMode(row.theme_mode),
   id: row.id,
   currency: row.currency,
   timezone: row.timezone,

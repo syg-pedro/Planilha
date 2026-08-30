@@ -359,12 +359,9 @@ const THEMES = [
   { id: 'system', name: 'Sistema', desc: 'Segue automaticamente o tema do dispositivo', icon: '🖥️' },
   { id: 'light', name: 'Neo Light', desc: 'Papel quente, tinta preta e cores diretas', icon: '☀️' },
   { id: 'dark', name: 'Neo Dark', desc: 'Superfícies escuras com contornos claros', icon: '🌙' },
-  { id: 'eva', name: 'EVA Brutal', desc: 'Roxo e neon com estrutura neo-brutalista', icon: '⚡' },
-  { id: 'cyberpunk', name: 'Cyber Brutal', desc: 'Azul elétrico e amarelo em blocos sólidos', icon: '🌃' },
-  { id: 'arasaka', name: 'Arasaka Brutal', desc: 'Vermelho corporativo com contraste rígido', icon: '🔻' },
 ] as const
 
-const VALID_THEME_MODES = ['light', 'dark', 'eva', 'cyberpunk', 'arasaka', 'system']
+const VALID_THEME_MODES = ['light', 'dark', 'system']
 
 const WIDGETS = WIDGET_OPTIONS
 

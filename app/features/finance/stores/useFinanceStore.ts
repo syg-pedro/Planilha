@@ -121,15 +121,31 @@ export const useFinanceStore = defineStore('finance', () => {
     return response as T
   }
 
+  const LEGACY_THEME_MODES = new Set(['eva', 'eva_01', 'cyberpunk', 'arasaka'])
+  const DARK_THEMES = new Set(['dark'])
+
+  const normalizeThemeMode = (mode: string): ThemeMode => {
+    if (LEGACY_THEME_MODES.has(mode)) return 'dark'
+    if (mode === 'light' || mode === 'dark' || mode === 'custom' || mode === 'system') return mode
+    return 'dark'
+  }
+
+  const normalizeSettings = (nextSettings: HouseholdSettings): HouseholdSettings => ({
+    ...nextSettings,
+    themeMode: normalizeThemeMode(nextSettings.themeMode)
+  })
+
   const resolveEffectiveTheme = (): Exclude<ThemeMode, 'system'> => {
-    if (settings.value.themeMode !== 'system') {
-      return settings.value.themeMode
+    const mode = normalizeThemeMode(settings.value.themeMode)
+    if (mode !== settings.value.themeMode) {
+      settings.value.themeMode = mode
+    }
+    if (mode !== 'system') {
+      return mode
     }
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     return prefersDark ? 'dark' : 'light'
   }
-
-  const DARK_THEMES = new Set(['dark', 'cyberpunk', 'arasaka'])
 
   // Variáveis sobrescritas inline quando o tema é 'custom'.
   const CUSTOM_VARS = [
@@ -157,6 +173,8 @@ export const useFinanceStore = defineStore('finance', () => {
 
     // Limpa quaisquer overrides inline de execuções anteriores
     for (const v of CUSTOM_VARS) root.style.removeProperty(v)
+
+    settings.value.themeMode = normalizeThemeMode(settings.value.themeMode)
 
     if (settings.value.themeMode === 'custom') {
       const c = settings.value.colorTokens
@@ -264,7 +282,7 @@ export const useFinanceStore = defineStore('finance', () => {
     error.value = null
     try {
       const response = await fetchApi<BootstrapResponse>('/api/bootstrap')
-      settings.value = response.settings
+      settings.value = normalizeSettings(response.settings)
       accounts.value = response.accounts
       categories.value = response.categories
       rules.value = response.rules
@@ -329,7 +347,7 @@ export const useFinanceStore = defineStore('finance', () => {
         colorTokens: settings.value.colorTokens
       }
     })
-    settings.value = response.settings
+    settings.value = normalizeSettings(response.settings)
     applyTheme()
   }
 
@@ -342,7 +360,7 @@ export const useFinanceStore = defineStore('finance', () => {
         dashboardConfig: settings.value.dashboardConfig
       }
     })
-    settings.value = response.settings
+    settings.value = normalizeSettings(response.settings)
   }
 
   const saveAccount = async (account: Partial<Account>) => {
@@ -436,7 +454,7 @@ export const useFinanceStore = defineStore('finance', () => {
       method: 'POST',
       body: { onboarding }
     })
-    settings.value = response.settings
+    settings.value = normalizeSettings(response.settings)
   }
 
   const scheduleUpcomingNotifications = async () => {

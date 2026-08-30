@@ -39,8 +39,8 @@ Aplicar uma linguagem neo-brutalista funcional a todas as superfícies do Financ
 
 ## Compatibilidade
 
-- `ThemeMode` e os valores persistidos não mudam.
-- Light, dark, EVA, Cyberpunk, Arasaka, custom e system continuam válidos.
+- Os temas visíveis ficam restritos a Sistema, Neo Light e Neo Dark.
+- Valores legados de tema persistidos, como EVA, Cyberpunk e Arasaka, caem para Neo Dark.
 - O tema customizado mantém as mesmas chaves de cor.
 - Nenhum endpoint, migration, tipo de domínio ou regra financeira faz parte desta mudança.
 - Layout mobile, safe areas e tamanhos mínimos de toque permanecem suportados.
@@ -57,4 +57,4 @@ Aplicar uma linguagem neo-brutalista funcional a todas as superfícies do Financ
 
 ## Rollout recomendado
 
-Publicar a branch em preview, validar primeiro em 390 px, 768 px e 1440 px e revisar light/dark. Depois, conferir EVA, Cyberpunk, Arasaka e custom. A integração em `main` deve ocorrer somente após uma rodada de uso real nos fluxos de lançamento, edição, pagamento e configuração de tema.
+Publicar a branch em preview, validar primeiro em 390 px, 768 px e 1440 px e revisar Sistema, Neo Light, Neo Dark e cores personalizadas. A integração em `main` deve ocorrer somente após uma rodada de uso real nos fluxos de lançamento, edição, pagamento e configuração de tema.

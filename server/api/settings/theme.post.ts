@@ -14,7 +14,7 @@ const colorSchema = z.object({
 })
 
 const schema = z.object({
-  themeMode: z.enum(['light', 'dark', 'eva', 'cyberpunk', 'arasaka', 'custom', 'system']),
+  themeMode: z.enum(['light', 'dark', 'custom', 'system']),
   densityMode: z.enum(['compact', 'comfortable']),
   colorTokens: colorSchema
 })
