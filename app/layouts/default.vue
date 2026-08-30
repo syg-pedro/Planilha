@@ -443,11 +443,12 @@ const currency = useCurrency()
 const { logout } = useLogout()
 const config = useRuntimeConfig()
 const appVersion = ref(config.public.appVersion as string)
+const isNativePlatform = Capacitor.isNativePlatform()
 
 const activeScreen = useState('finance-screen', () => 'dashboard')
 const collapsed = ref(false)
 const drawerOpen = ref(false)
-const isMobile = ref(false)
+const isMobile = ref(isNativePlatform)
 
 const alertCount = 3
 
@@ -482,7 +483,15 @@ watch(() => store.settings.themeMode, () => {
   store.applyTheme()
 }, { immediate: true })
 
-const updateMobile = () => { isMobile.value = window.matchMedia('(max-width: 767px)').matches }
+const updateMobile = () => {
+  if (isNativePlatform) {
+    isMobile.value = true
+    return
+  }
+
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth
+  isMobile.value = viewportWidth <= 767 || window.matchMedia('(max-width: 767px)').matches
+}
 
 const syncPublishedVersion = async () => {
   if (Capacitor.isNativePlatform()) return
@@ -524,10 +533,11 @@ onMounted(() => {
   mobileMediaQuery = window.matchMedia('(max-width: 767px)')
   updateMobile()
   window.addEventListener('resize', updateMobile)
+  window.visualViewport?.addEventListener('resize', updateMobile)
   mobileMediaQuery.addEventListener('change', updateMobile)
   requestAnimationFrame(updateMobile)
 
-  if (Capacitor.isNativePlatform()) {
+  if (isNativePlatform) {
     void App.getInfo().then(({ version }) => {
       appVersion.value = version
     })
@@ -542,6 +552,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateMobile)
+  window.visualViewport?.removeEventListener('resize', updateMobile)
   mobileMediaQuery?.removeEventListener('change', updateMobile)
   void backButtonListener?.remove()
 })

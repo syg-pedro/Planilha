@@ -365,13 +365,27 @@ onUnmounted(() => {
   z-index: 1000;
   display: grid;
   place-items: center;
-  padding: 20px;
+  box-sizing: border-box;
+  padding: 14px;
+  padding-top: max(14px, env(safe-area-inset-top, 0px));
+  padding-right: max(14px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(14px, env(safe-area-inset-left, 0px));
+  overflow: hidden;
   background: var(--overlay);
   backdrop-filter: blur(3px);
 }
 
 .ota-update-dialog {
-  width: min(100%, 420px);
+  box-sizing: border-box;
+  width: calc(100vw - 28px);
+  width: min(420px, calc(100dvw - 28px));
+  max-width: calc(100vw - 28px);
+  max-width: calc(100dvw - 28px);
+  max-height: calc(100vh - 28px);
+  max-height: calc(100dvh - 28px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: 3px solid var(--border);
   background: var(--surface);
   box-shadow: 8px 8px 0 var(--ds-shadow-color);
@@ -411,11 +425,13 @@ onUnmounted(() => {
   padding: 10px;
   font-size: 13px;
   font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .ota-update-dialog__actions {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 18px;
 }
@@ -440,10 +456,12 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
   background: var(--primary);
   color: var(--bg);
   box-shadow: var(--shadow-sm);
   text-decoration: none;
+  text-align: center;
 }
 
 .ota-update-enter-active,
@@ -457,9 +475,11 @@ onUnmounted(() => {
 }
 
 @media (max-width: 480px) {
-  .ota-update-backdrop { padding: 14px; }
   .ota-update-dialog { padding: 18px; }
-  .ota-update-dialog__actions { flex-direction: column-reverse; }
+  .ota-update-dialog__actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
   .ota-update-dialog button,
   .ota-update-dialog__apply { width: 100%; }
 }
