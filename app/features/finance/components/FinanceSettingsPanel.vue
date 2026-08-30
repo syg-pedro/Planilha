@@ -29,6 +29,31 @@
       </section>
     </div>
 
+    <!-- ── Atalhos ───────────────────────────────────────────── -->
+    <section class="neo-panel">
+      <header class="neo-panel-header cfg__panel-head">
+        <h3 class="cfg__panel-title">Atalhos</h3>
+        <p class="cfg__panel-sub">Guias, ajuda e itens de manutenção do app.</p>
+      </header>
+      <div class="cfg__shortcut-grid">
+        <button
+          v-for="item in SETTINGS_SHORTCUTS"
+          :key="item.id"
+          type="button"
+          class="cfg__shortcut"
+          @click="goToShortcut(item.id)"
+        >
+          <span class="cfg__shortcut-icon">
+            <BaseIcon :name="item.icon" :size="18" />
+          </span>
+          <span class="cfg__shortcut-copy">
+            <span class="cfg__shortcut-title">{{ item.label }}</span>
+            <span class="cfg__shortcut-sub">{{ item.description }}</span>
+          </span>
+        </button>
+      </div>
+    </section>
+
     <!-- ── Instalar app ───────────────────────────────────────── -->
     <section v-if="!isNativePlatform && !$pwaInstalled" class="neo-panel">
       <header class="neo-panel-header cfg__panel-head">
@@ -308,7 +333,10 @@ import { ref, computed, onMounted } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { WIDGET_OPTIONS, DEFAULT_COLORS, DARK_COLORS } from '#shared/constants'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
+import { SETTINGS_SHORTCUT_ITEMS } from '~/features/finance/constants/ui'
 import type { ThemeMode, Account } from '#shared/types'
+
+const emit = defineEmits<{ navigate: [screen: string] }>()
 
 const store = useFinanceStore()
 const currency = useCurrency()
@@ -364,8 +392,21 @@ const THEMES = [
 const VALID_THEME_MODES = ['light', 'dark', 'system']
 
 const WIDGETS = WIDGET_OPTIONS
+const SETTINGS_SHORTCUTS = SETTINGS_SHORTCUT_ITEMS.map(item => ({
+  ...item,
+  description: {
+    onboarding: 'Guia inicial e checklist',
+    help: 'Tutoriais e dúvidas frequentes',
+    changelog: 'Mudanças da versão',
+    'design-system': 'Componentes e tokens visuais',
+  }[item.id],
+}))
 
 const isWidgetOn = (id: string) => (store.settings.dashboardConfig.visibleWidgets ?? []).includes(id)
+
+const goToShortcut = (screen: string) => {
+  emit('navigate', screen)
+}
 
 const onThemeModeChange = async (value: string) => {
   if (VALID_THEME_MODES.includes(value)) {
@@ -742,6 +783,74 @@ const copyInviteLink = async () => {
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
+
+/* ── Atalhos ───────────────────────────────────────────────── */
+.cfg__shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 18px 16px;
+}
+
+.cfg__shortcut {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 70px;
+  padding: 12px;
+  background: var(--surface2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+}
+
+.cfg__shortcut:hover {
+  box-shadow: var(--shadow-md);
+  transform: translate(-1px, -1px);
+}
+
+.cfg__shortcut:active {
+  box-shadow: 1px 1px 0 var(--ds-shadow-color);
+  transform: translate(2px, 2px);
+}
+
+.cfg__shortcut-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: var(--primary);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-xs);
+  color: var(--on-primary);
+}
+
+.cfg__shortcut-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cfg__shortcut-title {
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.cfg__shortcut-sub {
+  color: var(--text3);
+  font-size: 11.5px;
+  font-weight: 650;
 }
 
 /* ── Linhas ─────────────────────────────────────────────────── */
@@ -1315,6 +1424,15 @@ const copyInviteLink = async () => {
 
   .cfg__panel-body {
     padding: 12px 14px;
+  }
+
+  .cfg__shortcut-grid {
+    grid-template-columns: 1fr;
+    padding: 0 14px 14px;
+  }
+
+  .cfg__shortcut {
+    min-height: 62px;
   }
 
   .cfg__row {

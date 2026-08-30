@@ -40,14 +40,13 @@ export const DS_ITEM = { id: 'design-system', label: 'Design System', icon: 'spa
 export const ONBOARDING_ITEM = { id: 'onboarding', label: 'Primeiros passos', icon: 'sparkle' } as const
 export const HELP_ITEM = { id: 'help', label: 'Ajuda', icon: 'help' } as const
 export const CHANGELOG_ITEM = { id: 'changelog', label: 'Novidades', icon: 'refresh' } as const
+export const SETTINGS_SHORTCUT_ITEMS = [ONBOARDING_ITEM, HELP_ITEM, CHANGELOG_ITEM, DS_ITEM] as const
+export const SETTINGS_SECTION_ITEMS = [SETTINGS_ITEM, ...SETTINGS_SHORTCUT_ITEMS] as const
 
 export const ALL_NAV_ITEMS = [
   ...NAV_GROUPS.flatMap(g => g.items),
-  ONBOARDING_ITEM,
-  HELP_ITEM,
-  CHANGELOG_ITEM,
   SETTINGS_ITEM,
-  DS_ITEM,
+  ...SETTINGS_SHORTCUT_ITEMS,
 ] as const
 
 // Legacy — kept for any existing usages

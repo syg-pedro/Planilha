@@ -49,7 +49,7 @@
                 v-for="item in group.items"
                 :key="item.id"
                 class="app-nav-item"
-                :class="{ 'app-nav-item--active': activeScreen === item.id }"
+                :class="{ 'app-nav-item--active': isItemActive(item.id) }"
                 :title="collapsed ? item.label : ''"
                 :style="{
                   display: 'flex',
@@ -63,21 +63,21 @@
                   fontFamily: 'inherit',
                   fontWeight: 600,
                   fontSize: '13px',
-                  background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
-                  color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
+                  background: isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent',
+                  color: isItemActive(item.id) ? 'var(--primary)' : 'var(--text2)',
                   transition: 'background .12s, color .12s',
                   width: '100%',
                   position: 'relative',
                   overflow: 'hidden',
                   whiteSpace: 'nowrap',
                 }"
-                @mouseenter="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'var(--surface2)'"
-                @mouseleave="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'transparent'"
+                @mouseenter="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'var(--surface2)'"
+                @mouseleave="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent'"
                 @click="goTo(item.id)"
               >
-                <span v-if="activeScreen === item.id" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
+                <span v-if="isItemActive(item.id)" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
                 <span style="position: relative; flex-shrink: 0">
-                  <BaseIcon :name="item.icon" :size="15" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
+                  <BaseIcon :name="item.icon" :size="15" :color="isItemActive(item.id) ? 'var(--primary)' : 'currentColor'" />
                   <span
                     v-if="item.id === 'alerts' && alertCount > 0"
                     style="position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: var(--on-danger)"
@@ -95,7 +95,7 @@
           v-for="item in BOTTOM_ITEMS"
           :key="item.id"
           class="app-nav-item"
-          :class="{ 'app-nav-item--active': activeScreen === item.id }"
+          :class="{ 'app-nav-item--active': isItemActive(item.id) }"
           :title="collapsed ? item.label : ''"
           :style="{
             display: 'flex',
@@ -109,18 +109,18 @@
             fontFamily: 'inherit',
             fontWeight: 600,
             fontSize: '13px',
-            background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
-            color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
+            background: isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent',
+            color: isItemActive(item.id) ? 'var(--primary)' : 'var(--text2)',
             transition: 'background .12s, color .12s',
             width: '100%',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
           }"
-          @mouseenter="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'var(--surface2)'"
-          @mouseleave="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'transparent'"
+          @mouseenter="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'var(--surface2)'"
+          @mouseleave="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent'"
           @click="goTo(item.id)"
         >
-          <BaseIcon :name="item.icon" :size="16" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
+          <BaseIcon :name="item.icon" :size="16" :color="isItemActive(item.id) ? 'var(--primary)' : 'currentColor'" />
           <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">{{ item.label }}</span>
         </button>
 
@@ -209,7 +209,7 @@
               v-for="item in group.items"
               :key="item.id"
               class="app-nav-item"
-              :class="{ 'app-nav-item--active': activeScreen === item.id }"
+              :class="{ 'app-nav-item--active': isItemActive(item.id) }"
               :style="{
                 display: 'flex',
                 alignItems: 'center',
@@ -221,18 +221,18 @@
                 fontFamily: 'inherit',
                 fontWeight: 600,
                 fontSize: '14px',
-                background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
-                color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
+                background: isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent',
+                color: isItemActive(item.id) ? 'var(--primary)' : 'var(--text2)',
                 transition: 'background .12s',
                 width: '100%',
                 position: 'relative',
               }"
-              @mouseenter="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'var(--surface2)'"
-              @mouseleave="($event.currentTarget as HTMLElement).style.background = activeScreen === item.id ? 'var(--primary-dim)' : 'transparent'"
+              @mouseenter="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'var(--surface2)'"
+              @mouseleave="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent'"
               @click="goTo(item.id)"
             >
-              <span v-if="activeScreen === item.id" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
-              <BaseIcon :name="item.icon" :size="16" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
+              <span v-if="isItemActive(item.id)" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
+              <BaseIcon :name="item.icon" :size="16" :color="isItemActive(item.id) ? 'var(--primary)' : 'currentColor'" />
               {{ item.label }}
               <span v-if="item.id === 'alerts' && alertCount > 0" style="margin-left: auto; display: inline-flex; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; background: var(--danger-light); color: var(--danger)">{{ alertCount }}</span>
             </button>
@@ -243,13 +243,13 @@
             v-for="item in BOTTOM_ITEMS"
             :key="item.id"
             class="app-nav-item"
-            :class="{ 'app-nav-item--active': activeScreen === item.id }"
+            :class="{ 'app-nav-item--active': isItemActive(item.id) }"
             :style="{
               display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 10px',
               borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
               fontWeight: 600, fontSize: '14px',
-              background: activeScreen === item.id ? 'var(--primary-dim)' : 'transparent',
-              color: activeScreen === item.id ? 'var(--primary)' : 'var(--text2)',
+              background: isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent',
+              color: isItemActive(item.id) ? 'var(--primary)' : 'var(--text2)',
               width: '100%', transition: 'background .12s',
             }"
             @click="goTo(item.id)"
@@ -435,7 +435,7 @@ import { App } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import BaseIcon from '~/components/base/BaseIcon.vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import { NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, DS_ITEM, ONBOARDING_ITEM, HELP_ITEM, CHANGELOG_ITEM } from '~/features/finance/constants/ui'
+import { ALL_NAV_ITEMS, NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, SETTINGS_SECTION_ITEMS } from '~/features/finance/constants/ui'
 import { helpForScreen } from '~/features/finance/constants/helpContent'
 
 const store = useFinanceStore()
@@ -456,8 +456,10 @@ const now = new Date()
 const currentMonthName = MONTH_NAMES[now.getMonth()]
 const currentYear = now.getFullYear()
 
-const BOTTOM_ITEMS = [ONBOARDING_ITEM, HELP_ITEM, CHANGELOG_ITEM, DS_ITEM, SETTINGS_ITEM]
-const ALL_ITEMS = [...NAV_GROUPS.flatMap(g => g.items), ...BOTTOM_ITEMS]
+const BOTTOM_ITEMS = [SETTINGS_ITEM]
+const SETTINGS_SECTION_IDS: ReadonlySet<string> = new Set(SETTINGS_SECTION_ITEMS.map(item => item.id))
+const ALL_ITEMS = ALL_NAV_ITEMS
+const isItemActive = (id: string) => activeScreen.value === id || (id === SETTINGS_ITEM.id && SETTINGS_SECTION_IDS.has(activeScreen.value))
 const currentItemLabel = computed(() => ALL_ITEMS.find(i => i.id === activeScreen.value)?.label ?? 'Dashboard')
 const visibleScreenTitle = computed(() =>
   isMobile.value && activeScreen.value === 'dashboard' ? 'Visão geral' : currentItemLabel.value
