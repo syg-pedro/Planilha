@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#00FF33</color>
+    <color name="colorPrimaryDark">#171C25</color>
+    <color name="colorAccent">#BB00FF</color>
+
+    <color name="widget_bg">#171C25</color>
+    <color name="widget_surface">#222936</color>
+    <color name="widget_border">#020306</color>
+    <color name="widget_primary">#00FF33</color>
+    <color name="widget_danger">#E84545</color>
+    <color name="widget_text">#F7F2E8</color>
+    <color name="widget_text_muted">#969DAC</color>
+    <color name="widget_shadow">#05060A</color>
+</resources>

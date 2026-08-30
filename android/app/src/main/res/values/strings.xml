@@ -4,4 +4,6 @@
     <string name="title_activity_main">Financeiro Familiar</string>
     <string name="package_name">com.pedro.financeirofamiliar</string>
     <string name="custom_url_scheme">com.pedro.financeirofamiliar</string>
+    <string name="widget_finance_summary_name">Resumo financeiro</string>
+    <string name="widget_finance_summary_description">Mostra saldo, receitas, despesas e próximo vencimento.</string>
 </resources>

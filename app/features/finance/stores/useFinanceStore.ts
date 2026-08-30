@@ -5,6 +5,7 @@ import { LocalNotifications } from '@capacitor/local-notifications'
 import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection, computeKpis, excludeBenefitEntries } from '#shared/finance'
 import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
 import { createDefaultOnboardingState } from '#shared/onboarding'
+import { syncFinanceWidgetSnapshot } from '~/features/finance/utils/financeWidget'
 import type {
   Account,
   BootstrapResponse,
@@ -277,6 +278,28 @@ export const useFinanceStore = defineStore('finance', () => {
     }
   }
 
+  const syncWidgetSnapshot = async () => {
+    if (!process.client || !Capacitor.isNativePlatform()) {
+      return
+    }
+
+    const now = new Date()
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    const periodMode = filters.value.periodMode ?? settings.value.periodMode
+    const currentMonthEntries = entries.value.filter((entry) => {
+      const sourceDate = periodMode === 'competence' ? entry.competenceDate : entry.dueDate
+      return sourceDate.startsWith(currentMonth)
+    })
+
+    const currentMonthKpis = computeKpis(currentMonthEntries, accounts.value)
+    await syncFinanceWidgetSnapshot({
+      kpis: currentMonthKpis,
+      entries: entries.value,
+      accounts: accounts.value,
+      currency: settings.value.currency || 'BRL',
+    })
+  }
+
   const bootstrap = async () => {
     loading.value = true
     error.value = null
@@ -295,6 +318,7 @@ export const useFinanceStore = defineStore('finance', () => {
       }
       applyTheme()
       initialized.value = true
+      void syncWidgetSnapshot()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Falha ao carregar dados'
       throw err
@@ -318,6 +342,7 @@ export const useFinanceStore = defineStore('finance', () => {
       if (batch.deletes.length > 0) {
         entries.value = entries.value.filter((entry) => !batch.deletes.includes(entry.id))
       }
+      void syncWidgetSnapshot()
       return
     }
 
@@ -326,6 +351,7 @@ export const useFinanceStore = defineStore('finance', () => {
       body: batch
     })
     entries.value = response.entries
+    void syncWidgetSnapshot()
   }
 
   const rebuildRules = async () => {
@@ -361,6 +387,7 @@ export const useFinanceStore = defineStore('finance', () => {
       }
     })
     settings.value = normalizeSettings(response.settings)
+    void syncWidgetSnapshot()
   }
 
   const saveAccount = async (account: Partial<Account>) => {
@@ -369,6 +396,7 @@ export const useFinanceStore = defineStore('finance', () => {
       body: { upserts: [account], deletes: [] }
     })
     accounts.value = response.accounts
+    void syncWidgetSnapshot()
   }
 
   const saveRules = async (upserts: Partial<FinanceRule>[], deletes: string[]) => {
