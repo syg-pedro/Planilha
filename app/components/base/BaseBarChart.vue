@@ -118,10 +118,11 @@ function result(d: BarDataPoint) {
   z-index: 20;
   min-width: 150px;
   padding: 10px 12px;
-  background: var(--panel2, var(--panel));
-  border: 2px solid var(--border);
+  color: var(--text);
+  background: var(--surface);
+  border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
   pointer-events: none;
 }
 
