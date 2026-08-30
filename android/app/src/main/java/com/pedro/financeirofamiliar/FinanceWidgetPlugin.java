@@ -25,7 +25,7 @@ public class FinanceWidgetPlugin extends Plugin {
             nextDue,
             updated
         );
-        FinanceSummaryWidgetProvider.updateAllWidgets(getContext());
+        FinanceSummaryWidgetProvider.updateAllWidgetVariants(getContext());
 
         call.resolve();
     }

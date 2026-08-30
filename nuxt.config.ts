@@ -73,7 +73,7 @@ export default defineNuxtConfig({
     dataFilePath: process.env.DATA_FILE_PATH || '',
     public: {
       appName: 'Financeiro Familiar',
-      appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.1.0',
+      appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.1.1',
       webBuildVersion,
       webVersionUrl: '/api/web-version',
       updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || 'https://planilha-cyan.vercel.app/api/android-release',

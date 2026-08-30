@@ -15,13 +15,38 @@ import androidx.core.content.ContextCompat;
 public class FinanceSummaryWidgetProvider extends AppWidgetProvider {
     public static final String PREFS_NAME = "finance_summary_widget";
 
-    private static final String ACTION_REFRESH = "com.pedro.financeirofamiliar.WIDGET_REFRESH";
+    public static final String ACTION_REFRESH = "com.pedro.financeirofamiliar.WIDGET_REFRESH";
     private static final String KEY_BALANCE = "balance";
     private static final String KEY_BALANCE_IS_NEGATIVE = "balance_is_negative";
     private static final String KEY_INCOME = "income";
     private static final String KEY_EXPENSE = "expense";
     private static final String KEY_NEXT_DUE = "next_due";
     private static final String KEY_UPDATED = "updated";
+
+    public static final class Snapshot {
+        public final String balance;
+        public final boolean balanceIsNegative;
+        public final String income;
+        public final String expense;
+        public final String nextDue;
+        public final String updated;
+
+        Snapshot(
+            String balance,
+            boolean balanceIsNegative,
+            String income,
+            String expense,
+            String nextDue,
+            String updated
+        ) {
+            this.balance = balance;
+            this.balanceIsNegative = balanceIsNegative;
+            this.income = income;
+            this.expense = expense;
+            this.nextDue = nextDue;
+            this.updated = updated;
+        }
+    }
 
     public static void saveSnapshot(
         Context context,
@@ -45,6 +70,42 @@ public class FinanceSummaryWidgetProvider extends AppWidgetProvider {
         editor.apply();
     }
 
+    public static Snapshot readSnapshot(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return new Snapshot(
+            prefs.getString(KEY_BALANCE, "R$ 0,00"),
+            prefs.getBoolean(KEY_BALANCE_IS_NEGATIVE, false),
+            prefs.getString(KEY_INCOME, "↑ R$ 0,00"),
+            prefs.getString(KEY_EXPENSE, "↓ R$ 0,00"),
+            prefs.getString(KEY_NEXT_DUE, "Próximo vencimento: --"),
+            prefs.getString(KEY_UPDATED, "Abra o app para atualizar")
+        );
+    }
+
+    public static int getBalanceColor(Context context, Snapshot snapshot) {
+        return ContextCompat.getColor(context, snapshot.balanceIsNegative ? R.color.widget_danger : R.color.widget_primary);
+    }
+
+    public static void setOpenAppPendingIntent(Context context, RemoteViews views, int rootId, int requestCode) {
+        Intent openAppIntent = new Intent(context, MainActivity.class);
+        openAppIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode, openAppIntent, flags);
+        views.setOnClickPendingIntent(rootId, pendingIntent);
+    }
+
+    public static void updateAllWidgetVariants(Context context) {
+        updateAllWidgets(context);
+        FinanceCompactWidgetProvider.updateAllWidgets(context);
+        FinanceFlowWidgetProvider.updateAllWidgets(context);
+        FinanceDueWidgetProvider.updateAllWidgets(context);
+    }
+
     public static void updateAllWidgets(Context context) {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
         ComponentName provider = new ComponentName(context, FinanceSummaryWidgetProvider.class);
@@ -61,7 +122,7 @@ public class FinanceSummaryWidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
         if (ACTION_REFRESH.equals(intent.getAction())) {
-            updateAllWidgets(context);
+            updateAllWidgetVariants(context);
         }
     }
 
@@ -72,35 +133,16 @@ public class FinanceSummaryWidgetProvider extends AppWidgetProvider {
     }
 
     private static void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String balance = prefs.getString(KEY_BALANCE, "R$ 0,00");
-        boolean balanceIsNegative = prefs.getBoolean(KEY_BALANCE_IS_NEGATIVE, false);
-        String income = prefs.getString(KEY_INCOME, "↑ R$ 0,00");
-        String expense = prefs.getString(KEY_EXPENSE, "↓ R$ 0,00");
-        String nextDue = prefs.getString(KEY_NEXT_DUE, "Próximo vencimento: --");
-        String updated = prefs.getString(KEY_UPDATED, "Abra o app para atualizar");
+        Snapshot snapshot = readSnapshot(context);
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_finance_summary);
-        views.setTextViewText(R.id.widget_balance, balance);
-        views.setTextViewText(R.id.widget_income, income);
-        views.setTextViewText(R.id.widget_expense, expense);
-        views.setTextViewText(R.id.widget_next_due, nextDue);
-        views.setTextViewText(R.id.widget_updated, updated);
-        views.setTextColor(
-            R.id.widget_balance,
-            ContextCompat.getColor(context, balanceIsNegative ? R.color.widget_danger : R.color.widget_primary)
-        );
-
-        Intent openAppIntent = new Intent(context, MainActivity.class);
-        openAppIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            flags |= PendingIntent.FLAG_IMMUTABLE;
-        }
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, openAppIntent, flags);
-        views.setOnClickPendingIntent(R.id.widget_root, pendingIntent);
+        views.setTextViewText(R.id.widget_balance, snapshot.balance);
+        views.setTextViewText(R.id.widget_income, snapshot.income);
+        views.setTextViewText(R.id.widget_expense, snapshot.expense);
+        views.setTextViewText(R.id.widget_next_due, snapshot.nextDue);
+        views.setTextViewText(R.id.widget_updated, snapshot.updated);
+        views.setTextColor(R.id.widget_balance, getBalanceColor(context, snapshot));
+        setOpenAppPendingIntent(context, views, R.id.widget_root, appWidgetId);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }

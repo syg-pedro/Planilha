@@ -38,6 +38,45 @@
                 android:resource="@xml/finance_summary_widget" />
         </receiver>
 
+        <receiver
+            android:name=".FinanceCompactWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_finance_compact_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.pedro.financeirofamiliar.WIDGET_REFRESH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/finance_compact_widget" />
+        </receiver>
+
+        <receiver
+            android:name=".FinanceFlowWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_finance_flow_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.pedro.financeirofamiliar.WIDGET_REFRESH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/finance_flow_widget" />
+        </receiver>
+
+        <receiver
+            android:name=".FinanceDueWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_finance_due_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.pedro.financeirofamiliar.WIDGET_REFRESH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/finance_due_widget" />
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

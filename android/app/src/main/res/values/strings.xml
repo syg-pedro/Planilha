@@ -6,4 +6,10 @@
     <string name="custom_url_scheme">com.pedro.financeirofamiliar</string>
     <string name="widget_finance_summary_name">Resumo financeiro</string>
     <string name="widget_finance_summary_description">Mostra saldo, receitas, despesas e próximo vencimento.</string>
+    <string name="widget_finance_compact_name">Saldo compacto</string>
+    <string name="widget_finance_compact_description">Mostra o saldo líquido em um widget menor.</string>
+    <string name="widget_finance_flow_name">Receitas e despesas</string>
+    <string name="widget_finance_flow_description">Mostra saldo líquido, receitas e despesas do mês.</string>
+    <string name="widget_finance_due_name">Próximo vencimento</string>
+    <string name="widget_finance_due_description">Mostra a próxima despesa pendente e o saldo atual.</string>
 </resources>
