@@ -32,6 +32,7 @@ android/keystore.properties
 .env
 .env.*
 !.env.example
+!.env.homol.example
 
 .vercel
 docs/dados.txt
@@ -39,7 +40,8 @@ docs/dados.txt
 # Dados pessoais e arquivos locais
 scripts/restore.sql
 scripts/demo-restore.sql
-docs/
+docs/*
+!docs/revisao-2026-09-04/
 .claude/settings.local.json
 .claude/settings.local.json
 supabase/.temp/

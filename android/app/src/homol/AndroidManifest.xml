@@ -1,0 +1,3 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <application android:icon="@drawable/homol_icon" android:roundIcon="@drawable/homol_icon" tools:replace="android:icon,android:roundIcon" />
+</manifest>

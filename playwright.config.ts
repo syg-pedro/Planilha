@@ -30,6 +30,6 @@ export default defineConfig({
     url: 'http://127.0.0.1:3000',
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,
-    env: { EDIT_KEY: 'demo-finance-key' }
+    env: { EDIT_KEY: 'demo-finance-key', NUXT_E2E: 'true' }
   }
 })

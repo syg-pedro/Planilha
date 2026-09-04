@@ -1,0 +1,10 @@
+{
+  "bootstrapStatus": 200,
+  "originalEntries": 240,
+  "createdAndRead": true,
+  "cacheControl": "private, no-store",
+  "unauthenticatedStatus": 401,
+  "cleanupVerified": true,
+  "login": true,
+  "url": "https://planilha-homol.vercel.app/"
+}

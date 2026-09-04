@@ -1,7 +1,8 @@
 <template>
   <section>
+    <FinanceSyncStatus />
     <BasePanel v-if="store.error" title="Erro" class="ds-alert-error text-sm">{{ store.error }}</BasePanel>
-    <BasePanel v-if="store.warnings.length > 0" title="Avisos de importacao inicial" class="ds-alert-warning text-sm">
+    <BasePanel v-if="store.warnings.length > 0" title="Avisos" class="ds-alert-warning text-sm">
       <ul class="list-disc space-y-1 pl-5">
         <li v-for="warning in store.warnings" :key="warning">{{ warning }}</li>
       </ul>
@@ -35,21 +36,23 @@
 </template>
 
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
+import FinanceSyncStatus from '~/features/finance/components/FinanceSyncStatus.vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import MatrizScreen        from '~/features/finance/components/screens/MatrizScreen.vue'
-import DashboardScreen     from '~/features/finance/components/screens/DashboardScreen.vue'
-import AssinaturasScreen   from '~/features/finance/components/screens/AssinaturasScreen.vue'
-import DividasScreen       from '~/features/finance/components/screens/DividasScreen.vue'
-import PlanejamentoScreen  from '~/features/finance/components/screens/PlanejamentoScreen.vue'
-import RelatoriosScreen    from '~/features/finance/components/screens/RelatoriosScreen.vue'
-import AlertasScreen       from '~/features/finance/components/screens/AlertasScreen.vue'
-import PrimeirosPassosScreen from '~/features/finance/components/screens/PrimeirosPassosScreen.vue'
-import DesignSystemScreen  from '~/features/finance/components/screens/DesignSystemScreen.vue'
-import ConfiguracoesScreen    from '~/features/finance/components/screens/ConfiguracoesScreen.vue'
-import CartoesScreen         from '~/features/finance/components/screens/CartoesScreen.vue'
-import ListaDeDesejosScreen  from '~/features/finance/components/screens/ListaDeDesejosScreen.vue'
-import AjudaScreen           from '~/features/finance/components/screens/AjudaScreen.vue'
-import ChangelogScreen       from '~/features/finance/components/screens/ChangelogScreen.vue'
+const MatrizScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/MatrizScreen.vue'))
+const DashboardScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/DashboardScreen.vue'))
+const AssinaturasScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/AssinaturasScreen.vue'))
+const DividasScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/DividasScreen.vue'))
+const PlanejamentoScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/PlanejamentoScreen.vue'))
+const RelatoriosScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/RelatoriosScreen.vue'))
+const AlertasScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/AlertasScreen.vue'))
+const PrimeirosPassosScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/PrimeirosPassosScreen.vue'))
+const DesignSystemScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/DesignSystemScreen.vue'))
+const ConfiguracoesScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/ConfiguracoesScreen.vue'))
+const CartoesScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/CartoesScreen.vue'))
+const ListaDeDesejosScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/ListaDeDesejosScreen.vue'))
+const AjudaScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/AjudaScreen.vue'))
+const ChangelogScreen = defineAsyncComponent(() => import('~/features/finance/components/screens/ChangelogScreen.vue'))
 
 const store = useFinanceStore()
 const activeScreen = useState('finance-screen', () => 'dashboard')

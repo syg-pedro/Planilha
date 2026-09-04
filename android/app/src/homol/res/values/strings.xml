@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Financeiro Homol</string>
+    <string name="title_activity_main">Financeiro Homol</string>
+    <string name="package_name">com.pedro.financeirofamiliar.homol</string>
+    <string name="custom_url_scheme">com.pedro.financeirofamiliar.homol</string>
+    <string name="widget_finance_summary_name">Homol — Resumo financeiro</string>
+    <string name="widget_finance_compact_name">Homol — Saldo compacto</string>
+    <string name="widget_finance_flow_name">Homol — Receitas e despesas</string>
+    <string name="widget_finance_due_name">Homol — Próximo vencimento</string>
+</resources>

@@ -13,19 +13,19 @@
           <input
             v-model="searchText"
             type="text"
-            placeholder="Buscar lançamentos..."
+            aria-label="Buscar lançamentos" placeholder="Buscar lançamentos..."
             style="flex:1;background:transparent;border:none;outline:none;font-size:13px;color:var(--text);font-family:inherit"
             @focus="searchFocused=true"
             @blur="searchFocused=false"
           />
         </div>
       </div>
-      <BaseSelect v-model="kindFilter" class="filter-select">
+      <BaseSelect v-model="kindFilter" aria-label="Filtrar tipo" class="filter-select">
         <option value="all">Todos</option>
         <option value="income">Receitas</option>
         <option value="expense">Despesas</option>
       </BaseSelect>
-      <BaseSelect v-model="statusFilter" class="filter-select">
+      <BaseSelect v-model="statusFilter" aria-label="Filtrar status" class="filter-select">
         <option value="all">Todos os status</option>
         <option value="pending">Pendente</option>
         <option value="paid">Pago</option>
@@ -44,6 +44,7 @@
       </button>
     </div>
 
+    <p class="ds-text-muted text-sm">Totais dos resultados filtrados, sem benefícios e itens excluídos do cálculo.</p>
     <!-- Summary strip -->
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <div :style="{ background:'var(--success-light)', borderRadius:'var(--radius-sm)', padding:'8px 16px', border:'1px solid var(--success)' }">
@@ -165,6 +166,9 @@
     </div>
 
     <FinanceEntryEditorModal
+:is-new="creating"
+:error="store.syncError"
+:saving="store.syncing"
       :open="editorOpen"
       :entry="selectedEntry"
       :accounts="store.accounts"
@@ -181,6 +185,7 @@
 import { ref, computed } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import FinanceEntryEditorModal from '~/features/finance/components/FinanceEntryEditorModal.vue'
+import { excludeBenefitEntries } from '#shared/finance'
 import type { FinanceEntry } from '#shared/types'
 
 const props = withDefaults(defineProps<{ month?: string }>(), { month: '' })
@@ -199,6 +204,7 @@ const kindFilter = ref('all')
 const statusFilter = ref('pending')
 const searchFocused = ref(false)
 const editorOpen = ref(false)
+const creating = ref(false)
 const selectedEntry = ref<FinanceEntry | null>(null)
 
 const baseEntries = computed(() =>
@@ -217,8 +223,9 @@ const filteredRows = computed(() => {
 })
 
 const totals = computed(() => {
-  const income = filteredRows.value.filter(e => e.kind === 'income').reduce((s, e) => s + e.amount, 0)
-  const expense = filteredRows.value.filter(e => e.kind === 'expense').reduce((s, e) => s + e.amount, 0)
+  const cashEntries = excludeBenefitEntries(filteredRows.value, store.accounts)
+  const income = cashEntries.filter(e => e.kind === 'income').reduce((s, e) => s + e.amount, 0)
+  const expense = cashEntries.filter(e => e.kind === 'expense').reduce((s, e) => s + e.amount, 0)
   return { income, expense, net: income - expense }
 })
 
@@ -246,10 +253,11 @@ const badgeLabel = (status: FinanceEntry['status'], kind: FinanceEntry['kind']) 
 }
 
 const openNew = () => {
-  const now = new Date().toISOString().slice(0, 10)
+  creating.value = true
+  const now = props.month ? `${props.month}-01` : new Date().toISOString().slice(0, 10)
   selectedEntry.value = {
     id: `entry-${Math.random().toString(36).slice(2, 9)}`,
-    householdId: 'household-main',
+    householdId: store.settings.id,
     ruleId: null,
     accountId: null,
     categoryId: null,
@@ -271,6 +279,7 @@ const openNew = () => {
 }
 
 const openEdit = (e: FinanceEntry) => {
+  creating.value = false
   selectedEntry.value = { ...e }
   editorOpen.value = true
 }
@@ -281,13 +290,17 @@ const closeEditor = () => {
 }
 
 const saveFromEditor = async (entries: Partial<FinanceEntry>[]) => {
-  await store.saveEntriesBatch({ upserts: entries, deletes: [] })
-  closeEditor()
+  try {
+    await store.saveEntriesBatch({ upserts: entries, deletes: [] })
+    closeEditor()
+  } catch { /* The store exposes the error and preserves pending changes. */ }
 }
 
 const deleteFromEditor = async (entryId: string) => {
-  await store.saveEntriesBatch({ upserts: [], deletes: [entryId] })
-  closeEditor()
+  try {
+    await store.saveEntriesBatch({ upserts: [], deletes: [entryId] })
+    closeEditor()
+  } catch { /* The store exposes the error and preserves pending changes. */ }
 }
 
 const quickPay = async (id: string) => {

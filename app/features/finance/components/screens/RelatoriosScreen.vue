@@ -129,7 +129,7 @@
 import { ref, computed } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { buildCashflowSeries, buildCategoryBreakdown } from '#shared/finance'
-import { parseIsoDate } from '#shared/date'
+import { civilDate, entriesInPeriod, reportBounds } from '#shared/period'
 import BaseBarChart   from '~/components/base/BaseBarChart.vue'
 import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
 
@@ -153,31 +153,15 @@ const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out'
 const MONTH_FULL  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 
 const now = new Date()
-const currentMonthKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
+const currentMonthKey = civilDate(now, store.settings.timezone).slice(0, 7)
 
 const periodLabel = computed(() =>
   PERIOD_OPTIONS.find(o => o.id === period.value)?.label ?? ''
 )
 
 const filteredEntries = computed(() => {
-  const entries = store.entries
-  const nowUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
-
-  if (period.value === 'month') {
-    const key = currentMonthKey
-    return entries.filter(e => e.dueDate.startsWith(key))
-  }
-  if (period.value === 'quarter') {
-    const start = new Date(Date.UTC(nowUtc.getUTCFullYear(), nowUtc.getUTCMonth() - 2, 1))
-    return entries.filter(e => parseIsoDate(e.dueDate) >= start)
-  }
-  if (period.value === '6months') {
-    const start = new Date(Date.UTC(nowUtc.getUTCFullYear(), nowUtc.getUTCMonth() - 5, 1))
-    return entries.filter(e => parseIsoDate(e.dueDate) >= start)
-  }
-  // year
-  const yearStart = `${now.getUTCFullYear()}-01`
-  return entries.filter(e => e.dueDate >= yearStart)
+  const { start, end } = reportBounds(period.value, now, store.settings.timezone)
+  return entriesInPeriod(store.allCashableEntries, start, end, store.filters.periodMode)
 })
 
 const kpis = computed(() => {
@@ -216,7 +200,7 @@ const categoryRows = computed(() => {
 })
 
 const cashflowChart = computed(() => {
-  const series = buildCashflowSeries(filteredEntries.value, store.settings.periodMode)
+  const series = buildCashflowSeries(filteredEntries.value, store.filters.periodMode)
   return series.map(s => ({
     month:   MONTH_NAMES[parseInt(s.month.slice(5)) - 1] ?? s.month.slice(5),
     income:  s.income,
@@ -226,7 +210,7 @@ const cashflowChart = computed(() => {
 })
 
 const cashflowTable = computed(() => {
-  const series = buildCashflowSeries(filteredEntries.value, store.settings.periodMode)
+  const series = buildCashflowSeries(filteredEntries.value, store.filters.periodMode)
   return series.map(s => {
     const [y, m] = s.month.split('-')
     return {

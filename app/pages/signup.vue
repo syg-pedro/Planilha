@@ -5,9 +5,9 @@
 
     <form style="display: flex; flex-direction: column; gap: 16px" @submit.prevent="onSubmit">
       <div>
-        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">E-mail</label>
+        <label for="signup-email" style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">E-mail</label>
         <input
-          v-model="email"
+          id="signup-email" v-model="email"
           type="email"
           autocomplete="email"
           placeholder="seu@email.com"
@@ -17,16 +17,18 @@
       </div>
 
       <div>
-        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">Senha</label>
+        <label for="signup-password" style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">Senha</label>
         <div style="position: relative">
           <input
-            v-model="password"
+            id="signup-password" v-model="password"
             :type="showPassword ? 'text' : 'password'"
             autocomplete="new-password"
             placeholder="••••••••"
             :style="{ ...inputStyle, paddingRight: '44px' }"
           />
-          <button type="button" :style="eyeButtonStyle" @click="showPassword = !showPassword">
+          <button
+type="button" :style="eyeButtonStyle" :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+            @click="showPassword = !showPassword">
             <svg v-if="showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
               <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
@@ -54,10 +56,10 @@
       </div>
 
       <div>
-        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">Confirmar senha</label>
+        <label for="signup-confirmPassword" style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">Confirmar senha</label>
         <div style="position: relative">
           <input
-            v-model="confirmPassword"
+            id="signup-confirmPassword" v-model="confirmPassword"
             :type="showConfirm ? 'text' : 'password'"
             autocomplete="new-password"
             placeholder="••••••••"

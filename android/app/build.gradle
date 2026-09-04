@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
 apply plugin: 'com.android.application'
 
 def releaseStoreFile = System.getenv('ANDROID_KEYSTORE_FILE')
@@ -9,6 +11,7 @@ def appVersionCode = (System.getenv('ANDROID_VERSION_CODE') ?: '12').toInteger()
 def appVersionName = System.getenv('ANDROID_VERSION_NAME') ?: '1.1.1'
 
 android {
+    buildFeatures { buildConfig true }
     namespace "com.pedro.financeirofamiliar"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
@@ -35,12 +38,46 @@ android {
         }
     }
     buildTypes {
+        homol {
+            initWith debug
+            applicationIdSuffix '.homol'
+            versionNameSuffix '-homol'
+            matchingFallbacks = ['debug']
+        }
         release {
             signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+}
+
+// Variant-specific assets never overwrite the production Capacitor configuration.
+def homolAssets = layout.buildDirectory.dir('generated/homolAssets')
+android.sourceSets.homol.assets.srcDir(homolAssets)
+def generateHomolConfig = tasks.register('generateHomolConfig') {
+    def targetUrl = providers.environmentVariable('ANDROID_HOMOL_URL').orElse('')
+    inputs.property('homolUrl', targetUrl)
+    inputs.file('src/main/assets/capacitor.config.json')
+    outputs.dir(homolAssets)
+    doLast {
+        def uri = new URI(targetUrl.get())
+        if (uri.scheme != 'https' || !uri.host || uri.userInfo || uri.query || uri.fragment
+            || !(uri.path in ['', '/'])
+            || uri.host in ['planilha-cyan.vercel.app', 'planilha-mocha.vercel.app']) {
+            throw new GradleException('ANDROID_HOMOL_URL deve ser uma origem HTTPS de homologação, diferente de produção.')
+        }
+        def config = new JsonSlurper().parse(file('src/main/assets/capacitor.config.json'))
+        config.appId = 'com.pedro.financeirofamiliar.homol'
+        config.appName = 'Financeiro Homol'
+        config.server = [androidScheme: 'https', url: uri.toString(), cleartext: false]
+        def output = homolAssets.get().file('capacitor.config.json').asFile
+        output.parentFile.mkdirs()
+        output.text = JsonOutput.prettyPrint(JsonOutput.toJson(config))
+    }
+}
+tasks.configureEach { task ->
+    if (task.name == 'mergeHomolAssets') task.dependsOn(generateHomolConfig)
 }
 
 repositories {

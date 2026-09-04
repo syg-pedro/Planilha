@@ -1,0 +1,406 @@
+/* ── Overlay ─────────────────────────────────────────────── */
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--overlay);
+  backdrop-filter: blur(4px);
+}
+
+/* ── Container (bottom sheet) ────────────────────────────── */
+.sheet-container {
+  width: 100%;
+  max-width: 640px;
+  max-height: 95dvh;
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  box-shadow: 0 -8px 40px oklch(0% 0 0 / 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Handle ──────────────────────────────────────────────── */
+.sheet-handle-area {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 4px;
+  cursor: pointer;
+}
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--border);
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.sheet-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sheet-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+.sheet-subtitle {
+  font-size: 13px;
+  color: var(--text3);
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+}
+.sheet-close {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text2);
+  flex-shrink: 0;
+  touch-action: manipulation;
+  transition: background 0.12s;
+}
+.sheet-close:hover { background: var(--surface2); filter: brightness(0.9); }
+
+/* ── Body ────────────────────────────────────────────────── */
+.sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Field primitives ────────────────────────────────────── */
+.field-group {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.field-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0 14px;
+  height: 48px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+}
+.field-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-dim);
+}
+.field-input::placeholder { color: var(--text3); }
+
+.field-select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0 14px;
+  height: 48px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  font-family: inherit;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 18px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+.field-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-dim);
+}
+
+.field-textarea {
+  height: auto;
+  padding: 12px 14px;
+  resize: none;
+  line-height: 1.5;
+}
+
+/* ── Valor com prefixo ───────────────────────────────────── */
+.amount-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.amount-prefix {
+  position: absolute;
+  left: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text3);
+  pointer-events: none;
+}
+.amount-input {
+  padding-left: 42px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* ── Segmented control Tipo ──────────────────────────────── */
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  height: 48px;
+}
+.seg-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text3);
+  transition: background 0.15s, color 0.15s;
+  touch-action: manipulation;
+}
+.seg-btn:first-child { border-right: 1px solid var(--border); }
+.seg-active-expense {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+}
+.seg-active-income {
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+  color: var(--success);
+}
+
+/* ── Toggle excluir do cálculo ───────────────────────────── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+.toggle-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.toggle-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.toggle-hint {
+  font-size: 12px;
+  color: var(--text3);
+}
+.toggle-switch {
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border-radius: 99px;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  padding: 0;
+}
+.toggle-switch.toggle-on {
+  background: var(--primary);
+}
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+  display: block;
+  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+}
+.toggle-switch.toggle-on .toggle-thumb {
+  background: var(--on-primary);
+  transform: translateX(20px);
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+.sheet-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.btn-group {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.btn-cancel {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0 18px;
+  height: 46px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  font-family: inherit;
+  touch-action: manipulation;
+  transition: filter 0.12s;
+}
+.btn-cancel:hover { filter: brightness(0.95); }
+.btn-save {
+  background: var(--primary);
+  border: none;
+  border-radius: 10px;
+  padding: 0 24px;
+  height: 46px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on-primary);
+  cursor: pointer;
+  font-family: inherit;
+  touch-action: manipulation;
+  transition: filter 0.12s;
+}
+.btn-save:hover { filter: brightness(1.1); }
+.btn-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0 14px;
+  height: 46px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+  cursor: pointer;
+  font-family: inherit;
+  touch-action: manipulation;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+.btn-delete:hover { background: var(--danger-light); }
+
+/* ── Animação de entrada ─────────────────────────────────── */
+.sheet-enter-active,
+.sheet-leave-active {
+  transition: opacity 0.22s ease;
+}
+.sheet-enter-active .sheet-container,
+.sheet-leave-active .sheet-container {
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sheet-enter-from,
+.sheet-leave-to {
+  opacity: 0;
+}
+.sheet-enter-from .sheet-container,
+.sheet-leave-to .sheet-container {
+  transform: translateY(100%);
+}
+
+/* ── Desktop: dialog centralizado ───────────────────────── */
+@media (min-width: 640px) {
+  .sheet-overlay {
+    align-items: center;
+    padding: 16px;
+  }
+  .sheet-container {
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    max-height: 92dvh;
+  }
+  .sheet-handle-area { display: none; }
+  .sheet-enter-from .sheet-container,
+  .sheet-leave-to .sheet-container {
+    transform: scale(0.95) translateY(8px);
+  }
+}
+
+.editor-errors { padding: 12px 24px; color: var(--danger); flex-shrink: 0; }
+.field-input[aria-invalid="true"] { border-color: var(--danger); }
+@media (prefers-reduced-motion: reduce) { .sheet-enter-active, .sheet-leave-active, .sheet-container { transition: none !important; } }
+
+.seg-active-expense, .seg-active-income, .btn-delete, .editor-errors { color: var(--text); }
+.seg-active-expense { box-shadow: inset 0 -3px var(--danger); }
+.seg-active-income { box-shadow: inset 0 -3px var(--success); }
+.editor-errors { border-left: 3px solid var(--danger); }
+
+.sheet-header > div { min-width: 0; }
+.sheet-subtitle { max-width: 100%; }
+.sheet-close { width: 44px; height: 44px; }
+.field-input, .field-select { min-width: 0; font-size: 16px; }
+.amount-input { font-size: 20px; }
+@media (max-width: 480px) {
+  .field-row { grid-template-columns: minmax(0, 1fr); }
+  .sheet-footer { flex-wrap: wrap; }
+  .editor-errors { padding: 8px 16px; font-size: 14px; }
+}

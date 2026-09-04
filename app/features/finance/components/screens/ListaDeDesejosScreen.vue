@@ -55,6 +55,9 @@
       </button>
     </div>
 
+    <div v-if="loadError" role="alert" class="ds-alert-error">
+      <p>{{ loadError }}</p><button type="button" :disabled="loading" @click="fetchItems">Tentar novamente</button>
+    </div>
     <!-- Loading -->
     <div v-if="loading" style="display: flex; flex-direction: column; gap: 12px">
       <div v-for="n in 3" :key="n" class="skeleton-card" />
@@ -62,7 +65,7 @@
 
     <!-- Empty state -->
     <BaseEmptyState
-      v-else-if="visibleItems.length === 0"
+      v-else-if="!loadError && visibleItems.length === 0"
       icon="wishlist"
       title="Nenhum item na lista"
       body="Adicione itens que você deseja comprar para acompanhar seus desejos e metas."
@@ -271,6 +274,168 @@
   </div>
 </template>
 
+
+
+<script setup lang="ts">
+import { ref, computed, reactive, onMounted } from 'vue'
+import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
+import { makeId } from '#shared/id'
+import type { WishItem, WishPriority, WishStatus } from '#shared/types'
+import BaseKpiCard    from '~/components/base/BaseKpiCard.vue'
+import BaseIcon       from '~/components/base/BaseIcon.vue'
+import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
+
+const store    = useFinanceStore()
+const currency = useCurrency()
+const fmt      = (v: number) => currency.format(v)
+
+// ─── State ────────────────────────────────────────────────────────────────────
+
+const items        = ref<WishItem[]>([])
+const loading      = ref(false)
+const loadError = ref('')
+const brokenImages = reactive(new Set<string>())
+
+const search         = ref('')
+const filterStatus   = ref('')
+const filterPriority = ref('')
+
+// ─── Fetch ────────────────────────────────────────────────────────────────────
+
+const fetchItems = async () => {
+  loading.value = true
+  loadError.value = ''
+  try {
+    const res = await store.getWishItems()
+    items.value = res.items
+  } catch (error) {
+    loadError.value = error instanceof Error ? error.message : 'Não foi possível carregar os desejos.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(fetchItems)
+
+// ─── Computed ─────────────────────────────────────────────────────────────────
+
+const visibleItems = computed(() => {
+  let list = items.value
+  if (search.value.trim()) {
+    const q = search.value.toLowerCase()
+    list = list.filter(i => i.name.toLowerCase().includes(q) || (i.category ?? '').toLowerCase().includes(q))
+  }
+  if (filterStatus.value) {
+    list = list.filter(i => i.status === filterStatus.value)
+  }
+  if (filterPriority.value) {
+    list = list.filter(i => i.priority === filterPriority.value)
+  }
+  return list
+})
+
+const kpis = computed(() => {
+  const wantCount  = items.value.filter(i => i.status === 'want').length
+  const boughtCount = items.value.filter(i => i.status === 'bought').length
+  const totalValue = items.value
+    .filter(i => i.status !== 'bought')
+    .reduce((s, i) => s + (i.price ?? 0), 0)
+  return { wantCount, boughtCount, totalValue }
+})
+
+// ─── Badges ───────────────────────────────────────────────────────────────────
+
+const priorityLabel = (p: WishPriority) =>
+  p === 'high' ? 'Alta' : p === 'medium' ? 'Média' : 'Baixa'
+
+const priorityBadgeClass = (p: WishPriority) =>
+  p === 'high' ? 'badge-danger' : p === 'medium' ? 'badge-warning' : 'badge-success'
+
+const statusLabel = (s: WishStatus) =>
+  s === 'want' ? 'Quero' : s === 'saving' ? 'Guardando' : 'Comprado'
+
+const statusBadgeClass = (s: WishStatus) =>
+  s === 'want' ? 'badge-primary' : s === 'saving' ? 'badge-warning' : 'badge-success'
+
+// ─── Editor ───────────────────────────────────────────────────────────────────
+
+const editorOpen  = ref(false)
+const editingItem = ref<WishItem | null>(null)
+const saving      = ref(false)
+const errorMsg    = ref('')
+
+const draft = reactive({
+  name:     '',
+  price:    '' as string | number,
+  url:      '',
+  imageUrl: '',
+  category: '',
+  priority: 'medium' as WishPriority,
+  status:   'want' as WishStatus,
+  notes:    '',
+})
+
+const openEditor = (item: WishItem | null) => {
+  editingItem.value = item
+  errorMsg.value    = ''
+  draft.name     = item?.name     ?? ''
+  draft.price    = item?.price    != null ? item.price : ''
+  draft.url      = item?.url      ?? ''
+  draft.imageUrl = item?.imageUrl ?? ''
+  draft.category = item?.category ?? ''
+  draft.priority = item?.priority ?? 'medium'
+  draft.status   = item?.status   ?? 'want'
+  draft.notes    = item?.notes    ?? ''
+  editorOpen.value = true
+}
+
+const closeEditor = () => {
+  editorOpen.value  = false
+  editingItem.value = null
+  errorMsg.value    = ''
+}
+
+const saveItem = async () => {
+  if (!draft.name.trim()) return
+  saving.value   = true
+  errorMsg.value = ''
+  try {
+    const upsert: Partial<WishItem> = {
+      id:       editingItem.value?.id ?? makeId('wish'),
+      name:     draft.name.trim(),
+      price:    draft.price !== '' ? Number(draft.price) : null,
+      url:      draft.url.trim() || null,
+      imageUrl: draft.imageUrl.trim() || null,
+      category: draft.category.trim() || null,
+      priority: draft.priority,
+      status:   draft.status,
+      notes:    draft.notes.trim() || null,
+    }
+    const res = await store.saveWishItems([upsert], [])
+    items.value = res.items
+    closeEditor()
+  } catch (e: unknown) {
+    errorMsg.value = e instanceof Error ? e.message : 'Erro ao salvar item'
+  } finally {
+    saving.value = false
+  }
+}
+
+const deleteItem = async () => {
+  if (!editingItem.value) return
+  saving.value   = true
+  errorMsg.value = ''
+  try {
+    const res = await store.saveWishItems([], [editingItem.value.id])
+    items.value = res.items
+    closeEditor()
+  } catch (e: unknown) {
+    errorMsg.value = e instanceof Error ? e.message : 'Erro ao excluir item'
+  } finally {
+    saving.value = false
+  }
+}
+</script>
 <style scoped>
 @keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
 
@@ -643,166 +808,3 @@
   .sheet-leave-to .sheet-container { transform: scale(0.95) translateY(8px); }
 }
 </style>
-
-<script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
-import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import { makeId } from '#shared/id'
-import type { WishItem, WishPriority, WishStatus } from '#shared/types'
-import BaseKpiCard    from '~/components/base/BaseKpiCard.vue'
-import BaseIcon       from '~/components/base/BaseIcon.vue'
-import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
-
-const store    = useFinanceStore()
-const currency = useCurrency()
-const fmt      = (v: number) => currency.format(v)
-
-// ─── State ────────────────────────────────────────────────────────────────────
-
-const items        = ref<WishItem[]>([])
-const loading      = ref(false)
-const brokenImages = reactive(new Set<string>())
-
-const search         = ref('')
-const filterStatus   = ref('')
-const filterPriority = ref('')
-
-// ─── Fetch ────────────────────────────────────────────────────────────────────
-
-const fetchItems = async () => {
-  loading.value = true
-  try {
-    const res = await $fetch<{ items: WishItem[] }>(`/api/wishlist?key=${store.editKey}`)
-    items.value = res.items
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(fetchItems)
-
-// ─── Computed ─────────────────────────────────────────────────────────────────
-
-const visibleItems = computed(() => {
-  let list = items.value
-  if (search.value.trim()) {
-    const q = search.value.toLowerCase()
-    list = list.filter(i => i.name.toLowerCase().includes(q) || (i.category ?? '').toLowerCase().includes(q))
-  }
-  if (filterStatus.value) {
-    list = list.filter(i => i.status === filterStatus.value)
-  }
-  if (filterPriority.value) {
-    list = list.filter(i => i.priority === filterPriority.value)
-  }
-  return list
-})
-
-const kpis = computed(() => {
-  const wantCount  = items.value.filter(i => i.status === 'want').length
-  const boughtCount = items.value.filter(i => i.status === 'bought').length
-  const totalValue = items.value
-    .filter(i => i.status !== 'bought')
-    .reduce((s, i) => s + (i.price ?? 0), 0)
-  return { wantCount, boughtCount, totalValue }
-})
-
-// ─── Badges ───────────────────────────────────────────────────────────────────
-
-const priorityLabel = (p: WishPriority) =>
-  p === 'high' ? 'Alta' : p === 'medium' ? 'Média' : 'Baixa'
-
-const priorityBadgeClass = (p: WishPriority) =>
-  p === 'high' ? 'badge-danger' : p === 'medium' ? 'badge-warning' : 'badge-success'
-
-const statusLabel = (s: WishStatus) =>
-  s === 'want' ? 'Quero' : s === 'saving' ? 'Guardando' : 'Comprado'
-
-const statusBadgeClass = (s: WishStatus) =>
-  s === 'want' ? 'badge-primary' : s === 'saving' ? 'badge-warning' : 'badge-success'
-
-// ─── Editor ───────────────────────────────────────────────────────────────────
-
-const editorOpen  = ref(false)
-const editingItem = ref<WishItem | null>(null)
-const saving      = ref(false)
-const errorMsg    = ref('')
-
-const draft = reactive({
-  name:     '',
-  price:    '' as string | number,
-  url:      '',
-  imageUrl: '',
-  category: '',
-  priority: 'medium' as WishPriority,
-  status:   'want' as WishStatus,
-  notes:    '',
-})
-
-const openEditor = (item: WishItem | null) => {
-  editingItem.value = item
-  errorMsg.value    = ''
-  draft.name     = item?.name     ?? ''
-  draft.price    = item?.price    != null ? item.price : ''
-  draft.url      = item?.url      ?? ''
-  draft.imageUrl = item?.imageUrl ?? ''
-  draft.category = item?.category ?? ''
-  draft.priority = item?.priority ?? 'medium'
-  draft.status   = item?.status   ?? 'want'
-  draft.notes    = item?.notes    ?? ''
-  editorOpen.value = true
-}
-
-const closeEditor = () => {
-  editorOpen.value  = false
-  editingItem.value = null
-  errorMsg.value    = ''
-}
-
-const saveItem = async () => {
-  if (!draft.name.trim()) return
-  saving.value   = true
-  errorMsg.value = ''
-  try {
-    const upsert: Partial<WishItem> = {
-      id:       editingItem.value?.id ?? makeId('wish'),
-      name:     draft.name.trim(),
-      price:    draft.price !== '' ? Number(draft.price) : null,
-      url:      draft.url.trim() || null,
-      imageUrl: draft.imageUrl.trim() || null,
-      category: draft.category.trim() || null,
-      priority: draft.priority,
-      status:   draft.status,
-      notes:    draft.notes.trim() || null,
-    }
-    const res = await $fetch<{ items: WishItem[] }>(`/api/wishlist/batch?key=${store.editKey}`, {
-      method: 'POST',
-      body: { upserts: [upsert], deletes: [] },
-    })
-    items.value = res.items
-    closeEditor()
-  } catch (e: unknown) {
-    errorMsg.value = e instanceof Error ? e.message : 'Erro ao salvar item'
-  } finally {
-    saving.value = false
-  }
-}
-
-const deleteItem = async () => {
-  if (!editingItem.value) return
-  saving.value   = true
-  errorMsg.value = ''
-  try {
-    const res = await $fetch<{ items: WishItem[] }>(`/api/wishlist/batch?key=${store.editKey}`, {
-      method: 'POST',
-      body: { upserts: [], deletes: [editingItem.value.id] },
-    })
-    items.value = res.items
-    closeEditor()
-  } catch (e: unknown) {
-    errorMsg.value = e instanceof Error ? e.message : 'Erro ao excluir item'
-  } finally {
-    saving.value = false
-  }
-}
-</script>

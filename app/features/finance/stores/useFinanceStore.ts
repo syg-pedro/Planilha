@@ -1,9 +1,12 @@
+import { upcomingNotifications } from '#shared/notifications'
+import { useFinanceTheme } from '../composables/useFinanceTheme'
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, onScopeDispose, watch } from 'vue'
+import { useOfflineQueue } from '../composables/useOfflineQueue'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection, computeKpis, excludeBenefitEntries } from '#shared/finance'
-import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
+import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG } from '#shared/constants'
 import { createDefaultOnboardingState } from '#shared/onboarding'
 import { syncFinanceWidgetSnapshot } from '~/features/finance/utils/financeWidget'
 import type {
@@ -19,7 +22,7 @@ import type {
   OnboardingImportPayload,
   OnboardingImportPreview,
   OnboardingState,
-  ThemeMode
+  WishItem
 } from '#shared/types'
 
 const defaultSettings = (): HouseholdSettings => ({
@@ -48,6 +51,8 @@ const defaultFilters = (): DashboardFilters => ({
 export const useFinanceStore = defineStore('finance', () => {
   const runtime = useRuntimeConfig()
   const route = useRoute()
+  const auth = useAuth()
+  let sessionGeneration = 0
 
   const loading = ref(false)
   const initialized = ref(false)
@@ -70,15 +75,18 @@ export const useFinanceStore = defineStore('finance', () => {
   })
 
   const filters = ref<DashboardFilters>(defaultFilters())
-  const offlineQueue = ref<EntryBatchRequest[]>([])
+  const offline = useOfflineQueue(() => localStorage)
+  const offlineQueue = offline.queue
+  const syncError = offline.syncError
+  const syncing = offline.syncing
 
-  const filteredEntries = computed(() => applyFilters(entries.value, filters.value))
+  const filteredEntries = computed(() => applyFilters(entries.value, filters.value, new Date(), settings.value.timezone))
 
   const cashableEntries = computed(() => excludeBenefitEntries(filteredEntries.value, accounts.value))
 
   const allCashableEntries = computed(() => excludeBenefitEntries(entries.value, accounts.value))
 
-  const monthlyKpis = computed(() => computeKpis(filteredEntries.value, accounts.value))
+  const monthlyKpis = computed(() => computeKpis(filteredEntries.value, accounts.value, new Date(), settings.value.timezone))
 
   const categoryMap = computed(() => {
     const map = new Map<string, Category>()
@@ -110,7 +118,9 @@ export const useFinanceStore = defineStore('finance', () => {
   ): Promise<T> => {
     const apiBaseUrl = runtime.public.apiBaseUrl as string
     const url = apiBaseUrl ? new URL(path, apiBaseUrl).toString() : path
-    const accessToken = await useAuth().getAccessToken()
+    const version = sessionGeneration
+    const accessToken = await auth.getAccessToken()
+    if (version !== sessionGeneration) throw new Error('A sessão mudou. Tente novamente.')
     const response = await $fetch(url, {
       method: options.method ?? 'GET',
       body: options.body,
@@ -118,145 +128,46 @@ export const useFinanceStore = defineStore('finance', () => {
         'x-edit-key': editKey.value,
         ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {})
       }
+    }).catch((error: { statusCode?: number }) => {
+      const status = error.statusCode
+      throw new Error(status === 401 ? 'Sua sessão expirou. Entre novamente para continuar.'
+        : status === 403 ? 'Você não tem permissão para alterar este registro.'
+        : status === 400 ? 'Confira os campos informados e tente novamente.'
+        : status && status >= 500 ? 'O serviço está indisponível no momento. Tente novamente.'
+        : 'Não foi possível conectar. Verifique sua conexão e tente novamente.')
     })
+    if (version !== sessionGeneration) throw new Error('A sessão mudou. Tente novamente.')
     return response as T
   }
 
-  const LEGACY_THEME_MODES = new Set(['eva', 'eva_01', 'cyberpunk', 'arasaka'])
-  const DARK_THEMES = new Set(['dark'])
-
-  const normalizeThemeMode = (mode: string): ThemeMode => {
-    if (LEGACY_THEME_MODES.has(mode)) return 'dark'
-    if (mode === 'light' || mode === 'dark' || mode === 'custom' || mode === 'system') return mode
-    return 'dark'
-  }
-
-  const normalizeSettings = (nextSettings: HouseholdSettings): HouseholdSettings => ({
-    ...nextSettings,
-    themeMode: normalizeThemeMode(nextSettings.themeMode)
-  })
-
-  const resolveEffectiveTheme = (): Exclude<ThemeMode, 'system'> => {
-    const mode = normalizeThemeMode(settings.value.themeMode)
-    if (mode !== settings.value.themeMode) {
-      settings.value.themeMode = mode
-    }
-    if (mode !== 'system') {
-      return mode
-    }
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    return prefersDark ? 'dark' : 'light'
-  }
-
-  // Variáveis sobrescritas inline quando o tema é 'custom'.
-  const CUSTOM_VARS = [
-    '--ds-color-brand-primary', '--ds-color-brand-primary-dim', '--ds-color-brand-primary-light',
-    '--ds-color-brand-accent', '--ds-color-state-success', '--ds-color-state-success-light',
-    '--ds-color-state-danger', '--ds-color-state-danger-light', '--ds-color-state-warning',
-    '--ds-color-state-warning-light', '--accent-light'
-  ]
-
-  const isLightHex = (hex: string): boolean => {
-    const h = hex.replace('#', '')
-    if (h.length < 6) return true
-    const r = parseInt(h.slice(0, 2), 16)
-    const g = parseInt(h.slice(2, 4), 16)
-    const b = parseInt(h.slice(4, 6), 16)
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 140
-  }
-
-  const applyTheme = () => {
-    if (!process.client) {
-      return
-    }
-
-    const root = document.documentElement
-
-    // Limpa quaisquer overrides inline de execuções anteriores
-    for (const v of CUSTOM_VARS) root.style.removeProperty(v)
-
-    settings.value.themeMode = normalizeThemeMode(settings.value.themeMode)
-
-    if (settings.value.themeMode === 'custom') {
-      const c = settings.value.colorTokens
-      const light = isLightHex(c.background)
-      root.dataset.theme = light ? 'light' : 'dark'
-      root.classList.toggle('dark', !light)
-
-      const mix = (hex: string, pct: number, base: string) => `color-mix(in srgb, ${hex} ${pct}%, ${base})`
-      root.style.setProperty('--ds-color-brand-primary', c.primary)
-      root.style.setProperty('--ds-color-brand-primary-dim', mix(c.primary, 16, 'transparent'))
-      root.style.setProperty('--ds-color-brand-primary-light', mix(c.primary, 16, 'var(--ds-color-surface-card)'))
-      root.style.setProperty('--ds-color-brand-accent', c.accent)
-      root.style.setProperty('--ds-color-state-success', c.positive)
-      root.style.setProperty('--ds-color-state-success-light', mix(c.positive, 16, 'var(--ds-color-surface-card)'))
-      root.style.setProperty('--ds-color-state-danger', c.negative)
-      root.style.setProperty('--ds-color-state-danger-light', mix(c.negative, 16, 'var(--ds-color-surface-card)'))
-      root.style.setProperty('--ds-color-state-warning', c.accent)
-      root.style.setProperty('--ds-color-state-warning-light', mix(c.accent, 16, 'var(--ds-color-surface-card)'))
-      root.style.setProperty('--accent-light', mix(c.accent, 16, 'var(--ds-color-surface-card)'))
-      return
-    }
-
-    const effective = resolveEffectiveTheme()
-    root.dataset.theme = effective
-    root.classList.toggle('dark', DARK_THEMES.has(effective))
-  }
-
-  const setThemeMode = (mode: ThemeMode) => {
-    settings.value.themeMode = mode
-    if (mode === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      settings.value.colorTokens = { ...THEME_PRESETS[prefersDark ? 'dark' : 'light'] }
-    } else {
-      settings.value.colorTokens = { ...THEME_PRESETS[mode] }
-    }
-    applyTheme()
-  }
-
-  const loadOfflineQueue = () => {
-    if (!process.client) {
-      return
-    }
-    const raw = localStorage.getItem('finance-offline-queue')
-    if (!raw) {
-      return
-    }
-    try {
-      offlineQueue.value = JSON.parse(raw)
-    } catch {
-      offlineQueue.value = []
+  const { normalizeSettings, applyTheme, setThemeMode } = useFinanceTheme(settings)
+  const applyPendingEntries = () => {
+    for (const batch of offlineQueue.value) {
+      for (const patch of batch.upserts) {
+        const index = entries.value.findIndex(entry => entry.id === patch.id)
+        if (index >= 0) entries.value[index] = { ...entries.value[index], ...patch } as FinanceEntry
+        else entries.value.push({
+          householdId: settings.value.id, title: 'Lançamento', description: '', amount: 0,
+          kind: 'expense', status: 'pending', origin: 'manual', ruleId: null, accountId: null, categoryId: null,
+          dueDate: new Date().toISOString().slice(0, 10), competenceDate: patch.dueDate ?? new Date().toISOString().slice(0, 10),
+          installmentIndex: null, installmentTotal: null, metadata: null, excludeFromCalc: false,
+          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...patch,
+        } as FinanceEntry)
+      }
+      entries.value = entries.value.filter(entry => !batch.deletes.includes(entry.id))
     }
   }
-
-  const persistOfflineQueue = () => {
-    if (!process.client) {
-      return
-    }
-    localStorage.setItem('finance-offline-queue', JSON.stringify(offlineQueue.value))
-  }
-
-  const pushOfflineBatch = (batch: EntryBatchRequest) => {
-    offlineQueue.value.push(batch)
-    persistOfflineQueue()
-  }
-
   const flushOfflineQueue = async () => {
-    if (!process.client || !navigator.onLine || offlineQueue.value.length === 0) {
-      return
-    }
-
-    const pending = [...offlineQueue.value]
-    offlineQueue.value = []
-    persistOfflineQueue()
-
-    for (const batch of pending) {
-      await fetchApi<{ entries: FinanceEntry[] }>('/api/entries/batch', {
-        method: 'POST',
-        body: batch
-      })
-    }
-
+    if (!import.meta.client || !navigator.onLine) return
+    await offline.flush(async batch => {
+      const response = await fetchApi<{ entries: FinanceEntry[] }>('/api/entries/batch', { method: 'POST', body: batch })
+      entries.value = response.entries
+    })
+    applyPendingEntries()
+    void syncWidgetSnapshot()
+  }
+  const discardPendingEntries = async () => {
+    offline.discard()
     await bootstrap()
   }
 
@@ -301,6 +212,7 @@ export const useFinanceStore = defineStore('finance', () => {
   }
 
   const bootstrap = async () => {
+    const version = sessionGeneration
     loading.value = true
     error.value = null
     try {
@@ -320,38 +232,22 @@ export const useFinanceStore = defineStore('finance', () => {
       initialized.value = true
       void syncWidgetSnapshot()
     } catch (err) {
+      if (version !== sessionGeneration) throw err
       error.value = err instanceof Error ? err.message : 'Falha ao carregar dados'
       throw err
     } finally {
-      loading.value = false
+      if (version === sessionGeneration) loading.value = false
     }
   }
 
   const saveEntriesBatch = async (batch: EntryBatchRequest) => {
-    if (process.client && !navigator.onLine) {
-      pushOfflineBatch(batch)
-      for (const entry of batch.upserts) {
-        if (!entry.id) {
-          continue
-        }
-        const index = entries.value.findIndex((item) => item.id === entry.id)
-        if (index >= 0) {
-          entries.value[index] = { ...entries.value[index], ...entry } as FinanceEntry
-        }
-      }
-      if (batch.deletes.length > 0) {
-        entries.value = entries.value.filter((entry) => !batch.deletes.includes(entry.id))
-      }
-      void syncWidgetSnapshot()
-      return
-    }
-
-    const response = await fetchApi<{ entries: FinanceEntry[] }>('/api/entries/batch', {
-      method: 'POST',
-      body: batch
-    })
-    entries.value = response.entries
-    void syncWidgetSnapshot()
+    const stableBatch = { ...batch, upserts: batch.upserts.map(entry => ({ ...entry, id: entry.id ?? crypto.randomUUID() })) }
+    if (!import.meta.client) throw new Error('Salve os lançamentos pelo aplicativo.')
+    try { offline.enqueue(stableBatch) }
+    catch (error) { syncError.value = error instanceof Error ? error.message : 'Não foi possível guardar as alterações locais.'; throw error }
+    applyPendingEntries()
+    await flushOfflineQueue()
+    if (syncError.value) throw new Error(syncError.value)
   }
 
   const rebuildRules = async () => {
@@ -490,25 +386,20 @@ export const useFinanceStore = defineStore('finance', () => {
     const permission = await LocalNotifications.checkPermissions()
     if (permission.display !== 'granted') return
     await LocalNotifications.cancel({ notifications: Array.from({ length: 90 }, (_, id) => ({ id: 700000 + id })) })
-    const [hour, minute] = settings.value.notificationTime.split(':').map(Number)
-    const notificationHour = Number.isFinite(hour) ? Number(hour) : 9
-    const notificationMinute = Number.isFinite(minute) ? Number(minute) : 0
-    const notifications = entries.value
-      .filter(entry => entry.kind === 'expense' && entry.status !== 'paid')
-      .filter(entry => {
-        const due = new Date(`${entry.dueDate}T00:00:00`)
-        return due >= new Date() && due <= new Date(Date.now() + 90 * 86400000)
-      })
-      .slice(0, 90)
-      .map((entry, index) => {
-        const at = new Date(`${entry.dueDate}T00:00:00`)
-        at.setHours(notificationHour, notificationMinute, 0, 0)
-        return { id: 700000 + index, title: 'Vencimento próximo', body: `${entry.title} vence hoje`, schedule: { at }, extra: { entryId: entry.id } }
-      })
+    const notifications = upcomingNotifications(entries.value, settings.value.notificationDays, settings.value.notificationTime, settings.value.timezone)
+      .map((item, index) => ({ id: 700000 + index, title: item.title, body: item.body, schedule: { at: item.at }, extra: { entryId: item.entryId } }))
     if (notifications.length) await LocalNotifications.schedule({ notifications })
   }
 
+  let notificationTask = Promise.resolve()
+  watch([entries, () => settings.value.notificationTime], () => {
+    if (!import.meta.client || !Capacitor.isNativePlatform()) return
+    notificationTask = notificationTask.then(() => scheduleUpcomingNotifications()).catch(() => { /* OS permissions can change at any time. */ })
+  }, { deep: true })
+
   const resetState = () => {
+    sessionGeneration++
+    offline.reset()
     settings.value    = defaultSettings()
     accounts.value    = []
     categories.value  = []
@@ -517,21 +408,58 @@ export const useFinanceStore = defineStore('finance', () => {
     warnings.value    = []
     kpis.value        = { totalIncome: 0, totalExpense: 0, net: 0, pendingAmount: 0, upcoming7Days: 0, cardsUsedPercent: 0 }
     filters.value     = defaultFilters()
-    offlineQueue.value = []
     initialized.value = false
     error.value       = null
   }
 
-  const boot = async () => {
+  let bootTask: Promise<void> | null = null
+  let bootGeneration = -1
+  const boot = () => {
+    if (bootTask && bootGeneration === sessionGeneration) return bootTask
+    const version = sessionGeneration
+    bootGeneration = version
+    const task = runBoot().finally(() => {
+      if (bootTask === task) bootTask = null
+    })
+    bootTask = task
+    return task
+  }
+
+  const runBoot = async () => {
+    const version = sessionGeneration
     initEditKey()
-    loadOfflineQueue()
     await bootstrap()
+    if (version !== sessionGeneration) return
+    if (import.meta.client) {
+      offline.load(`${auth.user.value?.id ?? 'demo'}:${settings.value.id}`)
+      if (localStorage.getItem('finance-offline-queue')) warnings.value.push('Existem pendências antigas sem identificação de família. Elas foram preservadas e não serão enviadas automaticamente.')
+      applyPendingEntries()
+      await flushOfflineQueue()
+    }
     if (process.client) {
       window.addEventListener('online', flushOfflineQueue)
     }
   }
 
+  onScopeDispose(() => {
+    if (import.meta.client) window.removeEventListener('online', flushOfflineQueue)
+    offline.reset()
+  })
+
+  const getWishItems = () => fetchApi<{ items: WishItem[] }>('/api/wishlist')
+  const saveWishItems = (upserts: Partial<WishItem>[], deletes: string[]) => fetchApi<{ items: WishItem[] }>('/api/wishlist/batch', { method: 'POST', body: { upserts, deletes } })
+  const getHousehold = () => fetchApi<{ householdId: string; members: { userId: string; email: string; role: string; joinedAt: string }[]; invitations: { id: string; email: string; role: string; expiresAt: string; createdAt: string }[] }>('/api/me/household')
+  const createInvitation = (email: string) => fetchApi<{ token: string }>('/api/invitations/create', { method: 'POST', body: { email } })
+
+  const acceptInvitation = async (token: string) => {
+    await fetchApi('/api/invitations/accept', { method: 'POST', body: { token } })
+    resetState()
+    await boot()
+  }
+
   return {
+    acceptInvitation, getWishItems, saveWishItems, getHousehold, createInvitation,
+    syncError, syncing, discardPendingEntries,
     loading,
     initialized,
     error,

@@ -1,0 +1,27 @@
+[
+  {
+    "arquivo": "app/features/finance/components/screens/MatrizScreen.vue",
+    "antes": 1897,
+    "depois": 1008
+  },
+  {
+    "arquivo": "app/features/finance/components/FinanceSettingsPanel.vue",
+    "antes": 1451,
+    "depois": 519
+  },
+  {
+    "arquivo": "server/utils/repo.ts",
+    "antes": 1188,
+    "depois": 829
+  },
+  {
+    "arquivo": "app/features/finance/stores/useFinanceStore.ts",
+    "antes": 577,
+    "depois": 497
+  },
+  {
+    "arquivo": "app/components/base/BaseSelect.vue",
+    "antes": 232,
+    "depois": 16
+  }
+]

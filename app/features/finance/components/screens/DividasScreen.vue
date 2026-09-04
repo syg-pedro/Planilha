@@ -138,6 +138,8 @@
 
     <!-- Editor de parcela -->
     <FinanceEntryEditorModal
+:error="store.syncError"
+:saving="store.syncing"
       :open="editorOpen"
       :entry="selectedEntry"
       :accounts="store.accounts"
@@ -194,13 +196,17 @@ const openEditor  = (entry: FinanceEntry) => { selectedEntry.value = { ...entry 
 const closeEditor = () => { editorOpen.value = false; selectedEntry.value = null }
 
 const saveEntry = async (entries: Partial<FinanceEntry>[]) => {
-  await store.saveEntriesBatch({ upserts: entries, deletes: [] })
-  closeEditor()
+  try {
+    await store.saveEntriesBatch({ upserts: entries, deletes: [] })
+    closeEditor()
+  } catch { /* The store exposes the error and preserves pending changes. */ }
 }
 
 const deleteEntry = async (id: string) => {
-  await store.saveEntriesBatch({ upserts: [], deletes: [id] })
-  closeEditor()
+  try {
+    await store.saveEntriesBatch({ upserts: [], deletes: [id] })
+    closeEditor()
+  } catch { /* The store exposes the error and preserves pending changes. */ }
 }
 
 const quickPay = async (id: string) => {

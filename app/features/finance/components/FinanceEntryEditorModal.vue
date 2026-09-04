@@ -4,21 +4,21 @@
       <div
         v-if="open"
         class="sheet-overlay"
-        @click.self="emit('close')"
+        @click.self="requestClose"
       >
-        <div class="sheet-container">
+        <div ref="dialogRef" class="sheet-container" role="dialog" aria-modal="true" :aria-label="isNew ? 'Novo lançamento' : 'Editar lançamento'">
           <!-- Handle -->
-          <div class="sheet-handle-area" @click="emit('close')">
+          <div class="sheet-handle-area" aria-hidden="true">
             <div class="sheet-handle" />
           </div>
 
           <!-- Header -->
           <div class="sheet-header">
             <div>
-              <h2 class="sheet-title">{{ entry ? 'Editar lançamento' : 'Novo lançamento' }}</h2>
+              <h2 class="sheet-title">{{ isNew ? 'Novo lançamento' : 'Editar lançamento' }}</h2>
               <p class="sheet-subtitle">{{ draft.title || 'Preencha os dados abaixo' }}</p>
             </div>
-            <button class="sheet-close" @click="emit('close')">
+            <button aria-label="Fechar editor" class="sheet-close" @click="requestClose">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -30,9 +30,9 @@
 
             <!-- Descrição -->
             <div class="field-group">
-              <label class="field-label">Descrição</label>
+              <label class="field-label" :for="`${fieldId}-title`">Descrição</label>
               <input
-                v-model="draft.title"
+                :id="`${fieldId}-title`" v-model="draft.title" :aria-invalid="!!errors.title" :aria-describedby="errors.title ? `${fieldId}-title-error` : undefined"
                 type="text"
                 class="field-input"
                 placeholder="Ex.: Mercado, Salário..."
@@ -41,17 +41,15 @@
 
             <!-- Valor destacado -->
             <div class="field-group">
-              <label class="field-label">Valor (R$)</label>
+              <label class="field-label" :for="`${fieldId}-amount`">Valor (R$)</label>
               <div class="amount-wrapper">
                 <span class="amount-prefix">R$</span>
                 <input
-                  v-model="draft.amount"
-                  type="number"
+                  :id="`${fieldId}-amount`" v-model="draft.amount" :aria-invalid="!!errors.amount" :aria-describedby="errors.amount ? `${fieldId}-amount-error` : undefined"
+                  type="text"
                   inputmode="decimal"
                   class="field-input amount-input"
                   placeholder="0,00"
-                  step="0.01"
-                  min="0"
                 />
               </div>
             </div>
@@ -64,7 +62,7 @@
                   <button
                     type="button"
                     class="seg-btn"
-                    :class="{ 'seg-active-expense': draft.kind === 'expense' }"
+                    :class="{ 'seg-active-expense': draft.kind === 'expense' }" :aria-pressed="draft.kind === 'expense'"
                     @click="draft.kind = 'expense'"
                   >
                     <span>↓</span> Despesa
@@ -72,7 +70,7 @@
                   <button
                     type="button"
                     class="seg-btn"
-                    :class="{ 'seg-active-income': draft.kind === 'income' }"
+                    :class="{ 'seg-active-income': draft.kind === 'income' }" :aria-pressed="draft.kind === 'income'"
                     @click="draft.kind = 'income'"
                   >
                     <span>↑</span> Receita
@@ -80,50 +78,50 @@
                 </div>
               </div>
               <div class="field-group">
-                <label class="field-label">Status</label>
-                <BaseDropdown v-model="draft.status" :height="48">
+                <label class="field-label" :for="`${fieldId}-status`">Status</label>
+                <select :id="`${fieldId}-status`" v-model="draft.status" class="field-input">
                   <option value="pending">Pendente</option>
                   <option value="paid">{{ draft.kind === 'income' ? 'Recebido' : 'Pago' }}</option>
                   <option value="review">Revisar</option>
-                </BaseDropdown>
+                </select>
               </div>
             </div>
 
             <!-- Datas -->
             <div class="field-row">
               <div class="field-group">
-                <label class="field-label">Vencimento</label>
-                <input v-model="draft.dueDate" type="text" class="field-input" placeholder="dd/mm/aaaa" />
+                <label class="field-label" :for="`${fieldId}-dueDate`">Vencimento</label>
+                <input :id="`${fieldId}-dueDate`" v-model="draft.dueDate" :aria-invalid="!!errors.dueDate" :aria-describedby="errors.dueDate ? `${fieldId}-dueDate-error` : undefined" type="date" class="field-input" />
               </div>
               <div class="field-group">
-                <label class="field-label">Competência</label>
-                <input v-model="draft.competenceDate" type="text" class="field-input" placeholder="dd/mm/aaaa" />
+                <label class="field-label" :for="`${fieldId}-competenceDate`">Competência</label>
+                <input :id="`${fieldId}-competenceDate`" v-model="draft.competenceDate" :aria-invalid="!!errors.competenceDate" :aria-describedby="errors.competenceDate ? `${fieldId}-competenceDate-error` : undefined" type="date" class="field-input" />
               </div>
             </div>
 
             <!-- Conta + Categoria -->
             <div class="field-row">
               <div class="field-group">
-                <label class="field-label">Conta</label>
-                <BaseDropdown v-model="draft.accountId" :height="48">
+                <label class="field-label" :for="`${fieldId}-accountId`">Conta</label>
+                <select :id="`${fieldId}-accountId`" v-model="draft.accountId" class="field-input">
                   <option value="">Sem conta</option>
                   <option v-for="acc in accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
-                </BaseDropdown>
+                </select>
               </div>
               <div class="field-group">
-                <label class="field-label">Categoria</label>
-                <BaseDropdown v-model="draft.categoryId" :height="48">
+                <label class="field-label" :for="`${fieldId}-categoryId`">Categoria</label>
+                <select :id="`${fieldId}-categoryId`" v-model="draft.categoryId" class="field-input">
                   <option value="">Sem categoria</option>
                   <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                </BaseDropdown>
+                </select>
               </div>
             </div>
 
             <!-- Recorrência (apenas no editor da Lista) -->
             <div v-if="allowRecurrence" class="field-group">
-              <label class="field-label">Recorrência (meses)</label>
+              <label class="field-label" :for="`${fieldId}-recurrence`">Recorrência (meses)</label>
               <input
-                v-model.number="draft.recurrence"
+                :id="`${fieldId}-recurrence`" v-model.number="draft.recurrence" :aria-invalid="!!errors.recurrence" :aria-describedby="errors.recurrence ? `${fieldId}-recurrence-error` : undefined"
                 type="number"
                 min="1"
                 max="120"
@@ -140,9 +138,9 @@
             <!-- Parcelas (exibido apenas para lançamentos parcelados) -->
             <div v-if="isInstallment" class="field-row">
               <div class="field-group">
-                <label class="field-label">Parcela nº</label>
+                <label class="field-label" :for="`${fieldId}-installmentIndex`">Parcela nº</label>
                 <input
-                  v-model.number="draft.installmentIndex"
+                  :id="`${fieldId}-installmentIndex`" v-model.number="draft.installmentIndex" :aria-invalid="!!errors.installmentIndex" :aria-describedby="errors.installmentIndex ? `${fieldId}-installmentIndex-error` : undefined"
                   type="number"
                   class="field-input"
                   placeholder="Ex.: 3"
@@ -150,9 +148,9 @@
                 />
               </div>
               <div class="field-group">
-                <label class="field-label">Total de parcelas</label>
+                <label class="field-label" :for="`${fieldId}-installmentTotal`">Total de parcelas</label>
                 <input
-                  v-model.number="draft.installmentTotal"
+                  :id="`${fieldId}-installmentTotal`" v-model.number="draft.installmentTotal"
                   type="number"
                   class="field-input"
                   placeholder="Ex.: 12"
@@ -172,6 +170,7 @@
                 class="toggle-switch"
                 :class="{ 'toggle-on': draft.excludeFromCalc }"
                 role="switch"
+                aria-label="Excluir do cálculo"
                 :aria-checked="draft.excludeFromCalc"
                 @click="draft.excludeFromCalc = !draft.excludeFromCalc"
               >
@@ -181,9 +180,9 @@
 
             <!-- Observações -->
             <div class="field-group">
-              <label class="field-label">Observações</label>
+              <label class="field-label" :for="`${fieldId}-description`">Observações</label>
               <textarea
-                v-model="draft.description"
+                :id="`${fieldId}-description`" v-model="draft.description"
                 class="field-input field-textarea"
                 placeholder="Notas opcionais..."
                 rows="2"
@@ -191,17 +190,26 @@
             </div>
           </div>
 
+          <p v-if="error" role="alert" class="editor-errors">{{ error }} Você pode tentar salvar novamente.</p>
+          <div v-if="Object.keys(errors).length" role="alert" class="editor-errors">
+            <p v-for="(message, field) in errors" :id="`${fieldId}-${field}-error`" :key="field">{{ message }}</p>
+          </div>
+          <div v-if="discardOpen" class="editor-errors" role="alert">
+            <p>{{ error ? 'Fechar o formulário? Alterações na fila continuam pendentes; use o aviso de sincronização para descartá-las.' : 'Descartar as alterações deste lançamento?' }}</p>
+            <button type="button" class="btn-cancel" @click="discardOpen = false">Continuar editando</button>
+            <button type="button" class="btn-delete" @click="emit('close')">Descartar alterações</button>
+          </div>
           <!-- Footer com ações (fixo) -->
           <div class="sheet-footer">
-            <button v-if="entry" type="button" class="btn-delete" @click="onDelete">
+            <button v-if="entry && !isNew" type="button" class="btn-delete" :disabled="saving" @click="onDelete">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
               </svg>
               Excluir
             </button>
             <div class="btn-group">
-              <button type="button" class="btn-cancel" @click="emit('close')">Cancelar</button>
-              <button type="button" class="btn-save" @click="onSave">Salvar</button>
+              <button type="button" class="btn-cancel" @click="requestClose">Cancelar</button>
+              <button type="button" class="btn-save" :disabled="saving" @click="onSave">{{ saving ? 'Salvando…' : 'Salvar' }}</button>
             </div>
           </div>
         </div>
@@ -211,17 +219,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, watch, ref, useId, nextTick } from 'vue'
+import { useDialog } from '~/design-system/composables/useDialog'
+import { useEntryDraft } from '../composables/useEntryDraft'
 import type { Account, Category, FinanceEntry } from '#shared/types'
 
 const props = withDefaults(defineProps<{
+  isNew?: boolean
   open: boolean
   entry: FinanceEntry | null
   accounts: Account[]
   categories: Category[]
+  error?: string | null
+  saving?: boolean
   allowRecurrence?: boolean
 }>(), {
   allowRecurrence: false,
+  isNew: false,
+  saving: false,
+  error: null,
 })
 
 const emit = defineEmits<{
@@ -230,494 +246,27 @@ const emit = defineEmits<{
   (e: 'delete', id: string): void
 }>()
 
-const { formatDate, toIsoDate } = useDateFormat()
-
-const draft = reactive({
-  id: '',
-  title: '',
-  description: '',
-  amount: '0',
-  kind: 'expense',
-  status: 'pending',
-  dueDate: '',
-  competenceDate: '',
-  accountId: '',
-  categoryId: '',
-  installmentIndex: null as number | null,
-  installmentTotal: null as number | null,
-  excludeFromCalc: false,
-  recurrence: 1,
-})
-
-// Avança N meses sobre uma data ISO 'YYYY-MM-DD', preservando o dia (com clamp no fim do mês).
-const shiftIsoMonths = (iso: string, add: number): string => {
-  const [y, m, d] = iso.split('-').map(Number)
-  if (!y || !m || !d) return iso
-  const lastDay = new Date(Date.UTC(y, m - 1 + add + 1, 0)).getUTCDate()
-  const dt = new Date(Date.UTC(y, m - 1 + add, Math.min(d, lastDay)))
-  return dt.toISOString().slice(0, 10)
+const dialogRef = ref<HTMLElement | null>(null)
+const fieldId = useId()
+const { draft, errors, dirty, isInstallment, buildPayload } = useEntryDraft(() => props.entry, () => props.open, () => props.allowRecurrence)
+const discardOpen = ref(false)
+watch(() => props.open, () => { discardOpen.value = false })
+const requestClose = () => {
+  if (props.saving) return
+  if (discardOpen.value) { discardOpen.value = false; return }
+  if (dirty.value) { discardOpen.value = true; return }
+  emit('close')
 }
-
-const isInstallment = computed(() =>
-  draft.installmentIndex != null || draft.installmentTotal != null
-)
-
-watch(
-  () => props.entry,
-  (entry) => {
-    if (!entry) return
-    draft.id = entry.id
-    draft.title = entry.title
-    draft.description = entry.description
-    draft.amount = String(entry.amount)
-    draft.kind = entry.kind
-    draft.status = entry.status
-    draft.dueDate = formatDate(entry.dueDate)
-    draft.competenceDate = formatDate(entry.competenceDate)
-    draft.accountId = entry.accountId ?? ''
-    draft.categoryId = entry.categoryId ?? ''
-    draft.installmentIndex = entry.installmentIndex ?? null
-    draft.installmentTotal = entry.installmentTotal ?? null
-    draft.excludeFromCalc = entry.excludeFromCalc ?? false
-    draft.recurrence = 1
-  },
-  { immediate: true }
-)
-
-const onSave = () => {
-  const amount = Number.parseFloat(draft.amount)
-  const dueDate = toIsoDate(draft.dueDate)
-  const competenceDate = toIsoDate(draft.competenceDate)
-
-  if (!draft.id || Number.isNaN(amount) || !dueDate || !competenceDate) return
-
-  const kind = draft.kind === 'income' ? 'income' : 'expense'
-  const status = draft.status === 'paid' || draft.status === 'review' ? draft.status : 'pending'
-  const shared = {
-    title: draft.title.trim() || 'Lançamento',
-    description: draft.description,
-    amount,
-    kind: kind as FinanceEntry['kind'],
-    accountId: draft.accountId || null,
-    categoryId: draft.categoryId || null,
-    installmentIndex: draft.installmentIndex,
-    installmentTotal: draft.installmentTotal,
-    excludeFromCalc: draft.excludeFromCalc,
-  }
-
-  const months = props.allowRecurrence ? Math.min(120, Math.max(1, draft.recurrence || 1)) : 1
-  const entries: Partial<FinanceEntry>[] = [{
-    ...shared,
-    id: draft.id,
-    status: status as FinanceEntry['status'],
-    dueDate,
-    competenceDate,
-  }]
-
-  // Cópias dos meses seguintes (somente quando há recorrência)
-  for (let i = 1; i < months; i += 1) {
-    entries.push({
-      ...shared,
-      id: crypto.randomUUID(),
-      status: 'pending',
-      dueDate: shiftIsoMonths(dueDate, i),
-      competenceDate: shiftIsoMonths(competenceDate, i),
-    })
-  }
-
-  emit('save', entries)
+useDialog(computed(() => props.open), dialogRef, requestClose)
+const onSave = async () => {
+  if (props.saving) return
+  const payload = buildPayload()
+  if (payload) emit('save', payload)
+  else { await nextTick(); dialogRef.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus() }
 }
-
 const onDelete = () => {
-  if (!draft.id) return
-  emit('delete', draft.id)
+  if (!props.saving && draft.id && window.confirm(`Excluir o lançamento "${draft.title}"?`)) emit('delete', draft.id)
 }
 </script>
 
-<style scoped>
-/* ── Overlay ─────────────────────────────────────────────── */
-.sheet-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 400;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  background: var(--overlay);
-  backdrop-filter: blur(4px);
-}
-
-/* ── Container (bottom sheet) ────────────────────────────── */
-.sheet-container {
-  width: 100%;
-  max-width: 640px;
-  max-height: 95dvh;
-  background: var(--surface);
-  border-radius: 24px 24px 0 0;
-  border: 1px solid var(--border);
-  border-bottom: none;
-  box-shadow: 0 -8px 40px oklch(0% 0 0 / 0.25);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* ── Handle ──────────────────────────────────────────────── */
-.sheet-handle-area {
-  display: flex;
-  justify-content: center;
-  padding: 12px 0 4px;
-  cursor: pointer;
-}
-.sheet-handle {
-  width: 40px;
-  height: 4px;
-  border-radius: 99px;
-  background: var(--border);
-}
-
-/* ── Header ──────────────────────────────────────────────── */
-.sheet-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 20px 14px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.sheet-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text);
-  line-height: 1.2;
-}
-.sheet-subtitle {
-  font-size: 13px;
-  color: var(--text3);
-  margin-top: 3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 260px;
-}
-.sheet-close {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text2);
-  flex-shrink: 0;
-  touch-action: manipulation;
-  transition: background 0.12s;
-}
-.sheet-close:hover { background: var(--surface2); filter: brightness(0.9); }
-
-/* ── Body ────────────────────────────────────────────────── */
-.sheet-body {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-/* ── Field primitives ────────────────────────────────────── */
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-}
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.field-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.field-input {
-  width: 100%;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 0 14px;
-  height: 48px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  box-sizing: border-box;
-  -webkit-appearance: none;
-}
-.field-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-dim);
-}
-.field-input::placeholder { color: var(--text3); }
-
-.field-select {
-  width: 100%;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 0 14px;
-  height: 48px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-  font-family: inherit;
-  outline: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 18px;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  box-sizing: border-box;
-  cursor: pointer;
-  -webkit-appearance: none;
-}
-.field-select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-dim);
-}
-
-.field-textarea {
-  height: auto;
-  padding: 12px 14px;
-  resize: none;
-  line-height: 1.5;
-}
-
-/* ── Valor com prefixo ───────────────────────────────────── */
-.amount-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.amount-prefix {
-  position: absolute;
-  left: 14px;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text3);
-  pointer-events: none;
-}
-.amount-input {
-  padding-left: 42px;
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--text);
-}
-
-/* ── Segmented control Tipo ──────────────────────────────── */
-.segmented {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  height: 48px;
-}
-.seg-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text3);
-  transition: background 0.15s, color 0.15s;
-  touch-action: manipulation;
-}
-.seg-btn:first-child { border-right: 1px solid var(--border); }
-.seg-active-expense {
-  background: color-mix(in srgb, var(--danger) 14%, transparent);
-  color: var(--danger);
-}
-.seg-active-income {
-  background: color-mix(in srgb, var(--success) 14%, transparent);
-  color: var(--success);
-}
-
-/* ── Toggle excluir do cálculo ───────────────────────────── */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
-  cursor: pointer;
-}
-.toggle-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.toggle-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-.toggle-hint {
-  font-size: 12px;
-  color: var(--text3);
-}
-.toggle-switch {
-  flex-shrink: 0;
-  width: 44px;
-  height: 24px;
-  border-radius: 99px;
-  background: var(--border);
-  border: none;
-  cursor: pointer;
-  position: relative;
-  transition: background 0.2s;
-  padding: 0;
-}
-.toggle-switch.toggle-on {
-  background: var(--primary);
-}
-.toggle-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.2s;
-  display: block;
-  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
-}
-.toggle-switch.toggle-on .toggle-thumb {
-  background: var(--on-primary);
-  transform: translateX(20px);
-}
-
-/* ── Footer ──────────────────────────────────────────────── */
-.sheet-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 14px 20px;
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-  flex-shrink: 0;
-}
-.btn-group {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-}
-.btn-cancel {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 0 18px;
-  height: 46px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text2);
-  cursor: pointer;
-  font-family: inherit;
-  touch-action: manipulation;
-  transition: filter 0.12s;
-}
-.btn-cancel:hover { filter: brightness(0.95); }
-.btn-save {
-  background: var(--primary);
-  border: none;
-  border-radius: 10px;
-  padding: 0 24px;
-  height: 46px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--on-primary);
-  cursor: pointer;
-  font-family: inherit;
-  touch-action: manipulation;
-  transition: filter 0.12s;
-}
-.btn-save:hover { filter: brightness(1.1); }
-.btn-delete {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 0 14px;
-  height: 46px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--danger);
-  cursor: pointer;
-  font-family: inherit;
-  touch-action: manipulation;
-  transition: background 0.12s;
-  white-space: nowrap;
-}
-.btn-delete:hover { background: var(--danger-light); }
-
-/* ── Animação de entrada ─────────────────────────────────── */
-.sheet-enter-active,
-.sheet-leave-active {
-  transition: opacity 0.22s ease;
-}
-.sheet-enter-active .sheet-container,
-.sheet-leave-active .sheet-container {
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.sheet-enter-from,
-.sheet-leave-to {
-  opacity: 0;
-}
-.sheet-enter-from .sheet-container,
-.sheet-leave-to .sheet-container {
-  transform: translateY(100%);
-}
-
-/* ── Desktop: dialog centralizado ───────────────────────── */
-@media (min-width: 640px) {
-  .sheet-overlay {
-    align-items: center;
-    padding: 16px;
-  }
-  .sheet-container {
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    max-height: 92dvh;
-  }
-  .sheet-handle-area { display: none; }
-  .sheet-enter-from .sheet-container,
-  .sheet-leave-to .sheet-container {
-    transform: scale(0.95) translateY(8px);
-  }
-}
-</style>
+<style scoped src="../styles/entry-editor.css"></style>

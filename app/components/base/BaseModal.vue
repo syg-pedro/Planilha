@@ -6,6 +6,7 @@
       @click.self="$emit('close')"
     >
       <div
+        ref="dialogRef"
         class="base-modal"
         :style="{ maxWidth: `${maxWidth}px` }"
         role="dialog"
@@ -35,7 +36,8 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, computed } from 'vue'
+import { useDialog } from '../../design-system/composables/useDialog'
 import BaseIcon from '../../design-system/components/BaseIcon.vue'
 
 const props = withDefaults(defineProps<{
@@ -48,11 +50,10 @@ const props = withDefaults(defineProps<{
   maxWidth: 580,
 })
 
-defineEmits<{ close: [] }>()
+const emit = defineEmits<{ close: [] }>()
+const dialogRef = ref<HTMLElement | null>(null)
+useDialog(computed(() => props.open), dialogRef, () => emit('close'))
 
-watch(() => props.open, (val) => {
-  if (process.client) document.body.style.overflow = val ? 'hidden' : ''
-}, { immediate: true })
 </script>
 
 <style scoped>

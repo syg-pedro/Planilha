@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { execFileSync } from 'node:child_process'
+import { validateHomologation } from './shared/environment'
 
 const envSupabaseUrl =
   process.env.SUPABASE_URL ||
@@ -34,10 +35,23 @@ const resolveWebBuildVersion = () => {
 }
 
 const webBuildVersion = resolveWebBuildVersion()
+const appEnvironment = process.env.NUXT_PUBLIC_APP_ENV || 'production'
+const sharedProductionDatabase = appEnvironment === 'homol' && process.env.HOMOL_ALLOW_SHARED_PRODUCTION_DB === 'true'
+validateHomologation({
+  environment: appEnvironment,
+  webUrl: process.env.HOMOL_WEB_URL,
+  projectRef: process.env.HOMOL_SUPABASE_PROJECT_REF,
+  supabaseUrl: envSupabaseUrl,
+  publicSupabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || envSupabaseUrl,
+  serviceKey: envSupabaseServiceKey,
+  anonKey: envSupabasePublishableKey,
+  apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL,
+  allowSharedProductionDatabase: sharedProductionDatabase,
+})
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NUXT_E2E !== 'true' },
   css: [
     '~/assets/css/main.css',
     'ag-grid-community/styles/ag-grid.css',
@@ -72,11 +86,13 @@ export default defineNuxtConfig({
     supabaseServiceKey: envSupabaseServiceKey,
     dataFilePath: process.env.DATA_FILE_PATH || '',
     public: {
+      appEnvironment,
+      sharedProductionDatabase,
       appName: 'Financeiro Familiar',
       appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.1.1',
       webBuildVersion,
       webVersionUrl: '/api/web-version',
-      updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || 'https://planilha-cyan.vercel.app/api/android-release',
+      updateManifestUrl: appEnvironment === 'homol' ? '' : (process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || 'https://planilha-cyan.vercel.app/api/android-release'),
       defaultEditKey: process.env.EDIT_KEY || 'demo-finance-key',
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '',
       supabaseUrl: envSupabaseUrl,
@@ -124,20 +140,7 @@ export default defineNuxtConfig({
       skipWaiting: true,
       clientsClaim: true,
       globPatterns: ['**/*.{js,css,png,svg,ico,webmanifest}'],
-      runtimeCaching: [
-        {
-          urlPattern: /^https:\/\/planilha-cyan\.vercel\.app\/api\/.*/i,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'api-cache',
-            networkTimeoutSeconds: 5,
-            expiration: {
-              maxEntries: 100,
-              maxAgeSeconds: 60 * 60
-            }
-          }
-        }
-      ]
+      runtimeCaching: []
     }
   },
   app: {

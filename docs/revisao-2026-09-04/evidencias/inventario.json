@@ -1,0 +1,527 @@
+[
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\MatrizScreen.vue",
+    "Linhas": 1897,
+    "Bytes": 71018
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\FinanceSettingsPanel.vue",
+    "Linhas": 1451,
+    "Bytes": 43539
+  },
+  {
+    "Arquivo": "server\\utils\\repo.ts",
+    "Linhas": 1188,
+    "Bytes": 41366
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\ListaDeDesejosScreen.vue",
+    "Linhas": 808,
+    "Bytes": 25393
+  },
+  {
+    "Arquivo": "app\\layouts\\default.vue",
+    "Linhas": 764,
+    "Bytes": 32803
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\FinanceEntryEditorModal.vue",
+    "Linhas": 723,
+    "Bytes": 21623
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\AssinaturasScreen.vue",
+    "Linhas": 647,
+    "Bytes": 17729
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\RelatoriosScreen.vue",
+    "Linhas": 621,
+    "Bytes": 16686
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\CartoesScreen.vue",
+    "Linhas": 603,
+    "Bytes": 17188
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\DividasScreen.vue",
+    "Linhas": 579,
+    "Bytes": 17754
+  },
+  {
+    "Arquivo": "app\\features\\finance\\stores\\useFinanceStore.ts",
+    "Linhas": 577,
+    "Bytes": 19274
+  },
+  {
+    "Arquivo": "shared\\parser.ts",
+    "Linhas": 515,
+    "Bytes": 14891
+  },
+  {
+    "Arquivo": "app\\app.vue",
+    "Linhas": 497,
+    "Bytes": 14484
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\AlertasScreen.vue",
+    "Linhas": 475,
+    "Bytes": 13523
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\DesignSystemScreen.vue",
+    "Linhas": 468,
+    "Bytes": 12033
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\FinanceCalendar.vue",
+    "Linhas": 420,
+    "Bytes": 13300
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\FinanceEntryGrid.vue",
+    "Linhas": 414,
+    "Bytes": 16645
+  },
+  {
+    "Arquivo": "app\\features\\finance\\constants\\helpContent.ts",
+    "Linhas": 407,
+    "Bytes": 16195
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\AccountEditorSheet.vue",
+    "Linhas": 380,
+    "Bytes": 10774
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\DashboardScreen.vue",
+    "Linhas": 360,
+    "Bytes": 11408
+  },
+  {
+    "Arquivo": "app\\features\\finance\\utils\\onboardingWorkbook.ts",
+    "Linhas": 348,
+    "Bytes": 17383
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\AlertEntryDetailSheet.vue",
+    "Linhas": 331,
+    "Bytes": 10554
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\PrimeirosPassosScreen.vue",
+    "Linhas": 326,
+    "Bytes": 19646
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\FinanceCharts.vue",
+    "Linhas": 322,
+    "Bytes": 14087
+  },
+  {
+    "Arquivo": "app\\design-system\\styles\\components.css",
+    "Linhas": 317,
+    "Bytes": 8907
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\AjudaScreen.vue",
+    "Linhas": 311,
+    "Bytes": 8843
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseDropdown.vue",
+    "Linhas": 289,
+    "Bytes": 8604
+  },
+  {
+    "Arquivo": "app\\pages\\login.vue",
+    "Linhas": 274,
+    "Bytes": 10224
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseSelect.vue",
+    "Linhas": 232,
+    "Bytes": 6440
+  },
+  {
+    "Arquivo": "shared\\types.ts",
+    "Linhas": 228,
+    "Bytes": 5173
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseBarChart.vue",
+    "Linhas": 227,
+    "Bytes": 6238
+  },
+  {
+    "Arquivo": "app\\pages\\signup.vue",
+    "Linhas": 227,
+    "Bytes": 9124
+  },
+  {
+    "Arquivo": "app\\components\\PwaInstallBanner.vue",
+    "Linhas": 227,
+    "Bytes": 6509
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseKpiCard.vue",
+    "Linhas": 205,
+    "Bytes": 4508
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\PlanejamentoScreen.vue",
+    "Linhas": 188,
+    "Bytes": 10628
+  },
+  {
+    "Arquivo": "app\\layouts\\auth.vue",
+    "Linhas": 153,
+    "Bytes": 3830
+  },
+  {
+    "Arquivo": "app\\design-system\\styles\\tokens.css",
+    "Linhas": 143,
+    "Bytes": 5243
+  },
+  {
+    "Arquivo": "shared\\finance.ts",
+    "Linhas": 141,
+    "Bytes": 5167
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseAlertBanner.vue",
+    "Linhas": 138,
+    "Bytes": 2817
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseButton.vue",
+    "Linhas": 128,
+    "Bytes": 2611
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseModal.vue",
+    "Linhas": 127,
+    "Bytes": 2795
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\FinanceKpiCards.vue",
+    "Linhas": 122,
+    "Bytes": 5376
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\ChangelogScreen.vue",
+    "Linhas": 117,
+    "Bytes": 6204
+  },
+  {
+    "Arquivo": "app\\design-system\\styles\\base.css",
+    "Linhas": 114,
+    "Bytes": 1898
+  },
+  {
+    "Arquivo": "app\\pages\\invite\\[token].vue",
+    "Linhas": 110,
+    "Bytes": 5599
+  },
+  {
+    "Arquivo": "server\\utils\\onboarding.ts",
+    "Linhas": 107,
+    "Bytes": 4172
+  },
+  {
+    "Arquivo": "app\\composables\\useDateFormat.ts",
+    "Linhas": 106,
+    "Bytes": 2839
+  },
+  {
+    "Arquivo": "server\\utils\\auth.ts",
+    "Linhas": 89,
+    "Bytes": 3476
+  },
+  {
+    "Arquivo": "shared\\constants.ts",
+    "Linhas": 83,
+    "Bytes": 1735
+  },
+  {
+    "Arquivo": "app\\design-system\\components\\BaseIcon.vue",
+    "Linhas": 76,
+    "Bytes": 3968
+  },
+  {
+    "Arquivo": "server\\api\\invitations\\accept.post.ts",
+    "Linhas": 68,
+    "Bytes": 2219
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseLineChart.vue",
+    "Linhas": 68,
+    "Bytes": 2100
+  },
+  {
+    "Arquivo": "app\\composables\\useAuth.ts",
+    "Linhas": 66,
+    "Bytes": 1993
+  },
+  {
+    "Arquivo": "app\\features\\finance\\utils\\financeWidget.ts",
+    "Linhas": 65,
+    "Bytes": 2198
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseEmptyState.vue",
+    "Linhas": 64,
+    "Bytes": 1289
+  },
+  {
+    "Arquivo": "app\\features\\finance\\constants\\ui.ts",
+    "Linhas": 64,
+    "Bytes": 2374
+  },
+  {
+    "Arquivo": "app\\components\\base\\BasePanel.vue",
+    "Linhas": 61,
+    "Bytes": 1173
+  },
+  {
+    "Arquivo": "shared\\rules.ts",
+    "Linhas": 58,
+    "Bytes": 1673
+  },
+  {
+    "Arquivo": "app\\pages\\index.vue",
+    "Linhas": 58,
+    "Bytes": 4033
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseProgressBar.vue",
+    "Linhas": 58,
+    "Bytes": 1257
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseDonutRing.vue",
+    "Linhas": 55,
+    "Bytes": 1914
+  },
+  {
+    "Arquivo": "server\\api\\me\\household.get.ts",
+    "Linhas": 54,
+    "Bytes": 1696
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseBadge.vue",
+    "Linhas": 51,
+    "Bytes": 938
+  },
+  {
+    "Arquivo": "server\\api\\invitations\\create.post.ts",
+    "Linhas": 47,
+    "Bytes": 1456
+  },
+  {
+    "Arquivo": "shared\\defaultDadosText.ts",
+    "Linhas": 42,
+    "Bytes": 1928
+  },
+  {
+    "Arquivo": "app\\composables\\useSupabaseClient.ts",
+    "Linhas": 41,
+    "Bytes": 1319
+  },
+  {
+    "Arquivo": "app\\utils\\supabase\\universal.ts",
+    "Linhas": 41,
+    "Bytes": 1319
+  },
+  {
+    "Arquivo": "server\\api\\android-release.get.ts",
+    "Linhas": 39,
+    "Bytes": 1016
+  },
+  {
+    "Arquivo": "app\\plugins\\echarts.client.ts",
+    "Linhas": 35,
+    "Bytes": 749
+  },
+  {
+    "Arquivo": "server\\api\\settings\\theme.post.ts",
+    "Linhas": 33,
+    "Bytes": 998
+  },
+  {
+    "Arquivo": "app\\plugins\\pwa-install.client.ts",
+    "Linhas": 30,
+    "Bytes": 790
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseTextarea.vue",
+    "Linhas": 30,
+    "Bytes": 649
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseInput.vue",
+    "Linhas": 30,
+    "Bytes": 648
+  },
+  {
+    "Arquivo": "server\\utils\\supabase\\server.ts",
+    "Linhas": 29,
+    "Bytes": 1154
+  },
+  {
+    "Arquivo": "server\\api\\settings\\dashboard.post.ts",
+    "Linhas": 28,
+    "Bytes": 992
+  },
+  {
+    "Arquivo": "server\\api\\onboarding\\state.post.ts",
+    "Linhas": 24,
+    "Bytes": 869
+  },
+  {
+    "Arquivo": "app\\middleware\\auth.global.ts",
+    "Linhas": 24,
+    "Bytes": 849
+  },
+  {
+    "Arquivo": "server\\api\\entries\\batch.post.ts",
+    "Linhas": 23,
+    "Bytes": 787
+  },
+  {
+    "Arquivo": "app\\composables\\useLogout.ts",
+    "Linhas": 22,
+    "Bytes": 510
+  },
+  {
+    "Arquivo": "server\\api\\import\\csv.post.ts",
+    "Linhas": 21,
+    "Bytes": 713
+  },
+  {
+    "Arquivo": "server\\api\\accounts\\batch.post.ts",
+    "Linhas": 21,
+    "Bytes": 790
+  },
+  {
+    "Arquivo": "server\\middleware\\cors.ts",
+    "Linhas": 21,
+    "Bytes": 776
+  },
+  {
+    "Arquivo": "server\\api\\rules\\batch.post.ts",
+    "Linhas": 21,
+    "Bytes": 796
+  },
+  {
+    "Arquivo": "shared\\version.ts",
+    "Linhas": 19,
+    "Bytes": 717
+  },
+  {
+    "Arquivo": "shared\\onboarding.ts",
+    "Linhas": 19,
+    "Bytes": 574
+  },
+  {
+    "Arquivo": "server\\api\\wishlist\\batch.post.ts",
+    "Linhas": 19,
+    "Bytes": 766
+  },
+  {
+    "Arquivo": "server\\api\\onboarding\\import\\index.post.ts",
+    "Linhas": 18,
+    "Bytes": 713
+  },
+  {
+    "Arquivo": "shared\\date.ts",
+    "Linhas": 18,
+    "Bytes": 736
+  },
+  {
+    "Arquivo": "server\\api\\onboarding\\import\\preview.post.ts",
+    "Linhas": 17,
+    "Bytes": 679
+  },
+  {
+    "Arquivo": "app\\components\\base\\BaseIcon.vue",
+    "Linhas": 16,
+    "Bytes": 318
+  },
+  {
+    "Arquivo": "server\\api\\entries\\reseed.post.ts",
+    "Linhas": 15,
+    "Bytes": 555
+  },
+  {
+    "Arquivo": "server\\middleware\\supabase-session.ts",
+    "Linhas": 14,
+    "Bytes": 446
+  },
+  {
+    "Arquivo": "app\\features\\finance\\composables\\useCurrency.ts",
+    "Linhas": 13,
+    "Bytes": 345
+  },
+  {
+    "Arquivo": "app\\utils\\supabase\\client.ts",
+    "Linhas": 13,
+    "Bytes": 465
+  },
+  {
+    "Arquivo": "app\\plugins\\auth.client.ts",
+    "Linhas": 12,
+    "Bytes": 418
+  },
+  {
+    "Arquivo": "server\\api\\rules\\rebuild.post.ts",
+    "Linhas": 10,
+    "Bytes": 359
+  },
+  {
+    "Arquivo": "server\\api\\wishlist\\index.get.ts",
+    "Linhas": 10,
+    "Bytes": 351
+  },
+  {
+    "Arquivo": "app\\design-system\\styles\\motion.css",
+    "Linhas": 10,
+    "Bytes": 255
+  },
+  {
+    "Arquivo": "server\\api\\bootstrap.get.ts",
+    "Linhas": 9,
+    "Bytes": 316
+  },
+  {
+    "Arquivo": "app\\features\\finance\\components\\screens\\ConfiguracoesScreen.vue",
+    "Linhas": 9,
+    "Bytes": 262
+  },
+  {
+    "Arquivo": "app\\assets\\css\\main.css",
+    "Linhas": 8,
+    "Bytes": 259
+  },
+  {
+    "Arquivo": "server\\api\\web-version.get.ts",
+    "Linhas": 7,
+    "Bytes": 160
+  },
+  {
+    "Arquivo": "shared\\id.ts",
+    "Linhas": 1,
+    "Bytes": 106
+  },
+  {
+    "Arquivo": "app\\composables\\useCurrency.ts",
+    "Linhas": 1,
+    "Bytes": 74
+  },
+  {
+    "Arquivo": "app\\stores\\finance.ts",
+    "Linhas": 1,
+    "Bytes": 77
+  }
+]

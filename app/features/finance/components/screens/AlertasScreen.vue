@@ -82,6 +82,8 @@
 
     <!-- Editor modal (abre só ao clicar Editar no sheet) -->
     <FinanceEntryEditorModal
+:error="store.syncError"
+:saving="store.syncing"
       :open="editorOpen"
       :entry="selectedEntry"
       :accounts="store.accounts"
@@ -140,9 +142,11 @@ const openEditor = (entry: FinanceEntry) => {
 }
 
 const saveFromEditor = async (entries: Partial<FinanceEntry>[]) => {
-  await store.saveEntriesBatch({ upserts: entries, deletes: [] })
-  closeEditor()
-  selectedEntry.value = null
+  try {
+    await store.saveEntriesBatch({ upserts: entries, deletes: [] })
+    closeEditor()
+    selectedEntry.value = null
+  } catch { /* The store exposes the error and preserves pending changes. */ }
 }
 
 const onPay = async (id: string) => {
@@ -154,10 +158,12 @@ const onPay = async (id: string) => {
 }
 
 const onDelete = async (id: string) => {
-  await store.saveEntriesBatch({ upserts: [], deletes: [id] })
-  closeSheet()
-  closeEditor()
-  selectedEntry.value = null
+  try {
+    await store.saveEntriesBatch({ upserts: [], deletes: [id] })
+    closeSheet()
+    closeEditor()
+    selectedEntry.value = null
+  } catch { /* The store exposes the error and preserves pending changes. */ }
 }
 
 const isClickable = (alert: SmartAlert) => !!(alert.entryId || alert.navigateTo)

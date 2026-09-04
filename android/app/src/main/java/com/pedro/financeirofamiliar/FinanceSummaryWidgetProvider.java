@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat;
 public class FinanceSummaryWidgetProvider extends AppWidgetProvider {
     public static final String PREFS_NAME = "finance_summary_widget";
 
-    public static final String ACTION_REFRESH = "com.pedro.financeirofamiliar.WIDGET_REFRESH";
+    public static final String ACTION_REFRESH = BuildConfig.APPLICATION_ID + ".WIDGET_REFRESH";
     private static final String KEY_BALANCE = "balance";
     private static final String KEY_BALANCE_IS_NEGATIVE = "balance_is_negative";
     private static final String KEY_INCOME = "income";

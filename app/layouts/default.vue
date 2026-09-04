@@ -276,59 +276,12 @@
     <!-- Main area -->
     <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
 
-      <!-- Top bar -->
-      <div class="app-topbar" style="height: 58px; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 90; flex-shrink: 0">
-        <!-- Mobile: hamburger -->
-        <button
-          v-if="isMobile"
-          class="app-icon-button"
-          style="background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
-          @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
-          @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
-          @click="drawerOpen = !drawerOpen"
-        >
-          <BaseIcon name="menu" :size="20" />
-          <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface)" />
-        </button>
-
-        <!-- Title -->
-        <div style="flex: 1; min-width: 0">
-          <h1 style="font-size: 16px; font-weight: 800; color: var(--text); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ visibleScreenTitle }}</h1>
-          <p v-if="!isMobile" style="font-size: 11px; color: var(--text3)">{{ currentMonthName }} de {{ currentYear }}</p>
-        </div>
-
-        <!-- Right: income/expense summary + alerts + balance -->
-        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
-          <span v-if="!isMobile" style="font-size: 12px; color: var(--text3); font-weight: 600">
-            ↑ <span style="color: var(--success)">{{ currency.format(store.monthlyKpis.totalIncome) }}</span>
-            &nbsp;↓ <span style="color: var(--danger)">{{ currency.format(store.monthlyKpis.totalExpense) }}</span>
-          </span>
-          <button
-            class="app-icon-button"
-            style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
-            :style="{ background: helpMenuOpen ? 'var(--surface2)' : 'none', color: helpMenuOpen ? 'var(--primary)' : 'var(--text2)' }"
-            title="Ajuda desta tela"
-            @mouseenter="!helpMenuOpen && (($event.currentTarget as HTMLElement).style.background = 'var(--surface2)')"
-            @mouseleave="!helpMenuOpen && (($event.currentTarget as HTMLElement).style.background = 'none')"
-            @click="helpMenuOpen = !helpMenuOpen"
-          >
-            <BaseIcon name="help" :size="20" />
-          </button>
-          <button
-            class="app-icon-button"
-            style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
-            @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
-            @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
-            @click="goTo('alerts')"
-          >
-            <BaseIcon name="alerts" :size="20" />
-            <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: var(--on-danger)">{{ alertCount }}</span>
-          </button>
-          <div class="app-balance-chip" style="padding: 5px 12px; background: var(--primary-dim)">
-            <span class="ds-money" style="font-size: 12px; font-weight: 700; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</span>
-          </div>
-        </div>
-      </div>
+      <FinanceTopbar
+:mobile="isMobile" :drawer-open="drawerOpen" :title="visibleScreenTitle"
+        :period="`${currentMonthName} de ${currentYear}`" :income="currency.format(store.monthlyKpis.totalIncome)"
+        :expense="currency.format(store.monthlyKpis.totalExpense)" :balance="currency.format(store.monthlyKpis.net)"
+        :help-open="helpMenuOpen" :alert-count="alertCount" @menu="drawerOpen = !drawerOpen"
+        @help="helpMenuOpen = !helpMenuOpen" @alerts="goTo('alerts')" />
 
       <!-- Content -->
       <main
@@ -429,6 +382,7 @@
 </template>
 
 <script setup lang="ts">
+import FinanceTopbar from "~/features/finance/components/FinanceTopbar.vue"
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import type { PluginListenerHandle } from '@capacitor/core'
 import { App } from '@capacitor/app'

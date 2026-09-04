@@ -9,6 +9,7 @@
     "android:sync": "npm run generate && npx cap sync android",
     "android:debug": "npm run android:sync && cd android && gradlew.bat assembleDebug",
     "android:release": "npm run android:sync && cd android && gradlew.bat assembleRelease",
+    "android:homol": "cd android && gradlew.bat assembleHomol --max-workers=4",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "nuxt preview",
@@ -55,7 +56,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@capacitor/cli": "^7.6.8",
+    "@electric-sql/pglite": "^0.5.8",
     "@nuxt/eslint": "^1.15.2",
     "@playwright/test": "^1.61.1",
     "@storybook/addon-docs": "^9.0.18",

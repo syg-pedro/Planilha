@@ -48,6 +48,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { App } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
+import { useFinanceNavigation } from '~/features/finance/composables/useFinanceNavigation'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { isVersionNewer } from '#shared/version'
 
@@ -98,7 +99,9 @@ const updateInstruction = computed(() => isApkUpdate.value
   ? 'Uma nova versão está disponível. Abra a página no GitHub, baixe o APK e instale por cima da versão atual.'
   : 'Uma versão mais recente está disponível. Recarregue para continuar com as melhorias.')
 let webUpdateTimer: number | undefined
-const activeScreen = useState('finance-screen', () => 'dashboard')
+let themeQuery: MediaQueryList | undefined
+const updateSystemTheme = () => { if (store.settings.themeMode === 'system') store.applyTheme() }
+const { screen: activeScreen } = useFinanceNavigation()
 const AUTH_ROUTES = new Set(['/login', '/signup'])
 
 const layoutName = computed(() => {
@@ -154,10 +157,10 @@ const checkForNativeUpdate = async () => {
   if (!url) return
 
   try {
-    const [appInfo, release] = await Promise.all([
-      App.getInfo(),
-      $fetch<AndroidReleaseManifest>(url, { cache: 'no-store' })
-    ])
+    const appInfo = await App.getInfo()
+    // Homologação nunca sugere instalar o APK publicado no canal de produção.
+    if (appInfo.id.endsWith('.homol')) return
+    const release = await $fetch<AndroidReleaseManifest>(url, { cache: 'no-store' })
 
     if (!isVersionNewer(release.version, appInfo.version)) return
     if (dismissedApkVersion.value === release.version) return
@@ -232,7 +235,6 @@ watch(user, async (newUser, oldUser) => {
 
   if (newUser) {
     await store.boot()
-    await store.requestNotifications()
     store.notifyUpcoming()
     void notifyAboutUpdate(visibleUpdate.value)
   }
@@ -273,8 +275,7 @@ onMounted(async () => {
   if (!store.initialized) {
     try {
       await store.boot()
-      await store.requestNotifications()
-      store.notifyUpcoming()
+        store.notifyUpcoming()
       void notifyAboutUpdate(visibleUpdate.value)
     } catch {
       // O erro já é registrado no store e será mostrado pela página. Nunca deixe
@@ -284,17 +285,14 @@ onMounted(async () => {
     }
   }
 
-  const mq = window.matchMedia('(prefers-color-scheme: dark)')
-  mq.addEventListener('change', () => {
-    if (store.settings.themeMode === 'system') {
-      store.applyTheme()
-    }
-  })
+  themeQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  themeQuery.addEventListener('change', updateSystemTheme)
   appReady.value = true
 })
 
 onUnmounted(() => {
   if (webUpdateTimer) window.clearInterval(webUpdateTimer)
+  themeQuery?.removeEventListener('change', updateSystemTheme)
 })
 </script>
 

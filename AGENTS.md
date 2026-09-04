@@ -37,7 +37,7 @@ npx vitest run tests/parser.test.ts
 
 ### Authentication
 
-No login. Every API route (`server/utils/auth.ts`) checks `?key=` against `EDIT_KEY` (default: `demo-finance-key`). The frontend reads it from the URL on startup via the Pinia store.
+With Supabase configured, protected APIs verify the user through a bearer token or session cookie and resolve the household from `household_members`. The local in-memory mode uses `?key=` or `x-edit-key` against `EDIT_KEY` (default: `demo-finance-key`). Never fall back to the demo key when Supabase is configured. Finance batch writes use the service-only transactional `save_finance_batch` RPC; apply the migration before deploying the server code.
 
 ### Frontend layer structure
 

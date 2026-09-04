@@ -1,9 +1,10 @@
+import { civilDate } from './period'
 import { monthKey, parseIsoDate } from './date'
 import type { Account, DashboardFilters, FinanceEntry, FinanceKpis, PeriodMode } from './types'
 
-export const applyFilters = (entries: FinanceEntry[], filters: DashboardFilters): FinanceEntry[] => {
-  const now = new Date()
-  const currentMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1))
+export const applyFilters = (entries: FinanceEntry[], filters: DashboardFilters, now = new Date(), timezone = 'America/Sao_Paulo'): FinanceEntry[] => {
+  const local = new Date(`${civilDate(now, timezone)}T00:00:00Z`)
+  const currentMonth = new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1))
   const months = filters.range === 'year' ? 12 : filters.range === 'quarter' ? 3 : 1
   const end = new Date(Date.UTC(currentMonth.getUTCFullYear(), currentMonth.getUTCMonth() + months, 0))
 
@@ -13,10 +14,10 @@ export const applyFilters = (entries: FinanceEntry[], filters: DashboardFilters)
     if (date < currentMonth || date > end) {
       return false
     }
-    if (filters.accountIds.length > 0 && entry.accountId && !filters.accountIds.includes(entry.accountId)) {
+    if (filters.accountIds.length > 0 && !filters.accountIds.includes(entry.accountId ?? '')) {
       return false
     }
-    if (filters.categoryIds.length > 0 && entry.categoryId && !filters.categoryIds.includes(entry.categoryId)) {
+    if (filters.categoryIds.length > 0 && !filters.categoryIds.includes(entry.categoryId ?? '')) {
       return false
     }
     return true
@@ -28,10 +29,10 @@ export const excludeBenefitEntries = (entries: FinanceEntry[], accounts: Account
   return entries.filter(e => !e.excludeFromCalc && (!e.accountId || !benefitIds.has(e.accountId)))
 }
 
-export const computeKpis = (entries: FinanceEntry[], accounts: Account[]): FinanceKpis => {
-  const now = new Date()
-  const seven = new Date(now)
-  seven.setUTCDate(now.getUTCDate() + 7)
+export const computeKpis = (entries: FinanceEntry[], accounts: Account[], now = new Date(), timezone = 'America/Sao_Paulo'): FinanceKpis => {
+  const today = civilDate(now, timezone)
+  const seven = new Date(`${today}T00:00:00Z`)
+  seven.setUTCDate(seven.getUTCDate() + 7)
 
   const cashEntries = excludeBenefitEntries(entries, accounts)
 
@@ -47,10 +48,9 @@ export const computeKpis = (entries: FinanceEntry[], accounts: Account[]): Finan
     .filter((entry) => entry.status !== 'paid')
     .reduce((sum, entry) => sum + (entry.kind === 'expense' ? entry.amount : -entry.amount), 0)
 
-  const upcoming7Days = entries
+  const upcoming7Days = cashEntries
     .filter((entry) => {
-      const due = parseIsoDate(entry.dueDate)
-      return due >= now && due <= seven && entry.status !== 'paid'
+      return entry.dueDate >= today && entry.dueDate <= seven.toISOString().slice(0, 10) && entry.status !== 'paid'
     })
     .reduce((sum, entry) => sum + (entry.kind === 'expense' ? entry.amount : 0), 0)
 

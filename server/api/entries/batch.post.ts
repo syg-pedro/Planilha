@@ -1,12 +1,7 @@
 import { createError, defineEventHandler, readBody } from 'h3'
-import { z } from 'zod'
+import { entryBatchSchema as schema } from '../../../shared/batchSchemas'
 import { assertEditKey } from '../../utils/auth'
 import { getRepository } from '../../utils/repo'
-
-const schema = z.object({
-  upserts: z.array(z.object({}).passthrough()).default([]),
-  deletes: z.array(z.string()).default([])
-})
 
 export default defineEventHandler(async (event) => {
   const { householdId } = await assertEditKey(event)
@@ -18,6 +13,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const repo = getRepository(householdId)
-  const entries = await repo.saveEntriesBatch(parsed.data.upserts as any[], parsed.data.deletes)
+  const entries = await repo.saveEntriesBatch(parsed.data.upserts, parsed.data.deletes)
   return { entries }
 })

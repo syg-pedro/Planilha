@@ -132,8 +132,8 @@ const currentMonthKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1)
 
 const yearRows = computed(() => {
   const map = new Map<string, { income: number; expense: number }>()
-  for (const entry of store.entries) {
-    const key = entry.dueDate.slice(0, 7)
+  for (const entry of store.allCashableEntries) {
+    const key = (store.filters.periodMode === 'competence' ? entry.competenceDate : entry.dueDate).slice(0, 7)
     if (!key.startsWith(String(year.value))) continue
     const cur = map.get(key) ?? { income: 0, expense: 0 }
     if (entry.kind === 'income') cur.income += entry.amount

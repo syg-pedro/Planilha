@@ -16,6 +16,7 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true">
 
             <intent-filter>
@@ -31,7 +32,7 @@
             android:label="@string/widget_finance_summary_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.pedro.financeirofamiliar.WIDGET_REFRESH" />
+                <action android:name="${applicationId}.WIDGET_REFRESH" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -44,7 +45,7 @@
             android:label="@string/widget_finance_compact_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.pedro.financeirofamiliar.WIDGET_REFRESH" />
+                <action android:name="${applicationId}.WIDGET_REFRESH" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -57,7 +58,7 @@
             android:label="@string/widget_finance_flow_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.pedro.financeirofamiliar.WIDGET_REFRESH" />
+                <action android:name="${applicationId}.WIDGET_REFRESH" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -70,7 +71,7 @@
             android:label="@string/widget_finance_due_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.pedro.financeirofamiliar.WIDGET_REFRESH" />
+                <action android:name="${applicationId}.WIDGET_REFRESH" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

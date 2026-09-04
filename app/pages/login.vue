@@ -5,9 +5,9 @@
 
     <form style="display: flex; flex-direction: column; gap: 16px" @submit.prevent="onSubmit">
       <div>
-        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">E-mail</label>
+        <label for="login-email" style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">E-mail</label>
         <input
-          v-model="email"
+          id="login-email" v-model="email"
           type="email"
           autocomplete="email"
           placeholder="seu@email.com"
@@ -17,10 +17,10 @@
       </div>
 
       <div>
-        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">Senha</label>
+        <label for="login-password" style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">Senha</label>
         <div style="position: relative">
           <input
-            v-model="password"
+            id="login-password" v-model="password"
             :type="showPassword ? 'text' : 'password'"
             autocomplete="current-password"
             placeholder="••••••••"
@@ -30,6 +30,7 @@
           <button
             type="button"
             :style="eyeButtonStyle"
+            :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
             @click="showPassword = !showPassword"
           >
             <svg v-if="showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -247,6 +248,7 @@ onMounted(async () => {
   }
 })
 
+const loginRoute = useRoute()
 const onSubmit = async () => {
   errorMsg.value = null
   loading.value = true
@@ -259,7 +261,8 @@ const onSubmit = async () => {
       return
     }
     await persistRecentUser(email.value, password.value)
-    await navigateTo('/')
+    const redirect = loginRoute.query.redirect
+    await navigateTo(typeof redirect === 'string' && redirect.startsWith('/invite/') ? redirect : '/')
   } finally {
     loading.value = false
   }

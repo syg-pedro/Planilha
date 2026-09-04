@@ -1,6 +1,7 @@
-export default defineNuxtPlugin(async () => {
+export default defineNuxtPlugin(async (nuxtApp) => {
   const { init, user } = useAuth()
-  await init()
+  const dispose = await init()
+  nuxtApp.vueApp.onUnmount(() => dispose?.())
 
   // Se o session foi renovado pelo plugin e o usuário já estava autenticado,
   // mas o middleware server-side o mandou para /login, redireciona para o app

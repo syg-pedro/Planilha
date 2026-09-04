@@ -4,7 +4,11 @@
     class="bd-trigger"
     :class="{ 'bd-trigger--open': open }"
     :style="{ height: height + 'px' }"
-    role="button"
+    role="combobox"
+    aria-haspopup="listbox"
+    :aria-expanded="open"
+    :aria-controls="listId"
+    :aria-activedescendant="open && cursor >= 0 ? `${listId}-${cursor}` : undefined"
     tabindex="0"
     @click="toggle"
     @keydown.enter.prevent="onEnter"
@@ -30,6 +34,7 @@
     <Transition name="bd-pop">
       <ul
         v-if="open"
+        :id="listId"
         ref="listRef"
         class="bd-list"
         :style="listStyle"
@@ -37,6 +42,7 @@
       >
         <li
           v-for="(opt, i) in normalizedOptions"
+          :id="`${listId}-${i}`"
           :key="opt.value"
           class="bd-opt"
           :class="{ 'bd-opt--active': String(opt.value) === String(modelValue), 'bd-opt--cursor': i === cursor }"
@@ -60,9 +66,11 @@
 </template>
 
 <script setup lang="ts" generic="T extends string = string">
-import { ref, computed, useSlots, nextTick, onBeforeUnmount, watchEffect } from 'vue'
+import { useId, ref, computed, useSlots, nextTick, onBeforeUnmount, watchEffect } from 'vue'
 
 interface Option { value: T; label: string }
+
+const listId = useId()
 
 const props = withDefaults(defineProps<{
   modelValue: T

@@ -1,13 +1,16 @@
+import { mapAccountToRow, mapCategoryToRow, mapRuleToRow, mapEntryToRow, mapSettingFromRow, mapAccountFromRow, mapCategoryFromRow, mapRuleFromRow, mapEntryFromRow, mapWishItemFromRow } from './financeMappers'
+import { createError } from 'h3'
+import { saveFinanceBatch, readHouseholdRows } from './financeBatch'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { DEFAULT_COLORS, DEFAULT_DASHBOARD_CONFIG, DEFAULT_HOUSEHOLD_ID } from '../../shared/constants'
+import { DEFAULT_HOUSEHOLD_ID } from '../../shared/constants'
 import { DEFAULT_DADOS_TEXT } from '../../shared/defaultDadosText'
 import { computeKpis } from '../../shared/finance'
 import { parseDadosText } from '../../shared/parser'
 import { buildEntriesFromRules } from '../../shared/rules'
 import { makeId } from '../../shared/id'
-import { createDefaultOnboardingState, normalizeOnboardingKey } from '../../shared/onboarding'
+import { normalizeOnboardingKey } from '../../shared/onboarding'
 import type {
   Account,
   BootstrapResponse,
@@ -20,11 +23,10 @@ import type {
   OnboardingImportPreview,
   OnboardingImportSummary,
   OnboardingState,
-  ThemeMode,
   ThemeSettingsRequest,
   WishItem,
   WishPriority,
-  WishStatus
+  WishStatus,
 } from '../../shared/types'
 
 interface Repository {
@@ -586,201 +588,6 @@ const makeMemoryRepo = (): Repository => ({
 
 })
 
-const mapSettingToRow = (settings: HouseholdSettings) => ({
-  id: settings.id,
-  currency: settings.currency,
-  timezone: settings.timezone,
-  theme_mode: settings.themeMode,
-  density_mode: settings.densityMode,
-  period_mode: settings.periodMode,
-  horizon_months: settings.horizonMonths,
-  notification_days: settings.notificationDays,
-  notification_time: settings.notificationTime,
-  color_tokens: settings.colorTokens,
-  dashboard_config: settings.dashboardConfig,
-  onboarding_state: settings.onboarding,
-  updated_at: settings.updatedAt
-})
-
-const mapAccountToRow = (account: Account) => ({
-  id: account.id,
-  household_id: account.householdId,
-  name: account.name,
-  owner: account.owner,
-  type: account.type,
-  limit_total: account.limitTotal,
-  closing_day: account.closingDay,
-  due_day: account.dueDay,
-  active: account.active
-})
-
-const mapCategoryToRow = (category: Category) => ({
-  id: category.id,
-  household_id: category.householdId,
-  name: category.name,
-  kind: category.kind,
-  color: category.color
-})
-
-const mapRuleToRow = (rule: FinanceRule) => ({
-  id: rule.id,
-  household_id: rule.householdId,
-  title: rule.title,
-  description: rule.description,
-  account_id: rule.accountId,
-  category_id: rule.categoryId,
-  amount: rule.amount,
-  kind: rule.kind,
-  due_day: rule.dueDay,
-  frequency: rule.frequency,
-  starts_at: rule.startsAt,
-  ends_at: rule.endsAt,
-  auto_generate: rule.autoGenerate,
-  metadata: rule.metadata
-})
-
-const mapEntryToRow = (entry: FinanceEntry) => ({
-  id: entry.id,
-  household_id: entry.householdId,
-  rule_id: entry.ruleId,
-  account_id: entry.accountId,
-  category_id: entry.categoryId,
-  title: entry.title,
-  description: entry.description,
-  amount: entry.amount,
-  kind: entry.kind,
-  due_date: entry.dueDate,
-  competence_date: entry.competenceDate,
-  installment_index: entry.installmentIndex,
-  installment_total: entry.installmentTotal,
-  status: entry.status,
-  origin: entry.origin,
-  exclude_from_calc: entry.excludeFromCalc ?? false,
-  metadata: entry.metadata,
-  created_at: entry.createdAt,
-  updated_at: entry.updatedAt
-})
-
-const normalizeThemeMode = (mode: string): ThemeMode => {
-  if (mode === 'light' || mode === 'dark' || mode === 'custom' || mode === 'system') return mode
-  return 'dark'
-}
-
-const mapSettingFromRow = (row: Record<string, any>): HouseholdSettings => ({
-  themeMode: normalizeThemeMode(row.theme_mode),
-  id: row.id,
-  currency: row.currency,
-  timezone: row.timezone,
-  densityMode: row.density_mode,
-  periodMode: row.period_mode,
-  horizonMonths: row.horizon_months,
-  notificationDays: row.notification_days ?? [3, 1],
-  notificationTime: row.notification_time ?? '09:00',
-  colorTokens: { ...DEFAULT_COLORS, ...(row.color_tokens ?? {}) },
-  dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG, ...(row.dashboard_config ?? {}) },
-  onboarding: {
-    ...createDefaultOnboardingState(),
-    ...(row.onboarding_state ?? {}),
-  },
-  updatedAt: row.updated_at
-})
-
-const mapAccountFromRow = (row: Record<string, any>): Account => ({
-  id: row.id,
-  householdId: row.household_id,
-  name: row.name,
-  owner: row.owner,
-  type: row.type,
-  limitTotal: row.limit_total,
-  closingDay: row.closing_day,
-  dueDay: row.due_day,
-  active: row.active
-})
-
-const mapCategoryFromRow = (row: Record<string, any>): Category => ({
-  id: row.id,
-  householdId: row.household_id,
-  name: row.name,
-  kind: row.kind,
-  color: row.color
-})
-
-const mapRuleFromRow = (row: Record<string, any>): FinanceRule => ({
-  id: row.id,
-  householdId: row.household_id,
-  title: row.title,
-  description: row.description,
-  accountId: row.account_id,
-  categoryId: row.category_id,
-  amount: toNumber(row.amount),
-  kind: row.kind,
-  dueDay: row.due_day,
-  frequency: row.frequency,
-  startsAt: row.starts_at,
-  endsAt: row.ends_at,
-  autoGenerate: row.auto_generate,
-  metadata: row.metadata
-})
-
-const mapEntryFromRow = (row: Record<string, any>): FinanceEntry => ({
-  id: row.id,
-  householdId: row.household_id,
-  ruleId: row.rule_id,
-  accountId: row.account_id,
-  categoryId: row.category_id,
-  title: row.title,
-  description: row.description,
-  amount: toNumber(row.amount),
-  kind: row.kind,
-  dueDate: row.due_date,
-  competenceDate: row.competence_date,
-  installmentIndex: row.installment_index,
-  installmentTotal: row.installment_total,
-  status: row.status,
-  origin: row.origin,
-  excludeFromCalc: row.exclude_from_calc ?? false,
-  metadata: row.metadata,
-  createdAt: row.created_at,
-  updatedAt: row.updated_at
-})
-
-const mapWishItemFromRow = (row: Record<string, any>): WishItem => ({
-  id: row.id,
-  householdId: row.household_id,
-  name: row.name,
-  price: row.price != null ? toNumber(row.price) : null,
-  url: row.url ?? null,
-  imageUrl: row.image_url ?? null,
-  notes: row.notes ?? null,
-  priority: (row.priority ?? 'medium') as WishPriority,
-  status: (row.status ?? 'want') as WishStatus,
-  category: row.category ?? null,
-  createdAt: row.created_at,
-  updatedAt: row.updated_at,
-})
-
-const _ensureSupabaseSeed = async (client: SupabaseClient): Promise<void> => {
-  const { count, error } = await client
-    .from('household_settings')
-    .select('id', { count: 'exact', head: true })
-    .eq('id', DEFAULT_HOUSEHOLD_ID)
-
-  if (error) {
-    throw error
-  }
-
-  if ((count ?? 0) > 0) {
-    return
-  }
-
-  const state = await createMemoryState()
-  await client.from('household_settings').upsert([mapSettingToRow(state.settings)])
-  if (state.accounts.length > 0) await client.from('accounts').upsert(state.accounts.map(mapAccountToRow))
-  if (state.categories.length > 0) await client.from('categories').upsert(state.categories.map(mapCategoryToRow))
-  if (state.rules.length > 0) await client.from('rules').upsert(state.rules.map(mapRuleToRow))
-  if (state.entries.length > 0) await client.from('entries').upsert(state.entries.map(mapEntryToRow))
-}
-
 const getSupabaseClient = (): SupabaseClient => {
   const config = useRuntimeConfig()
   const supabaseUrl = config.supabaseUrl as string
@@ -797,10 +604,10 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
 
     const [settingsRes, accountsRes, categoriesRes, rulesRes, entriesRes] = await Promise.all([
       client.from('household_settings').select('*').eq('id', householdId).single(),
-      client.from('accounts').select('*').eq('household_id', householdId),
-      client.from('categories').select('*').eq('household_id', householdId),
-      client.from('rules').select('*').eq('household_id', householdId),
-      client.from('entries').select('*').eq('household_id', householdId),
+      readHouseholdRows(client, 'accounts', householdId).then(data => ({ data, error: null })),
+      readHouseholdRows(client, 'categories', householdId).then(data => ({ data, error: null })),
+      readHouseholdRows(client, 'rules', householdId).then(data => ({ data, error: null })),
+      readHouseholdRows(client, 'entries', householdId).then(data => ({ data, error: null })),
     ])
 
     if (settingsRes.error) throw settingsRes.error
@@ -824,43 +631,8 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
 
   async saveEntriesBatch(upserts, deletes) {
     const client = getSupabaseClient()
-
-    if (deletes.length > 0) {
-      const { error } = await client.from('entries').delete().in('id', deletes)
-      if (error) throw error
-    }
-
-    if (upserts.length > 0) {
-      const payload = upserts.map((entry) =>
-        mapEntryToRow({
-          id: entry.id ?? makeId('entry'),
-          householdId,
-          ruleId: entry.ruleId ?? null,
-          accountId: entry.accountId ?? null,
-          categoryId: entry.categoryId ?? null,
-          title: entry.title ?? 'Novo lancamento',
-          description: entry.description ?? '',
-          amount: toNumber(entry.amount),
-          kind: entry.kind === 'income' ? 'income' : 'expense',
-          dueDate: entry.dueDate ?? new Date().toISOString().slice(0, 10),
-          competenceDate: entry.competenceDate ?? entry.dueDate ?? new Date().toISOString().slice(0, 10),
-          installmentIndex: entry.installmentIndex ?? null,
-          installmentTotal: entry.installmentTotal ?? null,
-          status: entry.status ?? 'pending',
-          origin: entry.origin ?? 'manual',
-          excludeFromCalc: entry.excludeFromCalc ?? false,
-          metadata: entry.metadata ?? null,
-          createdAt: entry.createdAt ?? new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        })
-      )
-      const { error } = await client.from('entries').upsert(payload)
-      if (error) throw error
-    }
-
-    const { data, error } = await client.from('entries').select('*').eq('household_id', householdId)
-    if (error) throw error
-    return (data ?? []).map(mapEntryFromRow)
+    await saveFinanceBatch(client, householdId, 'entries', upserts, deletes)
+    return (await readHouseholdRows(client, 'entries', householdId)).map(mapEntryFromRow)
   },
 
   async rebuildRules() {
@@ -873,16 +645,11 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
       .single()
     if (settingsError) throw settingsError
 
-    const { data: rulesRows, error: rulesError } = await client.from('rules').select('*').eq('household_id', householdId)
-    if (rulesError) throw rulesError
+    const rulesRows = await readHouseholdRows(client, 'rules', householdId)
 
     // Preserve status the user already set (e.g. salary marked as received)
-    const { data: existingAuto } = await client
-      .from('entries')
-      .select('rule_id, due_date, status')
-      .eq('household_id', householdId)
-      .eq('origin', 'auto')
-
+    const existingAuto = (await readHouseholdRows(client, 'entries', householdId))
+      .filter(row => row.origin === 'auto' && row.metadata?.generatedFromRule)
     const preservedStatus = new Map<string, string>()
     for (const row of existingAuto ?? []) {
       if (row.rule_id && row.due_date) {
@@ -899,67 +666,13 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
       status: (preservedStatus.get(`${e.ruleId}__${e.dueDate}`) ?? e.status) as FinanceEntry['status']
     }))
 
-    const { error: deleteError } = await client
-      .from('entries')
-      .delete()
-      .eq('household_id', householdId)
-      .eq('origin', 'auto')
-    if (deleteError) throw deleteError
-
-    if (withPreservedStatus.length > 0) {
-      const { error: insertError } = await client.from('entries').insert(withPreservedStatus.map(mapEntryToRow))
-      if (insertError) throw insertError
-    }
+    await saveFinanceBatch(client, householdId, 'entries', withPreservedStatus, (existingAuto ?? []).map(row => row.id))
 
     return withPreservedStatus.length
   },
 
   async reseedEntries() {
-    const client = getSupabaseClient()
-    const config = useRuntimeConfig()
-    const configuredPath = (config.dataFilePath as string) || ''
-    const candidatePaths = [configuredPath, join(process.cwd(), 'dados.txt')].filter(Boolean)
-    let raw = DEFAULT_DADOS_TEXT
-    for (const filePath of candidatePaths) {
-      try { raw = await readFile(filePath, 'utf8'); break } catch { /* fallback */ }
-    }
-    const seed = parseDadosText(raw)
-
-    // Delete in FK order
-    const { error: delEntries } = await client.from('entries').delete().eq('household_id', householdId)
-    if (delEntries) throw delEntries
-
-    const { error: delBudgets } = await client.from('budgets').delete().eq('household_id', householdId)
-    if (delBudgets) throw delBudgets
-
-    const { error: delRules } = await client.from('rules').delete().eq('household_id', householdId)
-    if (delRules) throw delRules
-
-    const { error: delAccounts } = await client.from('accounts').delete().eq('household_id', householdId)
-    if (delAccounts) throw delAccounts
-
-    const { error: delCategories } = await client.from('categories').delete().eq('household_id', householdId)
-    if (delCategories) throw delCategories
-
-    // Re-insert in FK-safe order
-    if (seed.accounts.length > 0) {
-      const { error } = await client.from('accounts').insert(seed.accounts.map(mapAccountToRow))
-      if (error) throw error
-    }
-    if (seed.categories.length > 0) {
-      const { error } = await client.from('categories').insert(seed.categories.map(mapCategoryToRow))
-      if (error) throw error
-    }
-    if (seed.rules.length > 0) {
-      const { error } = await client.from('rules').insert(seed.rules.map(mapRuleToRow))
-      if (error) throw error
-    }
-    if (seed.entries.length > 0) {
-      const { error } = await client.from('entries').insert(seed.entries.map(mapEntryToRow))
-      if (error) throw error
-    }
-
-    return seed.entries.length
+    throw createError({ statusCode: 403, statusMessage: 'Restaurar dados de demonstração só está disponível no modo local.' })
   },
 
   async saveTheme(payload) {
@@ -1036,13 +749,12 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
-        return mapEntryToRow(entry)
+        return entry
       })
       .filter(Boolean)
 
     if (rows.length > 0) {
-      const { error } = await client.from('entries').insert(rows as Record<string, unknown>[])
-      if (error) throw error
+      await saveFinanceBatch(client, householdId, 'entries', rows as FinanceEntry[], [])
     }
 
     return { inserted: rows.length, warnings }
@@ -1088,96 +800,25 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
 
   async saveRules(upserts, deletes) {
     const client = getSupabaseClient()
-    if (deletes.length > 0) {
-      const { error } = await client.from('rules').delete().in('id', deletes)
-      if (error) throw error
-    }
-    if (upserts.length > 0) {
-      const payload = upserts.map(r => mapRuleToRow({
-        id:           r.id ?? makeId('rule'),
-        householdId,
-        title:        r.title        ?? 'Nova regra',
-        description:  r.description  ?? '',
-        accountId:    r.accountId    ?? null,
-        categoryId:   r.categoryId   ?? null,
-        amount:       toNumber(r.amount ?? 0),
-        kind:         r.kind === 'income' ? 'income' : 'expense',
-        dueDay:       r.dueDay        ?? null,
-        frequency:    r.frequency     ?? 'monthly',
-        startsAt:     r.startsAt      ?? new Date().toISOString().slice(0, 10),
-        endsAt:       r.endsAt        ?? null,
-        autoGenerate: r.autoGenerate  ?? false,
-        metadata:     r.metadata      ?? null
-      }))
-      const { error } = await client.from('rules').upsert(payload)
-      if (error) throw error
-    }
-    const { data, error } = await client.from('rules').select('*').eq('household_id', householdId)
-    if (error) throw error
-    return (data ?? []).map(mapRuleFromRow)
+    await saveFinanceBatch(client, householdId, 'rules', upserts, deletes)
+    return (await readHouseholdRows(client, 'rules', householdId)).map(mapRuleFromRow)
   },
 
   async saveAccounts(upserts, deletes) {
     const client = getSupabaseClient()
-    if (deletes.length > 0) {
-      const { error } = await client.from('accounts').delete().in('id', deletes)
-      if (error) throw error
-    }
-    if (upserts.length > 0) {
-      const payload = upserts.map(a => mapAccountToRow({
-        id:          a.id          ?? makeId('account'),
-        householdId,
-        name:        a.name        ?? 'Nova conta',
-        owner:       a.owner       ?? '',
-        type:        a.type        ?? 'bank',
-        limitTotal:  a.limitTotal  ?? null,
-        closingDay:  a.closingDay  ?? null,
-        dueDay:      a.dueDay      ?? null,
-        active:      a.active      ?? true,
-      }))
-      const { error } = await client.from('accounts').upsert(payload)
-      if (error) throw error
-    }
-    const { data, error } = await client.from('accounts').select('*').eq('household_id', householdId)
-    if (error) throw error
-    return (data ?? []).map(mapAccountFromRow)
+    await saveFinanceBatch(client, householdId, 'accounts', upserts, deletes)
+    return (await readHouseholdRows(client, 'accounts', householdId)).map(mapAccountFromRow)
   },
 
   async getWishItems() {
     const client = getSupabaseClient()
-    const { data, error } = await client.from('wish_items').select('*').eq('household_id', householdId)
-    if (error) throw error
-    return (data ?? []).map(mapWishItemFromRow)
+    return (await readHouseholdRows(client, 'wish_items', householdId)).map(mapWishItemFromRow)
   },
 
   async saveWishItems(upserts, deletes) {
     const client = getSupabaseClient()
-    if (deletes.length > 0) {
-      const { error } = await client.from('wish_items').delete().in('id', deletes)
-      if (error) throw error
-    }
-    if (upserts.length > 0) {
-      const now = new Date().toISOString()
-      const payload = upserts.map(w => ({
-        id: w.id ?? makeId('wish'),
-        household_id: householdId,
-        name: w.name ?? 'Item',
-        price: w.price ?? null,
-        url: w.url ?? null,
-        image_url: w.imageUrl ?? null,
-        notes: w.notes ?? null,
-        priority: w.priority ?? 'medium',
-        status: w.status ?? 'want',
-        category: w.category ?? null,
-        created_at: w.createdAt ?? now,
-        updated_at: now,
-      }))
-      const { error } = await client.from('wish_items').upsert(payload)
-      if (error) throw error
-    }
-    const { data, error } = await client.from('wish_items').select('*').eq('household_id', householdId)
-    if (error) throw error
-    return (data ?? []).map(mapWishItemFromRow)
+    await saveFinanceBatch(client, householdId, 'wish_items', upserts, deletes)
+    return (await readHouseholdRows(client, 'wish_items', householdId)).map(mapWishItemFromRow)
   },
 })
 

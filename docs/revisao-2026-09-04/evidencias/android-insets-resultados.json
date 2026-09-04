@@ -1,0 +1,33 @@
+{
+  "api": 36,
+  "build": "debug local",
+  "keyboardCycles": 2,
+  "measurements": [
+    {
+      "state": "closed",
+      "height": 838
+    },
+    {
+      "state": "open",
+      "height": 570,
+      "bottom": 556.2857360839844,
+      "width": 411,
+      "overflow": false
+    },
+    {
+      "state": "closed",
+      "height": 838
+    },
+    {
+      "state": "open",
+      "height": 570,
+      "bottom": 556.2857360839844,
+      "width": 411,
+      "overflow": false
+    }
+  ],
+  "physicalSaveTap": true,
+  "persistedAmount": 1234.56,
+  "records": 1,
+  "restoredHeight": 838
+}

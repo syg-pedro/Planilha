@@ -19,9 +19,10 @@ export const useAuth = () => {
     const { data: { session } } = await client.auth.getSession()
     user.value = session?.user ?? null
 
-    client.auth.onAuthStateChange((_, session) => {
+    const { data: { subscription } } = client.auth.onAuthStateChange((_, session) => {
       user.value = session?.user ?? null
     })
+    return () => subscription.unsubscribe()
   }
 
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {

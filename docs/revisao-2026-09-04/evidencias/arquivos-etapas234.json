@@ -1,0 +1,27 @@
+[
+  {
+    "arquivo": "app/features/finance/components/screens/MatrizScreen.vue",
+    "base": 1897,
+    "atual": 834
+  },
+  {
+    "arquivo": "app/features/finance/components/FinanceEntryEditorModal.vue",
+    "base": 723,
+    "atual": 272
+  },
+  {
+    "arquivo": "app/layouts/default.vue",
+    "base": 764,
+    "atual": 718
+  },
+  {
+    "arquivo": "app/features/finance/components/FinanceSettingsPanel.vue",
+    "base": 1451,
+    "atual": 519
+  },
+  {
+    "arquivo": "app/features/finance/stores/useFinanceStore.ts",
+    "base": 577,
+    "atual": 505
+  }
+]

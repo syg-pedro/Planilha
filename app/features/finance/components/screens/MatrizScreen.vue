@@ -14,7 +14,7 @@
         <input
           v-model="searchText"
           type="text"
-          placeholder="Buscar lançamentos..."
+          aria-label="Buscar lançamentos" placeholder="Buscar lançamentos..."
           @focus="searchFocused = true"
           @blur="searchFocused = false"
         />
@@ -26,7 +26,7 @@
           v-for="v in VIEWS"
           :key="v.id"
           type="button"
-          class="plan-seg-btn"
+          class="plan-seg-btn" :aria-pressed="viewMode === v.id"
           :class="{ 'plan-seg-btn--on': viewMode === v.id }"
           @click="viewMode = v.id as 'matrix' | 'list'"
         >{{ v.label }}</button>
@@ -40,24 +40,44 @@
       >+ Novo lançamento</button>
     </div>
 
+      <!-- Seletor de mês -->
+      <div v-if="isCompact || viewMode === 'list'" class="month-nav">
+        <button
+          class="month-nav-btn"
+          :disabled="selectedMonthIndex === 0"
+          aria-label="Mês anterior"
+         @click="prevMonth">‹</button>
+        <BaseDropdown v-model="selectedMonth" :height="38" style="min-width: 0; flex: 1">
+          <option v-for="m in months" :key="m" :value="m">{{ formatMonthLong(m) }}</option>
+        </BaseDropdown>
+        <button
+          class="month-nav-btn"
+          :disabled="selectedMonthIndex === months.length - 1"
+          aria-label="Próximo mês"
+         @click="nextMonth">›</button>
+        <button class="month-nav-btn" aria-label="Ir para o mês atual" @click="selectedMonth = currentMonthKey">Hoje</button>
+      </div>
+    <p v-if="editError" role="alert" class="ds-alert-error">{{ editError }} <button type="button" @click="viewMode = 'list'">Abrir lista de lançamentos</button></p>
+
     <!-- ── Totalizadores ────────────────────────────────────────────── -->
     <div v-if="viewMode === 'matrix'" class="plan-totals">
       <div class="plan-total plan-total--income">
         <span class="plan-total-label">Receitas</span>
-        <span class="plan-total-value ds-money">{{ fmt(incomeTotal) }}</span>
+        <span class="plan-total-value ds-money">{{ fmt(monthIncomeTotal(selectedMonth)) }}</span>
       </div>
       <div class="plan-total plan-total--expense">
         <span class="plan-total-label">Despesas</span>
-        <span class="plan-total-value ds-money">{{ fmt(expenseTotal) }}</span>
+        <span class="plan-total-value ds-money">{{ fmt(monthExpenseTotal(selectedMonth)) }}</span>
       </div>
-      <div class="plan-total" :class="netTotal >= 0 ? 'plan-total--income' : 'plan-total--expense'">
+      <div class="plan-total" :class="sobra(selectedMonth) >= 0 ? 'plan-total--income' : 'plan-total--expense'">
         <span class="plan-total-label plan-total-label--muted">Saldo</span>
-        <span class="plan-total-value ds-money">{{ fmt(netTotal) }}</span>
+        <span class="plan-total-value ds-money">{{ fmt(sobra(selectedMonth)) }}</span>
       </div>
     </div>
 
     <p v-if="viewMode === 'matrix'" class="plan-hint">
-      {{ months.length }} meses · {{ expenseColumns.length }} despesas · {{ incomeColumns.length }} receitas
+      Resumo de {{ formatMonthLong(selectedMonth) }} por vencimento. Totais excluem benefícios e itens fora do cálculo; as células mantêm esses registros visíveis.
+      {{ months.length }} meses no histórico · {{ expenseColumns.length }} despesas · {{ incomeColumns.length }} receitas
       <template v-if="hiddenColumnCount > 0"> · {{ hiddenColumnCount }} coluna(s) ocultas pela busca</template>
       <template v-else> · clique em uma célula para editar</template>
     </p>
@@ -66,99 +86,12 @@
     <!-- MATRIZ VIEW — cards (≤640px)                                    -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <template v-if="viewMode === 'matrix' && isCompact">
-      <section v-for="month in months" :key="`card-${month}`" class="neo-panel mcard">
-        <header class="neo-panel-header mcard-head">
-          <span class="mcard-month">{{ formatMonthLong(month) }}</span>
-          <span class="mcard-net ds-money" :class="sobra(month) >= 0 ? 'is-positive' : 'is-negative'">{{ fmt(sobra(month)) }}</span>
-          <button class="mcard-clear" title="Apagar valores do mês" @click.stop="openClearRow(month)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-          </button>
-        </header>
-
-        <p class="mcard-group">Despesas</p>
-        <div
-          v-for="col in visibleExpenseColumns"
-          :key="`e-${month}-${col}`"
-          class="mcard-row"
-          @click="startEdit('expense', col, month, $event)"
-        >
-          <span class="mcard-swatch mcard-swatch--expense" />
-          <div class="mcard-row-main">
-            <p class="mcard-row-title">{{ col }}</p>
-            <p v-if="getColumnDueDay('expense', col)" class="mcard-row-sub">vence dia {{ getColumnDueDay('expense', col) }}</p>
-          </div>
-          <div class="mcard-row-side">
-            <input
-              v-if="editingKey === cellKey('expense', col, month)"
-              v-model="editValue"
-              type="text"
-              inputmode="decimal"
-              class="mcard-input"
-              @blur="saveCell('expense', col, month)"
-              @keydown.enter.prevent="saveCell('expense', col, month)"
-              @keydown.escape.prevent="cancelEdit"
-              @click.stop
-            />
-            <template v-else>
-              <p class="mcard-amount ds-money" :class="{ 'is-empty': getAmount('expense', col, month) === 0 }">
-                <sup v-if="getCellCount('expense', col, month) > 1" class="cell-count">×{{ getCellCount('expense', col, month) }}</sup>
-                {{ getAmount('expense', col, month) > 0 ? fmt(getAmount('expense', col, month)) : '—' }}
-              </p>
-              <button
-                v-if="getAmount('expense', col, month) > 0"
-                class="plan-pill"
-                :class="pillClass(getStatus('expense', col, month))"
-                @click.stop="toggleStatus('expense', col, month)"
-              >{{ statusLabel('expense', getStatus('expense', col, month)) }}</button>
-            </template>
-          </div>
-        </div>
-        <p v-if="visibleExpenseColumns.length === 0" class="mcard-empty">Nenhuma despesa.</p>
-
-        <p class="mcard-group">Receitas</p>
-        <div
-          v-for="col in visibleIncomeColumns"
-          :key="`i-${month}-${col}`"
-          class="mcard-row"
-          @click="startEdit('income', col, month, $event)"
-        >
-          <span class="mcard-swatch mcard-swatch--income" />
-          <div class="mcard-row-main">
-            <p class="mcard-row-title">{{ col }}</p>
-          </div>
-          <div class="mcard-row-side">
-            <input
-              v-if="editingKey === cellKey('income', col, month)"
-              v-model="editValue"
-              type="text"
-              inputmode="decimal"
-              class="mcard-input"
-              @blur="saveCell('income', col, month)"
-              @keydown.enter.prevent="saveCell('income', col, month)"
-              @keydown.escape.prevent="cancelEdit"
-              @click.stop
-            />
-            <template v-else>
-              <p class="mcard-amount ds-money" :class="{ 'is-empty': getAmount('income', col, month) === 0 }">
-                <sup v-if="getCellCount('income', col, month) > 1" class="cell-count">×{{ getCellCount('income', col, month) }}</sup>
-                {{ getAmount('income', col, month) > 0 ? fmt(getAmount('income', col, month)) : '—' }}
-              </p>
-              <button
-                v-if="getAmount('income', col, month) > 0"
-                class="plan-pill"
-                :class="pillClass(getStatus('income', col, month))"
-                @click.stop="toggleStatus('income', col, month)"
-              >{{ statusLabel('income', getStatus('income', col, month)) }}</button>
-            </template>
-          </div>
-        </div>
-        <p v-if="visibleIncomeColumns.length === 0" class="mcard-empty">Nenhuma receita.</p>
-
-        <footer class="mcard-foot">
-          <span>Despesas <b class="ds-money is-negative">{{ fmt(monthExpenseTotal(month)) }}</b></span>
-          <span>Receitas <b class="ds-money is-positive">{{ fmt(monthIncomeTotal(month)) }}</b></span>
-        </footer>
-      </section>
+      <MatrixMonthCard
+v-model:value="editValue" :label="formatMonthLong(selectedMonth)" :rows="mobileRows"
+        :income="monthIncomeTotal(selectedMonth)" :expense="monthExpenseTotal(selectedMonth)" :editing-key="editingKey" :saving="saving || store.syncing" :format="fmt"
+        @clear="openClearRow(selectedMonth)" @edit="(kind, title, event) => startEdit(kind, title, selectedMonth, event)"
+        @save="(kind, title) => saveCell(kind, title, selectedMonth)" @cancel="cancelEdit"
+        @toggle="(kind, title) => toggleStatus(kind, title, selectedMonth)" />
 
       <div class="mcard-actions">
         <button class="plan-ghost-btn" @click.stop="openAdd('expense')">+ Despesa</button>
@@ -390,22 +323,6 @@
     <!-- LISTA VIEW                                                     -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <template v-else>
-      <!-- Seletor de mês -->
-      <div class="month-nav">
-        <button
-          class="month-nav-btn"
-          :disabled="selectedMonthIndex === 0"
-          @click="prevMonth"
-        >‹</button>
-        <BaseDropdown v-model="selectedMonth" :height="38" style="min-width: 200px">
-          <option v-for="m in months" :key="m" :value="m">{{ formatMonthLong(m) }}</option>
-        </BaseDropdown>
-        <button
-          class="month-nav-btn"
-          :disabled="selectedMonthIndex === months.length - 1"
-          @click="nextMonth"
-        >›</button>
-      </div>
       <FinanceEntryGrid :month="selectedMonth" />
     </template>
 
@@ -442,8 +359,8 @@
     <!-- ── Modal: Renomear ───────────────────────────────────────────── -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="renameState.open" class="modal-overlay" @click.self="renameState.open = false">
-          <div class="modal-box" @click.stop>
+        <div v-if="renameState.open" class="modal-overlay" @click.self="closeMatrixDialogs">
+          <div ref="matrixDialog" role="dialog" aria-modal="true" aria-label="Editar planilha" class="modal-box" @click.stop>
             <h3 class="modal-title">Renomear coluna</h3>
             <p class="modal-sub">Todos os lançamentos com este título serão renomeados.</p>
             <input
@@ -452,12 +369,13 @@
               type="text"
               class="modal-input"
               placeholder="Novo nome..."
-              @keydown.enter.prevent="confirmRename"
-              @keydown.escape.prevent="renameState.open = false"
+              @keydown.enter.prevent="runMatrixAction(confirmRename)"
+              @keydown.escape.prevent="closeMatrixDialogs"
             />
+            <p v-if="editError" role="alert" class="ds-alert-error">{{ editError }}</p>
             <div class="modal-footer">
-              <button class="btn-cancel" @click="renameState.open = false">Cancelar</button>
-              <button class="btn-save" :disabled="!renameState.newTitle.trim()" @click="confirmRename">Renomear</button>
+              <button class="btn-cancel" @click="closeMatrixDialogs">Cancelar</button>
+              <button class="btn-save" :disabled="!renameState.newTitle.trim() || actionPending" @click="runMatrixAction(confirmRename)">Renomear</button>
             </div>
           </div>
         </div>
@@ -467,16 +385,17 @@
     <!-- ── Modal: Confirmar exclusão de coluna ──────────────────────── -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="deleteState.open" class="modal-overlay" @click.self="deleteState.open = false">
-          <div class="modal-box" @click.stop>
+        <div v-if="deleteState.open" class="modal-overlay" @click.self="closeMatrixDialogs">
+          <div ref="matrixDialog" role="dialog" aria-modal="true" aria-label="Editar planilha" class="modal-box" @click.stop>
             <h3 class="modal-title">Excluir coluna</h3>
             <p class="modal-sub">
               Isso excluirá <strong>{{ deleteState.count }} lançamento(s)</strong> com o título
               "<strong>{{ deleteState.title }}</strong>". Esta ação não pode ser desfeita.
             </p>
+            <p v-if="editError" role="alert" class="ds-alert-error">{{ editError }}</p>
             <div class="modal-footer">
-              <button class="btn-cancel" @click="deleteState.open = false">Cancelar</button>
-              <button class="btn-delete" @click="confirmDelete">Excluir</button>
+              <button class="btn-cancel" @click="closeMatrixDialogs">Cancelar</button>
+              <button class="btn-delete" :disabled="actionPending" @click="runMatrixAction(confirmDelete)">Excluir</button>
             </div>
           </div>
         </div>
@@ -486,16 +405,17 @@
     <!-- ── Modal: Apagar valores do mês ───────────────────────────── -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="clearRowState.open" class="modal-overlay" @click.self="clearRowState.open = false">
-          <div class="modal-box" @click.stop>
+        <div v-if="clearRowState.open" class="modal-overlay" @click.self="closeMatrixDialogs">
+          <div ref="matrixDialog" role="dialog" aria-modal="true" aria-label="Editar planilha" class="modal-box" @click.stop>
             <h3 class="modal-title">Apagar valores do mês</h3>
             <p class="modal-sub">
               Isso zera os <strong>{{ clearRowState.count }} valor(es)</strong> de
               <strong>{{ formatMonthLong(clearRowState.month) }}</strong>, mantendo a linha do mês.
             </p>
+            <p v-if="editError" role="alert" class="ds-alert-error">{{ editError }}</p>
             <div class="modal-footer">
-              <button class="btn-cancel" @click="clearRowState.open = false">Cancelar</button>
-              <button class="btn-delete" :disabled="clearRowState.count === 0" @click="confirmClearRow">Apagar valores</button>
+              <button class="btn-cancel" @click="closeMatrixDialogs">Cancelar</button>
+              <button class="btn-delete" :disabled="clearRowState.count === 0 || actionPending" @click="runMatrixAction(confirmClearRow)">Apagar valores</button>
             </div>
           </div>
         </div>
@@ -505,30 +425,32 @@
     <!-- ── Modal: Adicionar coluna ───────────────────────────────────── -->
     <Teleport to="body">
       <Transition name="modal">
-        <div v-if="addState.open" class="modal-overlay" @click.self="addState.open = false">
-          <div class="modal-box" @click.stop>
+        <div v-if="addState.open" class="modal-overlay" @click.self="closeMatrixDialogs">
+          <div ref="matrixDialog" role="dialog" aria-modal="true" aria-label="Editar planilha" class="modal-box" @click.stop>
             <h3 class="modal-title">
               Adicionar {{ addState.kind === 'expense' ? 'despesa' : 'receita' }}
             </h3>
-            <p class="modal-sub">Cria uma nova coluna na matriz com o nome informado.</p>
+            <p class="modal-sub">Cadastre um lançamento no mês selecionado.</p>
             <div style="display: flex; flex-direction: column; gap: 12px">
               <div>
-                <label class="modal-label">Título</label>
+                <label for="matrix-add-title" class="modal-label">Título</label>
                 <input
+                  id="matrix-add-title"
                   ref="addTitleInputRef"
                   v-model="addState.title"
                   type="text"
                   class="modal-input"
                   placeholder="Ex.: Aluguel, Salário..."
                   @keydown.enter.prevent="focusAddAmount"
-                  @keydown.escape.prevent="addState.open = false"
+                  @keydown.escape.prevent="closeMatrixDialogs"
                 />
               </div>
               <div>
-                <label class="modal-label">{{ addState.recurrence > 1 ? 'Valor por mês (opcional)' : 'Valor inicial (mês atual, opcional)' }}</label>
+                <label for="matrix-add-amount" class="modal-label">{{ addState.recurrence > 1 ? 'Valor por mês (opcional)' : 'Valor inicial (mês selecionado, opcional)' }}</label>
                 <div style="position: relative">
                   <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 700; color: var(--text3); pointer-events: none">R$</span>
                   <input
+                    id="matrix-add-amount"
                     ref="addAmountInputRef"
                     v-model="addState.amount"
                     type="text"
@@ -536,14 +458,15 @@
                     class="modal-input"
                     style="padding-left: 34px"
                     placeholder="0,00"
-                    @keydown.enter.prevent="confirmAdd"
-                    @keydown.escape.prevent="addState.open = false"
+                    @keydown.enter.prevent="runMatrixAction(confirmAdd)"
+                    @keydown.escape.prevent="closeMatrixDialogs"
                   />
                 </div>
               </div>
               <div>
-                <label class="modal-label">Recorrência (meses)</label>
+                <label for="matrix-add-recurrence" class="modal-label">Recorrência (meses)</label>
                 <input
+                  id="matrix-add-recurrence"
                   v-model.number="addState.recurrence"
                   type="number"
                   min="1"
@@ -558,9 +481,10 @@
                 </p>
               </div>
             </div>
+            <p v-if="editError" role="alert" class="ds-alert-error">{{ editError }}</p>
             <div class="modal-footer">
-              <button class="btn-cancel" @click="addState.open = false">Cancelar</button>
-              <button class="btn-save" :disabled="!addState.title.trim()" @click="confirmAdd">Adicionar</button>
+              <button class="btn-cancel" @click="closeMatrixDialogs">Cancelar</button>
+              <button class="btn-save" :disabled="!addState.title.trim() || actionPending || store.syncing" @click="runMatrixAction(confirmAdd)">Adicionar</button>
             </div>
           </div>
         </div>
@@ -571,17 +495,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
+import { computed, ref, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
+import { useMatrixEditing } from '../../composables/useMatrixEditing'
+import { useMatrixColumnOrder } from '../../composables/useMatrixColumnOrder'
+import { useMatrixModel } from '../../composables/useMatrixModel'
+import { useMonthNavigation } from '../../composables/useMonthNavigation'
+import { parseMoney } from '#shared/money'
+import { civilDate } from '#shared/period'
+import { useDialog } from '~/design-system/composables/useDialog'
+import MatrixMonthCard from '../MatrixMonthCard.vue'
 import FinanceEntryGrid from '~/features/finance/components/FinanceEntryGrid.vue'
 import type { EntryKind, EntryStatus, FinanceEntry } from '#shared/types'
 
 const store    = useFinanceStore()
+const route = useRoute()
+const router = useRouter()
 const currency = useCurrency()
 const fmt = (v: number) => currency.format(v)
 
 const VIEWS = [{ id: 'matrix', label: 'Matriz' }, { id: 'list', label: 'Lista' }]
-const viewMode = ref<'matrix' | 'list'>('matrix')
+const viewMode = computed<'matrix' | 'list'>({ get: () => route.query.view === 'list' ? 'list' : 'matrix', set: view => { void router.replace({ query: { ...route.query, view } }) } })
 
 const MONTH_ABBR = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 const formatMonth = (key: string) => {
@@ -620,37 +554,21 @@ onBeforeUnmount(() => {
 // ─── computed columns & months ───────────────────────────────────────────────
 
 const months = computed(() => {
-  const set = new Set<string>()
+  const set = new Set<string>([civilDate(new Date(), store.settings.timezone).slice(0, 7)])
   for (const e of store.entries) set.add(e.dueDate.slice(0, 7))
   return [...set].sort()
 })
 
 // ─── seletor de mês (usado na aba Lista) ────────────────────────────────────
 
-const currentMonthKey = new Date().toISOString().slice(0, 7)
-const selectedMonth = ref(currentMonthKey)
-
-const selectedMonthIndex = computed(() => {
-  const idx = months.value.indexOf(selectedMonth.value)
-  return idx >= 0 ? idx : 0
-})
-
-const prevMonth = () => {
-  const idx = selectedMonthIndex.value
-  if (idx > 0) selectedMonth.value = months.value[idx - 1]!
-}
-
-const nextMonth = () => {
-  const idx = selectedMonthIndex.value
-  if (idx < months.value.length - 1) selectedMonth.value = months.value[idx + 1]!
-}
+const { currentMonth: currentMonthKey, selectedMonth, selectedMonthIndex, prevMonth, nextMonth } = useMonthNavigation(() => months.value, () => store.settings.timezone)
 
 const expenseColumns = computed(() => buildColumns('expense'))
 const incomeColumns  = computed(() => buildColumns('income'))
 
 // ─── busca (apenas filtra quais colunas aparecem) ───────────────────────────
 
-const searchText = ref('')
+const searchText = computed({ get: () => typeof route.query.q === 'string' ? route.query.q : '', set: q => { void router.replace({ query: { ...route.query, q: q || undefined } }) } })
 const searchFocused = ref(false)
 const normalizedSearch = computed(() => searchText.value.trim().toLowerCase())
 const matchesSearch = (title: string) =>
@@ -662,211 +580,43 @@ const hiddenColumnCount = computed(() =>
   (expenseColumns.value.length - visibleExpenseColumns.value.length)
   + (incomeColumns.value.length - visibleIncomeColumns.value.length))
 
-const COLUMN_ORDER_KEY = 'finance-matrix-column-order'
-const columnOrder = ref<Record<EntryKind, string[]>>({ expense: [], income: [] })
-const columnOrderReady = ref(false)
+const { columnOrder, buildColumns, saveColumnOrder } = useMatrixColumnOrder(() => store.entries, () => store.settings.id)
 
-function buildColumns(kind: EntryKind): string[] {
-  const titles: string[] = []
-  for (const e of store.entries) {
-    if (e.kind === kind && !titles.includes(e.title)) titles.push(e.title)
-  }
-  const saved = [...new Set(columnOrder.value[kind].filter(title => titles.includes(title)))]
-  return [...saved, ...titles.filter(title => !saved.includes(title))]
-}
-
-const persistColumnOrder = () => {
-  if (import.meta.client) localStorage.setItem(COLUMN_ORDER_KEY, JSON.stringify(columnOrder.value))
-}
-
-onMounted(() => {
-  try {
-    const saved = JSON.parse(localStorage.getItem(COLUMN_ORDER_KEY) ?? '{}') as Partial<Record<EntryKind, unknown>>
-    columnOrder.value = {
-      expense: Array.isArray(saved.expense) ? saved.expense.filter((title): title is string => typeof title === 'string') : [],
-      income: Array.isArray(saved.income) ? saved.income.filter((title): title is string => typeof title === 'string') : [],
-    }
-  } catch {
-    // Mantém a ordem dos lançamentos se a preferência local estiver inválida.
-  }
-  columnOrderReady.value = true
-})
-
-watch([columnOrderReady, expenseColumns, incomeColumns], ([ready, expenses, incomes]) => {
-  if (!ready) return
-  const sync = (kind: EntryKind, columns: string[]) => [
-    ...new Set(columnOrder.value[kind].filter(column => columns.includes(column))),
-    ...columns.filter(column => !columnOrder.value[kind].includes(column)),
-  ]
-  const next = { expense: sync('expense', expenses), income: sync('income', incomes) }
-  if (next.expense.join('\0') === columnOrder.value.expense.join('\0') && next.income.join('\0') === columnOrder.value.income.join('\0')) return
-  columnOrder.value = next
-  persistColumnOrder()
-}, { immediate: true })
-
-const columnDueDayMap = computed(() => {
-  const daysByColumn = new Map<string, Set<number>>()
-
-  for (const entry of store.entries) {
-    const key = `${entry.kind}__${entry.title}`
-    const days = daysByColumn.get(key) ?? new Set<number>()
-    days.add(Number.parseInt(entry.dueDate.slice(8, 10), 10))
-    daysByColumn.set(key, days)
-  }
-
-  const result = new Map<string, number>()
-  for (const [key, days] of daysByColumn) {
-    if (days.size === 1) {
-      result.set(key, [...days][0]!)
-    }
-  }
-  return result
-})
-
-const getColumnDueDay = (kind: EntryKind, title: string): number | null =>
-  columnDueDayMap.value.get(`${kind}__${title}`) ?? null
-
-// ─── cell lookup maps ────────────────────────────────────────────────────────
-
-const amountMap = computed(() => {
-  const map  = new Map<string, number>()
-  const cnt  = new Map<string, number>()
-  const ents = new Map<string, FinanceEntry[]>()
-  for (const e of store.entries) {
-    const k = `${e.kind}__${e.title}__${e.dueDate.slice(0, 7)}`
-    map.set(k,  (map.get(k)  ?? 0) + e.amount)
-    cnt.set(k,  (cnt.get(k)  ?? 0) + 1)
-    if (!ents.has(k)) ents.set(k, [])
-    ents.get(k)!.push(e)
-  }
-  return { map, cnt, ents }
-})
-
-const cellKey         = (kind: string, title: string, month: string) => `${kind}__${title}__${month}`
-const getAmount       = (kind: string, title: string, month: string) => amountMap.value.map.get(cellKey(kind, title, month)) ?? 0
-const getCellCount    = (kind: string, title: string, month: string) => amountMap.value.cnt.get(cellKey(kind, title, month)) ?? 0
-const getCellEntries  = (kind: string, title: string, month: string) => amountMap.value.ents.get(cellKey(kind, title, month)) ?? []
-
-// ─── status por célula ───────────────────────────────────────────────────────
-
-const statusMap = computed(() => {
-  const map = new Map<string, 'paid' | 'pending' | 'mixed'>()
-  for (const e of store.entries) {
-    const k = cellKey(e.kind, e.title, e.dueDate.slice(0, 7))
-    const existing = map.get(k)
-    const st = e.status === 'paid' ? 'paid' : 'pending'
-    if (!existing) { map.set(k, st) }
-    else if (existing !== st) { map.set(k, 'mixed') }
-  }
-  return map
-})
-
-const getStatus = (kind: string, title: string, month: string): 'paid' | 'pending' | 'mixed' | null => {
-  if (getAmount(kind, title, month) === 0) return null
-  return statusMap.value.get(cellKey(kind, title, month)) ?? null
-}
+const matrixModel = useMatrixModel(() => store.entries)
+const { getColumnDueDay, cellKey, getAmount, getCellCount, getCellEntries, getStatus } = matrixModel
 
 const toggleStatus = async (kind: string, title: string, month: string) => {
   const entries = getCellEntries(kind, title, month)
   if (!entries.length) return
   const current = getStatus(kind, title, month)
   const next: EntryStatus = current === 'paid' ? 'pending' : 'paid'
-  await store.saveEntriesBatch({ upserts: entries.map(e => ({ ...e, status: next })), deletes: [] })
+  await runMatrixAction(() => store.saveEntriesBatch({ upserts: entries.map(e => ({ id: e.id, status: next })), deletes: [] }))
 }
 
-// Rótulos/estilos das pills de status (usados no layout de cards).
-const statusLabel = (kind: 'expense' | 'income', status: 'paid' | 'pending' | 'mixed' | null) => {
-  if (status === 'mixed') return 'Parcial'
-  if (status === 'paid') return kind === 'income' ? 'Recebido' : 'Pago'
-  return kind === 'income' ? 'A receber' : 'A pagar'
-}
+const mobileRows = computed(() => (['expense', 'income'] as const).flatMap(kind => {
+  const columns = kind === 'expense' ? visibleExpenseColumns.value : visibleIncomeColumns.value
+  return columns.filter(title => getCellCount(kind, title, selectedMonth.value) > 0).map(title => ({
+    key: cellKey(kind, title, selectedMonth.value), kind, title,
+    day: Math.min(...getCellEntries(kind, title, selectedMonth.value).map(entry => Number(entry.dueDate.slice(8)))),
+    amount: getAmount(kind, title, selectedMonth.value), count: getCellCount(kind, title, selectedMonth.value),
+    status: getStatus(kind, title, selectedMonth.value),
+  })).sort((a, b) => a.day - b.day || a.title.localeCompare(b.title))
+}))
 
-const pillClass = (status: 'paid' | 'pending' | 'mixed' | null) =>
-  status === 'paid' ? 'plan-pill--success'
-    : status === 'mixed' ? 'plan-pill--warning'
-      : 'plan-pill--danger'
-
-const monthExpenseTotal = (month: string) => expenseColumns.value.reduce((s, c) => s + getAmount('expense', c, month), 0)
-const monthIncomeTotal  = (month: string) => incomeColumns.value.reduce((s, c)  => s + getAmount('income',  c, month), 0)
-const expenseColumnTotal = (column: string) => months.value.reduce((sum, month) => sum + getAmount('expense', column, month), 0)
-const incomeColumnTotal  = (column: string) => months.value.reduce((sum, month) => sum + getAmount('income', column, month), 0)
+const { getAmount: getCashAmount } = useMatrixModel(() => store.allCashableEntries)
+const monthExpenseTotal = (month: string) => expenseColumns.value.reduce((s, c) => s + getCashAmount('expense', c, month), 0)
+const monthIncomeTotal  = (month: string) => incomeColumns.value.reduce((s, c)  => s + getCashAmount('income',  c, month), 0)
+const expenseColumnTotal = (column: string) => months.value.reduce((sum, month) => sum + getCashAmount('expense', column, month), 0)
+const incomeColumnTotal  = (column: string) => months.value.reduce((sum, month) => sum + getCashAmount('income', column, month), 0)
 const expenseTotal = computed(() => expenseColumns.value.reduce((sum, column) => sum + expenseColumnTotal(column), 0))
 const incomeTotal  = computed(() => incomeColumns.value.reduce((sum, column) => sum + incomeColumnTotal(column), 0))
-const netTotal     = computed(() => incomeTotal.value - expenseTotal.value)
 const sobra = (month: string) => monthIncomeTotal(month) - monthExpenseTotal(month)
 
 // ─── inline cell editing ─────────────────────────────────────────────────────
 
-const editingKey = ref<string | null>(null)
-const editValue  = ref('')
-const saving     = ref(false)
-
-const startEdit = (kind: string, title: string, month: string, event: MouseEvent) => {
-  if (saving.value) return
-  const key = cellKey(kind, title, month)
-  editingKey.value = key
-  const amount = getAmount(kind, title, month)
-  editValue.value = amount > 0 ? String(amount).replace('.', ',') : ''
-  const host = event.currentTarget as HTMLElement | null
-  nextTick(() => {
-    const input = host?.querySelector('input') as HTMLInputElement | null
-    input?.focus()
-    input?.select()
-  })
-}
-
-const cancelEdit = () => { editingKey.value = null }
-
-const saveCell = async (kind: EntryKind, title: string, month: string) => {
-  const key = cellKey(kind, title, month)
-  if (editingKey.value !== key) return
-  editingKey.value = null
-
-  const raw    = editValue.value.replace(',', '.').trim()
-  const amount = parseFloat(raw)
-  if (isNaN(amount) && raw !== '') return
-
-  const newAmount  = isNaN(amount) ? 0 : Math.max(0, amount)
-  const existing   = getCellEntries(kind, title, month)
-  const prevAmount = getAmount(kind, title, month)
-  if (newAmount === prevAmount) return
-
-  saving.value = true
-  try {
-    if (existing.length === 0 && newAmount === 0) return
-
-    if (existing.length === 0) {
-      const householdId = store.entries[0]?.householdId ?? store.accounts[0]?.householdId ?? 'household-main'
-      const newEntry: FinanceEntry = {
-        id: crypto.randomUUID(), householdId, ruleId: null, accountId: null, categoryId: null,
-        title, description: '', amount: newAmount, kind,
-        dueDate: `${month}-01`, competenceDate: `${month}-01`,
-        installmentIndex: null, installmentTotal: null,
-        status: 'pending', origin: 'manual', excludeFromCalc: false, metadata: null,
-        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      }
-      await store.saveEntriesBatch({ upserts: [newEntry], deletes: [] })
-      return
-    }
-
-    if (newAmount === 0) {
-      await store.saveEntriesBatch({ upserts: [], deletes: existing.map(e => e.id) })
-      return
-    }
-
-    if (existing.length === 1) {
-      await store.saveEntriesBatch({ upserts: [{ ...existing[0]!, amount: newAmount }], deletes: [] })
-      return
-    }
-
-    await store.saveEntriesBatch({
-      upserts: [{ ...existing[0]!, amount: newAmount }],
-      deletes: existing.slice(1).map(e => e.id),
-    })
-  } finally {
-    saving.value = false
-  }
-}
+const { editingKey, editValue, saving, editError, startEdit, cancelEdit, saveCell } = useMatrixEditing(
+  matrixModel, () => store.settings.id, store.saveEntriesBatch, month => { selectedMonth.value = month },
+)
 
 // ─── tooltip ─────────────────────────────────────────────────────────────────
 
@@ -888,11 +638,6 @@ const openColMenu = (kind: EntryKind, col: string, e: MouseEvent) => {
   colMenu.value = { kind, col, x: rect.left, y: rect.bottom + 4 }
 }
 const closeColMenu = () => { colMenu.value = null }
-
-const saveColumnOrder = (kind: EntryKind, columns: string[]) => {
-  columnOrder.value = { ...columnOrder.value, [kind]: columns }
-  persistColumnOrder()
-}
 
 const canMoveColumn = (direction: number) => {
   if (!colMenu.value) return false
@@ -997,7 +742,9 @@ const addTitleInputRef  = ref<HTMLInputElement | null>(null)
 const addAmountInputRef = ref<HTMLInputElement | null>(null)
 const addState = ref({ open: false, kind: 'expense' as EntryKind, title: '', amount: '', recurrence: 1 })
 
+let addIds: string[] = []
 const openAdd = (kind: EntryKind) => {
+  addIds = []
   addState.value = { open: true, kind, title: '', amount: '', recurrence: 1 }
   nextTick(() => { addTitleInputRef.value?.focus() })
 }
@@ -1013,11 +760,13 @@ const shiftMonthKey = (key: string, add: number): string => {
 
 const confirmAdd = async () => {
   const { kind, title, amount, recurrence } = addState.value
+  if (!Number.isInteger(recurrence) || recurrence < 1 || recurrence > 120) { editError.value = 'Use de 1 a 120 meses inteiros.'; return }
   const trimmed = title.trim()
   if (!trimmed) return
 
-  const amt = Math.max(0, parseFloat(amount.replace(',', '.')) || 0)
-  const startMonth = new Date().toISOString().slice(0, 7)
+  const amt = amount.trim() ? parseMoney(amount) : 0
+  if (amt === null) { editError.value = 'Informe um valor válido, por exemplo 1.234,56.'; return }
+  const startMonth = selectedMonth.value
   const householdId = store.entries[0]?.householdId ?? store.accounts[0]?.householdId ?? 'household-main'
   const now = new Date().toISOString()
   const months = Math.min(120, Math.max(1, recurrence || 1))
@@ -1026,7 +775,7 @@ const confirmAdd = async () => {
     const monthKey = shiftMonthKey(startMonth, i)
     const due = `${monthKey}-01`
     return {
-      id: crypto.randomUUID(), householdId, ruleId: null, accountId: null, categoryId: null,
+      id: (addIds[i] ??= crypto.randomUUID()), householdId, ruleId: null, accountId: null, categoryId: null,
       title: trimmed, description: '', amount: amt, kind,
       dueDate: due, competenceDate: due,
       installmentIndex: null, installmentTotal: null,
@@ -1055,843 +804,31 @@ const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending'
     ? 'color-mix(in srgb, var(--primary) 14%, var(--surface))'
     : (amount > 0 && status ? statusTint(status, kind) : 'transparent'),
 })
+const matrixDialog = ref<HTMLElement | null>(null)
+const anyDialogOpen = computed(() => renameState.value.open || deleteState.value.open || clearRowState.value.open || addState.value.open)
+const actionPending = ref(false)
+const runMatrixAction = async (action: () => Promise<void>) => {
+  if (actionPending.value || store.syncing) return
+  actionPending.value = true
+  editError.value = ''
+  try { await action() }
+  catch (error) { editError.value = error instanceof Error ? error.message : 'Não foi possível salvar. Tente novamente.' }
+  finally { actionPending.value = false }
+}
+const closeMatrixDialogs = () => {
+  if (actionPending.value || store.syncing) return
+  const changed = (addState.value.open && (addState.value.title || addState.value.amount || addState.value.recurrence !== 1))
+    || (renameState.value.open && renameState.value.newTitle !== renameState.value.oldTitle)
+  if (changed && !window.confirm('Descartar as alterações do formulário?')) return
+  renameState.value.open = false; deleteState.value.open = false; clearRowState.value.open = false; addState.value.open = false
+}
+useDialog(anyDialogOpen, matrixDialog, closeMatrixDialogs)
+onMounted(() => {
+  if (route.query.create === 'expense') {
+    openAdd('expense')
+    void router.replace({ query: { ...route.query, create: undefined } })
+  }
+})
 </script>
 
-<style scoped>
-.plan-screen {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* ── Barra de filtros ────────────────────────────── */
-.plan-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.plan-search {
-  flex: 1;
-  min-width: 180px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 12px;
-  background: var(--surface2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text3);
-  transition: box-shadow var(--ds-motion-fast) linear;
-}
-.plan-search--focus {
-  box-shadow: var(--shadow-xs);
-}
-.plan-search input {
-  flex: 1;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text);
-}
-.plan-search input::placeholder { color: var(--text3); }
-/* Neutraliza a altura global de inputs em telas pequenas (evita estourar a barra). */
-.plan-search input[type='text'] { height: 100%; }
-@media (max-width: 767px) {
-  .plan-search { height: 44px; }
-}
-.plan-search-clear {
-  flex-shrink: 0;
-  border: none;
-  background: transparent;
-  color: var(--text3);
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0 2px;
-  font-family: inherit;
-}
-.plan-search-clear:hover { color: var(--text); }
-
-.plan-seg {
-  display: flex;
-  gap: 6px;
-}
-.plan-seg-btn {
-  padding: 7px 14px;
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--ds-radius-md);
-  box-shadow: var(--shadow-xs);
-  background: var(--surface);
-  color: var(--text2);
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 12px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-.plan-seg-btn--on {
-  background: var(--primary);
-  color: var(--on-primary);
-}
-.plan-seg-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: none;
-}
-
-.plan-new-btn {
-  padding: 8px 16px;
-  background: var(--primary);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  color: var(--on-primary);
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 12.5px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-.plan-new-btn:active { transform: translate(2px, 2px); box-shadow: none; }
-
-.plan-ghost-btn {
-  flex: 1;
-  padding: 10px 14px;
-  background: var(--surface2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  color: var(--text);
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 12.5px;
-  cursor: pointer;
-}
-.plan-ghost-btn:active { transform: translate(2px, 2px); box-shadow: none; }
-
-/* ── Totalizadores ───────────────────────────────── */
-.plan-screen .ds-money {
-  font-family: var(--ds-font-family-grid);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-}
-
-.plan-totals {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.plan-total {
-  padding: 9px 18px;
-  border-radius: var(--ds-radius-md);
-  border: 1px solid var(--success);
-  background: var(--success-light);
-  display: flex;
-  flex-direction: column;
-  min-width: 120px;
-}
-.plan-total--income {
-  border-color: var(--success);
-  background: var(--success-light);
-}
-.plan-total--expense {
-  border-color: var(--danger);
-  background: var(--danger-light);
-}
-.plan-total-label {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.plan-total--income .plan-total-label,
-.plan-total--income .plan-total-value { color: var(--success); }
-.plan-total--expense .plan-total-label,
-.plan-total--expense .plan-total-value { color: var(--danger); }
-.plan-total-label--muted { color: var(--text3) !important; }
-.plan-total-value {
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.plan-hint {
-  font-size: 11.5px;
-  color: var(--text3);
-  font-weight: 600;
-}
-
-/* ── Painel + tabela ─────────────────────────────── */
-.plan-panel {
-  display: flex;
-  flex-direction: column;
-}
-.plan-panel-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 16px;
-}
-.plan-panel-title {
-  font-size: 13.5px;
-  font-weight: 800;
-  color: var(--text);
-  margin: 0;
-}
-.plan-panel-meta {
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text3);
-}
-.plan-panel-total {
-  margin-left: auto;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.plan-scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
-}
-
-.plan-table {
-  border-collapse: collapse;
-  width: max-content;
-  min-width: 100%;
-  font-size: 12.5px;
-}
-
-.plan-table th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--surface2);
-  border-bottom: var(--border-width) solid var(--border);
-  padding: 10px 14px;
-  text-align: right;
-  white-space: nowrap;
-  color: var(--text3);
-  font-weight: 700;
-  font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.plan-table th.th-sticky {
-  left: 0;
-  z-index: 3;
-  text-align: left;
-  border-right: var(--border-width) solid var(--border);
-  min-width: 94px;
-}
-.plan-table th.th-col {
-  padding: 0;
-  min-width: 96px;
-  max-width: 130px;
-}
-.plan-table th.th-sum { min-width: 96px; }
-.plan-table th.th-sum--primary { color: var(--primary); }
-.plan-table th.th-add {
-  padding: 6px 10px;
-  min-width: 96px;
-  text-align: left;
-}
-
-.plan-table tbody tr {
-  border-bottom: 1px solid var(--border);
-}
-.plan-table tbody tr:hover .td-sticky { background: var(--surface2); }
-
-.plan-table td {
-  padding: 10px 14px;
-  text-align: right;
-  white-space: nowrap;
-  color: var(--text);
-}
-
-.td-sticky {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  text-align: left;
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--text2);
-  background: var(--surface);
-  border-right: var(--border-width) solid var(--border);
-  transition: background var(--ds-motion-fast) linear;
-}
-.td-sticky-inner {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  justify-content: space-between;
-}
-
-.td-data {
-  cursor: text;
-  user-select: none;
-  min-width: 96px;
-  max-width: 130px;
-  padding: 6px 12px;
-  font-family: var(--ds-font-family-grid);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-}
-.td-data.is-empty { color: var(--text3); font-weight: 600; }
-.td-data.is-editing {
-  outline: var(--border-width) solid var(--primary);
-  outline-offset: calc(-1 * var(--border-width));
-}
-
-.td-sum {
-  font-family: var(--ds-font-family-grid);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-}
-.td-filler { padding: 0; }
-
-.is-positive { color: var(--success); }
-.is-negative { color: var(--danger); }
-.is-muted    { color: var(--text3); }
-
-.tfoot-row .td-foot {
-  border-top: var(--border-width) solid var(--border);
-  background: var(--danger-light);
-  color: var(--danger);
-  font-family: var(--ds-font-family-grid);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-  padding: 9px 14px;
-}
-.tfoot-row .td-sticky.td-foot {
-  background: var(--danger-light);
-  color: var(--danger);
-}
-
-.cell-input {
-  width: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: var(--ds-font-family-grid);
-  font-size: 12.5px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-  text-align: right;
-  color: var(--text);
-  display: block;
-  padding: 0;
-}
-
-/* ── Conteúdo da célula ──────────────────────────── */
-.cell-content {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 5px;
-  min-height: 18px;
-}
-.cell-count {
-  font-size: 8px;
-  color: var(--text3);
-  flex-shrink: 0;
-}
-
-/* ── Status dot ──────────────────────────────────── */
-.status-dot {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  cursor: pointer;
-  padding: 0;
-  outline: none;
-  transition: transform .12s, opacity .12s;
-  opacity: 0.9;
-}
-.status-dot:hover { transform: scale(1.4); opacity: 1; }
-
-.status-dot--paid      { background: var(--success); }
-.status-dot--received  { background: var(--success); }
-.status-dot--pending-expense { background: var(--danger); }
-.status-dot--pending-income  { background: var(--warning); }
-.status-dot--mixed     { background: var(--warning); }
-
-/* ── Pills (Tipo / Status) ───────────────────────── */
-.plan-pill {
-  display: inline-block;
-  padding: 2px 10px;
-  border: none;
-  border-radius: var(--radius-pill);
-  font-family: inherit;
-  font-size: 10.5px;
-  font-weight: 700;
-  white-space: nowrap;
-  box-shadow: none;
-  cursor: pointer;
-}
-.plan-pill--success { background: var(--success-light); color: var(--success); }
-.plan-pill--danger  { background: var(--danger-light);  color: var(--danger); }
-.plan-pill--warning { background: var(--warning-light); color: var(--warning); }
-
-/* ── Column header ───────────────────────────────── */
-.col-head {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-  min-height: 42px;
-  padding: 8px 10px 8px 14px;
-  gap: 3px;
-  height: 100%;
-}
-.col-head-main {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-.col-title {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: right;
-  cursor: grab;
-}
-.col-title:active { cursor: grabbing; }
-.due-day-badge {
-  align-self: flex-end;
-  cursor: default;
-  font-size: 9px;
-  padding: 1px 8px;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-}
-.col-menu-btn {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-xs);
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text3);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.12s, background 0.12s;
-  font-family: inherit;
-  line-height: 1;
-}
-th:hover .col-menu-btn {
-  opacity: 1;
-}
-.col-menu-btn:hover {
-  background: var(--surface);
-  border-color: var(--border);
-  color: var(--primary);
-}
-
-@media (max-width: 767px) {
-  .plan-scroll {
-    scrollbar-color: var(--primary) var(--surface2);
-    scrollbar-width: thin;
-  }
-  .col-menu-btn { opacity: 1; }
-}
-
-/* ── Row clear-values button ─────────────────────── */
-.row-clear-btn {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: var(--radius-xs);
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text3);
-  cursor: pointer;
-  padding: 0;
-  transition: opacity 0.12s, background 0.12s, color 0.12s;
-}
-.row-clear-btn:hover { background: var(--danger-light); border-color: var(--border); color: var(--danger); }
-
-/* ── Add column button ───────────────────────────── */
-.add-col-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: var(--border-width) dashed var(--border);
-  border-radius: var(--radius-xs);
-  padding: 4px 8px;
-  background: transparent;
-  color: var(--text3);
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  font-family: inherit;
-  text-transform: none;
-  letter-spacing: 0;
-  transition: border-color 0.12s, color 0.12s, background 0.12s;
-}
-.add-col-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-dim);
-}
-
-/* ── Cards (≤640px) ──────────────────────────────── */
-.mcard {
-  display: flex;
-  flex-direction: column;
-}
-.mcard-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 11px 14px;
-}
-.mcard-month {
-  flex: 1;
-  min-width: 0;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.mcard-net {
-  font-size: 13px;
-  font-weight: 800;
-}
-.mcard-clear {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-xs);
-  background: transparent;
-  color: var(--text3);
-  cursor: pointer;
-  padding: 0;
-}
-.mcard-clear:hover { background: var(--danger-light); color: var(--danger); border-color: var(--border); }
-
-.mcard-group {
-  padding: 8px 14px 4px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text3);
-}
-.mcard-empty {
-  padding: 0 14px 10px;
-  font-size: 11.5px;
-  color: var(--text3);
-}
-
-.mcard-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 14px;
-  border-bottom: 1px solid var(--border);
-  cursor: text;
-}
-.mcard-swatch {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  border: 1px solid var(--border);
-}
-.mcard-swatch--expense { background: var(--danger); }
-.mcard-swatch--income  { background: var(--success); }
-
-.mcard-row-main { flex: 1; min-width: 0; }
-.mcard-row-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.mcard-row-sub {
-  margin-top: 2px;
-  font-size: 10.5px;
-  color: var(--text3);
-}
-
-.mcard-row-side {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 3px;
-}
-.mcard-amount {
-  font-family: var(--ds-font-family-grid);
-  font-size: 13px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-  color: var(--text);
-}
-.mcard-amount.is-empty { color: var(--text3); font-weight: 600; }
-.mcard-input {
-  width: 120px;
-  height: 32px;
-  border: var(--border-width) solid var(--primary);
-  border-radius: var(--radius-sm);
-  background: var(--surface2);
-  font-family: var(--ds-font-family-grid);
-  font-size: 16px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "zero" 1;
-  text-align: right;
-  color: var(--text);
-  outline: none;
-  padding: 0 8px;
-}
-
-.mcard-foot {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px;
-  border-top: var(--border-width) solid var(--border);
-  background: var(--surface2);
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text3);
-}
-.mcard-foot b { font-size: 12px; font-weight: 800; margin-left: 4px; }
-
-.mcard-actions {
-  display: flex;
-  gap: 8px;
-}
-
-/* ── Seletor de mês (aba Lista) ──────────────────── */
-.month-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.month-nav-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  background: var(--surface2);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-.month-nav-btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; }
-.month-nav-btn:not(:disabled):active { transform: translate(2px, 2px); box-shadow: none; }
-
-/* ── Tooltip / menu flutuante ────────────────────── */
-.plan-tooltip {
-  position: fixed;
-  z-index: 9999;
-  background: var(--surface2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--ds-radius-md);
-  box-shadow: var(--shadow-sm);
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-  pointer-events: none;
-  white-space: nowrap;
-  max-width: 320px;
-  transform: translateX(-50%);
-}
-
-.plan-menu {
-  position: fixed;
-  z-index: 9999;
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  padding: 4px;
-  min-width: 168px;
-}
-
-/* ── Dropdown menu items ─────────────────────────── */
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 12px;
-  border: var(--border-width) solid transparent;
-  border-radius: var(--radius-xs);
-  background: transparent;
-  color: var(--text2);
-  font-size: 13px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.1s;
-  text-align: left;
-}
-.menu-item:hover { background: var(--surface2); border-color: var(--border); }
-.menu-item-danger { color: var(--danger); }
-.menu-item-danger:hover { background: var(--danger-light); }
-
-/* ── Modal ───────────────────────────────────────── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: var(--overlay);
-}
-.modal-box {
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: var(--shadow-md);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.modal-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text);
-}
-.modal-sub {
-  font-size: 13px;
-  color: var(--text3);
-  line-height: 1.5;
-}
-.modal-label {
-  display: block;
-  font-size: 10.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text3);
-  margin-bottom: 6px;
-}
-.modal-input {
-  width: 100%;
-  background: var(--surface2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0 12px;
-  height: 42px;
-  font-size: 14px;
-  font-weight: 650;
-  color: var(--text);
-  font-family: inherit;
-  outline: none;
-  box-sizing: border-box;
-  transition: box-shadow 0.15s, transform 0.15s;
-  -webkit-appearance: none;
-}
-.modal-input:focus {
-  box-shadow: var(--shadow-sm);
-  transform: translate(-1px, -1px);
-}
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 4px;
-}
-.btn-cancel {
-  background: var(--surface2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0 16px;
-  height: 40px;
-  font-size: 13px;
-  font-weight: 750;
-  color: var(--text2);
-  cursor: pointer;
-  font-family: inherit;
-}
-.btn-save {
-  background: var(--primary);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0 20px;
-  height: 40px;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--on-primary);
-  cursor: pointer;
-  font-family: inherit;
-}
-.btn-save:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-delete {
-  background: var(--danger);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0 20px;
-  height: 40px;
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--on-danger);
-  cursor: pointer;
-  font-family: inherit;
-}
-.btn-delete:disabled { opacity: 0.45; cursor: not-allowed; }
-
-/* ── Modal transition ────────────────────────────── */
-.modal-enter-active, .modal-leave-active { transition: opacity var(--ds-motion-base) linear; }
-.modal-enter-active .modal-box, .modal-leave-active .modal-box { transition: transform var(--ds-motion-base) linear; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
-.modal-enter-from .modal-box, .modal-leave-to .modal-box { transform: translate(5px, 5px); }
-</style>
+<style scoped src="../../styles/matrix.css"></style>

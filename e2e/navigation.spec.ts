@@ -7,10 +7,10 @@ const modules = [
   { navigation: 'Planejamento Anual', heading: 'Planejamento Anual' },
   { navigation: 'Planilha', heading: 'Planilha' },
   { navigation: 'Assinaturas', heading: 'Assinaturas' },
-  { navigation: 'Cartões e Contas', heading: 'Cartões e Contas' },
+  { navigation: 'Cartões', heading: 'Cartões' },
   { navigation: 'Lista de Desejos', heading: 'Lista de Desejos' },
-  { navigation: 'Dívidas e Parcelas', heading: 'Dívidas e Parcelas' },
-  { navigation: /Alertas Inteligentes$/, heading: 'Alertas Inteligentes' },
+  { navigation: 'Dívidas', heading: 'Dívidas' },
+  { navigation: /Alertas$/, heading: 'Alertas' },
   { navigation: 'Primeiros passos', heading: 'Primeiros passos' },
   { navigation: 'Ajuda', heading: 'Ajuda' },
   { navigation: 'Novidades', heading: 'Novidades' },
@@ -24,7 +24,11 @@ test.describe('navegação do Financeiro Familiar', () => {
     await openApp(page)
 
     for (const module of modules) {
-      await page.getByRole('button', { name: module.navigation, exact: typeof module.navigation === 'string' }).click()
+      if (['Primeiros passos', 'Ajuda', 'Novidades', 'Design System'].includes(String(module.navigation))) {
+        await page.getByRole('button', { name: 'Configurações', exact: true }).click()
+      }
+      const navigationRoot = ['Primeiros passos', 'Ajuda', 'Novidades', 'Design System'].includes(String(module.navigation)) ? page.locator('.cfg__shortcut-grid') : page
+      await navigationRoot.getByRole('button', { name: module.navigation, exact: !['Primeiros passos', 'Ajuda', 'Novidades', 'Design System'].includes(String(module.navigation)) && typeof module.navigation === 'string' }).first().click()
       await expect(page.getByRole('heading', { name: module.heading, level: 1 })).toBeVisible()
       if (module.heading === 'Novidades') {
         await expect(page.getByRole('button', { name: 'Verificar atualizações', exact: true })).toBeVisible()
@@ -37,7 +41,7 @@ test.describe('navegação do Financeiro Familiar', () => {
     await openApp(page)
     await page.getByRole('button', { name: 'Planilha', exact: true }).click()
 
-    await expect(page.locator('.matrix-table').first().getByText('Total', { exact: true })).toBeVisible()
+    await expect(page.locator('.plan-table').first()).toBeVisible()
     await page.getByRole('button', { name: 'Lista', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Matriz', exact: true })).toBeVisible()
   })
@@ -47,7 +51,7 @@ test.describe('navegação do Financeiro Familiar', () => {
     await openApp(page)
     await page.getByRole('button', { name: 'Planilha', exact: true }).click()
 
-    const expenses = page.locator('.matrix-table').first()
+    const expenses = page.locator('.plan-table').first()
     const titles = expenses.locator('.col-title')
     await expect(titles.first()).toBeVisible()
     const before = await titles.allTextContents()

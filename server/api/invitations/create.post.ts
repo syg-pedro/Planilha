@@ -2,10 +2,11 @@ import { createError, defineEventHandler, readBody } from 'h3'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { assertEditKey } from '../../utils/auth'
+import { requireSessionUser } from '../../utils/sessionUser'
 import { makeId } from '../../../shared/id'
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   role: z.enum(['member', 'owner']).default('member')
 })
 
@@ -29,6 +30,11 @@ export default defineEventHandler(async (event) => {
     { auth: { persistSession: false } }
   )
 
+  const user = await requireSessionUser(event)
+  const { data: member, error: memberError } = await client.from('household_members').select('role').eq('user_id', user.id).eq('household_id', householdId).single()
+  if (memberError || !member || (parsed.data.role === 'owner' && member.role !== 'owner')) {
+    throw createError({ statusCode: 403, statusMessage: 'Somente um responsável pode convidar outro responsável.' })
+  }
   const token = crypto.randomUUID()
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -37,6 +43,7 @@ export default defineEventHandler(async (event) => {
     household_id: householdId,
     email: parsed.data.email,
     token,
+    created_by: user.id,
     role: parsed.data.role,
     expires_at: expiresAt
   })

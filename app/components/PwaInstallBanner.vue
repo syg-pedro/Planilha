@@ -6,7 +6,7 @@
         <img src="/icon-192.png" alt="" class="pwa-banner-icon" />
         <div class="pwa-banner-text">
           <p class="pwa-banner-title">Financeiro Familiar</p>
-          <p class="pwa-banner-desc">Instale o app para acesso rápido e offline</p>
+          <p class="pwa-banner-desc">Instale o app para acesso rápido</p>
         </div>
         <button class="pwa-banner-btn pwa-banner-install" @click="install">Instalar</button>
         <button class="pwa-banner-btn pwa-banner-dismiss" aria-label="Fechar" @click="dismiss">✕</button>

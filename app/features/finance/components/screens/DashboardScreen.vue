@@ -1,17 +1,23 @@
 <template>
   <div class="dash">
-    <BaseAlertBanner :alerts="smartAlerts" />
+    <div class="dash__actions"><button type="button" class="ds-button" @click="newEntry">+ Novo lançamento</button></div>
+    <details v-if="smartAlerts.length"><summary>{{ smartAlerts.length }} alertas precisam de atenção</summary><BaseAlertBanner :alerts="smartAlerts" /></details>
 
-    <!-- KPIs -->
     <div class="dash__kpis">
+      <BaseKpiCard icon="balance"  label="Saldo previsto"   :value="fmt(store.monthlyKpis.net)"           :color="store.monthlyKpis.net >= 0 ? 'var(--success)' : 'var(--danger)'" sub="Inclui valores ainda pendentes" />
+      <BaseKpiCard icon="pending"  label="A pagar"         :value="fmt(pendingExpense)" color="var(--warning)" sub="Despesas pendentes" />
+      <BaseKpiCard icon="income" label="A receber" :value="fmt(pendingIncome)" color="var(--success)" sub="Receitas pendentes" />
+    </div>
+    <details class="dash__details"><summary>Ver receitas, despesas e limites</summary>
+      <div class="dash__kpis">
       <BaseKpiCard icon="income"   label="Receitas"        :value="fmt(store.monthlyKpis.totalIncome)"   color="var(--success)" :sub="currentMonthLabel" />
       <BaseKpiCard icon="expense"  label="Despesas"        :value="fmt(store.monthlyKpis.totalExpense)"  color="var(--danger)"  :sub="currentMonthLabel" />
-      <BaseKpiCard icon="balance"  label="Saldo líquido"   :value="fmt(store.monthlyKpis.net)"           :color="store.monthlyKpis.net >= 0 ? 'var(--success)' : 'var(--danger)'" :sub="store.monthlyKpis.net >= 0 ? 'Positivo' : 'Negativo'" />
-      <BaseKpiCard icon="pending"  label="Em aberto"       :value="fmt(store.monthlyKpis.pendingAmount)" color="var(--warning)" sub="Pendências" />
       <BaseKpiCard icon="calendar" label="Próx. 7 dias"    :value="fmt(store.monthlyKpis.upcoming7Days)" color="var(--accent)"  sub="Vencimentos" />
       <BaseKpiCard icon="card"     label="Uso dos cartões" :value="`${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`" :color="store.monthlyKpis.cardsUsedPercent > 80 ? 'var(--danger)' : 'var(--primary)'" sub="do limite total" />
-    </div>
+      </div>
+    </details>
 
+    <p v-if="actionError" role="alert" class="ds-alert-error">{{ actionError }}</p>
     <!-- Fluxo de caixa + próximos vencimentos -->
     <div class="dash__row">
       <section class="neo-panel">
@@ -35,7 +41,7 @@
         </div>
       </section>
 
-      <section class="neo-panel">
+      <section class="neo-panel dash__upcoming">
         <header class="neo-panel-header dash__panel-head">
           <h3 class="dash__panel-title">Próximos vencimentos</h3>
           <span class="dash__chip" style="background: var(--danger-light); color: var(--danger)">{{ upcomingEntries.length }}</span>
@@ -47,6 +53,7 @@
             <p class="dash__due-sub">{{ accountName(item.accountId) }} · {{ fmtDate(item.dueDate) }}</p>
           </div>
           <span class="dash__due-amount ds-money">{{ fmt(item.amount) }}</span>
+          <BaseButton size="sm" :disabled="!!paying || store.syncing" :aria-label="`Marcar ${item.title} como pago`" @click="pay(item)">Pagar</BaseButton>
           <span class="dash__due-tag" :style="tagStyle(item.daysLeft)">{{ tagLabel(item.daysLeft) }}</span>
         </div>
       </section>
@@ -67,8 +74,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { civilDate, entriesInPeriod, reportBounds } from "#shared/period"
+import { computed, ref } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
+import type { FinanceEntry } from '#shared/types'
 import { buildCashflowSeries } from '#shared/finance'
 import BaseAlertBanner from '~/components/base/BaseAlertBanner.vue'
 import BaseKpiCard     from '~/components/base/BaseKpiCard.vue'
@@ -87,19 +96,20 @@ const fmtDate  = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt
 const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 const MONTH_FULL  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 const now         = new Date()
-const currentMKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
+const today = civilDate(now, store.settings.timezone)
+const currentMKey = today.slice(0, 7)
 
-const currentMonthLabel = computed(() => MONTH_FULL[now.getUTCMonth()] ?? '')
+const currentMonthLabel = computed(() => MONTH_FULL[Number(currentMKey.slice(5)) - 1] ?? '')
 
 // ── Alertas derivados dos dados reais ────────────────────────
 const smartAlerts = computed(() => {
   type Tone = 'danger' | 'warning' | 'info' | 'success'
   const alerts: { tone: Tone; title: string; body: string }[] = []
-  const todayStr = now.toISOString().slice(0, 10)
-  const in7      = new Date(now); in7.setDate(in7.getDate() + 7)
+  const todayStr = today
+  const in7      = new Date(`${today}T00:00:00Z`); in7.setUTCDate(in7.getUTCDate() + 7)
   const in7Str   = in7.toISOString().slice(0, 10)
 
-  const urgent = store.entries.filter(
+  const urgent = store.allCashableEntries.filter(
     e => e.kind === 'expense' && e.status !== 'paid' && e.dueDate >= todayStr && e.dueDate <= in7Str
   )
   for (const e of urgent.slice(0, 2)) {
@@ -111,12 +121,13 @@ const smartAlerts = computed(() => {
 
 // ── Fluxo de caixa (últimos 6 meses) ─────────────────────────
 const cashflowData = computed(() => {
-  const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1))
-  const recent       = store.allCashableEntries.filter(e => new Date(e.dueDate + 'T00:00:00Z') >= sixMonthsAgo)
-  const series       = buildCashflowSeries(recent, store.settings.periodMode)
+  const bounds = reportBounds('6months', now, store.settings.timezone)
+  const sixMonthsAgo = new Date(`${bounds.start}T00:00:00Z`)
+  const recent = entriesInPeriod(store.allCashableEntries, bounds.start, bounds.end, store.filters.periodMode)
+  const series       = buildCashflowSeries(recent, store.filters.periodMode)
   const valuesByMonth = new Map(series.map(item => [item.month, item]))
   const months = Array.from({ length: 6 }, (_, index) => {
-    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5 + index, 1))
+    const date = new Date(Date.UTC(sixMonthsAgo.getUTCFullYear(), sixMonthsAgo.getUTCMonth() + index, 1))
     return date.toISOString().slice(0, 7)
   })
 
@@ -133,14 +144,14 @@ const cashflowData = computed(() => {
 
 // ── Próximos vencimentos ─────────────────────────────────────
 const upcomingEntries = computed(() => {
-  const todayStr = now.toISOString().slice(0, 10)
-  const in14     = new Date(now); in14.setDate(in14.getDate() + 14)
+  const todayStr = today
+  const in14     = new Date(`${today}T00:00:00Z`); in14.setUTCDate(in14.getUTCDate() + 14)
   const in14Str  = in14.toISOString().slice(0, 10)
-  return store.entries
+  return store.allCashableEntries
     .filter(e => e.kind === 'expense' && e.status !== 'paid' && e.dueDate >= todayStr && e.dueDate <= in14Str)
     .map(e => ({
       ...e,
-      daysLeft: Math.ceil((new Date(e.dueDate + 'T00:00:00Z').getTime() - now.getTime()) / 86400000)
+      daysLeft: Math.ceil((new Date(e.dueDate + 'T00:00:00Z').getTime() - new Date(`${today}T00:00:00Z`).getTime()) / 86400000)
     }))
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
 })
@@ -163,9 +174,27 @@ const savingsRateLabel = computed(() =>
     ? `${((store.monthlyKpis.net / store.monthlyKpis.totalIncome) * 100).toFixed(1)}%`
     : '0,0%'
 )
+const router = useRouter()
+const route = useRoute()
+const newEntry = () => router.push({ query: { ...route.query, screen: 'planilha', create: 'expense' } })
+const pendingExpense = computed(() => store.cashableEntries.filter(e => e.kind === 'expense' && e.status !== 'paid').reduce((sum, e) => sum + e.amount, 0))
+const pendingIncome = computed(() => store.cashableEntries.filter(e => e.kind === 'income' && e.status !== 'paid').reduce((sum, e) => sum + e.amount, 0))
+const paying = ref<string | null>(null)
+const actionError = ref('')
+const pay = async (entry: FinanceEntry) => {
+  if (paying.value) return
+  paying.value = entry.id
+  actionError.value = ''
+  try { await store.saveEntriesBatch({ upserts: [{ id: entry.id, status: 'paid' }], deletes: [] }) }
+  catch (error) { actionError.value = error instanceof Error ? error.message : 'Falha ao salvar.' }
+  finally { paying.value = null }
+}
 </script>
 
 <style scoped>
+.dash__details summary { min-height: 44px; cursor: pointer; padding: 10px 0; }
+.dash__actions button { min-height: 44px; padding: 10px 16px; background: var(--primary); color: var(--on-primary); border-radius: var(--radius-sm); font-weight: 700; }
+@media (max-width: 767px) { .dash__upcoming { order: -1; } }
 .dash {
   display: flex;
   flex-direction: column;
@@ -328,6 +357,9 @@ const savingsRateLabel = computed(() =>
 }
 
 @media (max-width: 640px) {
+  .dash__due { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .dash__due :deep(button) { min-height: 44px; }
+  .dash__due-tag { justify-self: end; }
   .dash {
     gap: 14px;
   }

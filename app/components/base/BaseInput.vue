@@ -2,6 +2,7 @@
   <label class="flex flex-col gap-1 text-sm">
     <span v-if="label" class="font-medium ds-text-muted">{{ label }}</span>
     <input
+      v-bind="$attrs"
       :value="modelValue"
       :type="type"
       :placeholder="placeholder"
@@ -12,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({ inheritAttrs: false })
 withDefaults(
   defineProps<{
     modelValue: string
