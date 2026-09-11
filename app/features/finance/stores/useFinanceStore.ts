@@ -5,7 +5,7 @@ import { computed, ref, onScopeDispose, watch } from 'vue'
 import { useOfflineQueue } from '../composables/useOfflineQueue'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
-import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildHeatmap, buildProjection, computeKpis, excludeBenefitEntries } from '#shared/finance'
+import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildExpensePaymentCycles, buildHeatmap, buildProjection, computeKpis, excludeBenefitEntries } from '#shared/finance'
 import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG } from '#shared/constants'
 import { createDefaultOnboardingState } from '#shared/onboarding'
 import { syncFinanceWidgetSnapshot } from '~/features/finance/utils/financeWidget'
@@ -87,6 +87,8 @@ export const useFinanceStore = defineStore('finance', () => {
   const allCashableEntries = computed(() => excludeBenefitEntries(entries.value, accounts.value))
 
   const monthlyKpis = computed(() => computeKpis(filteredEntries.value, accounts.value, new Date(), settings.value.timezone))
+
+  const expensePaymentCycles = computed(() => buildExpensePaymentCycles(entries.value, accounts.value, new Date(), settings.value.timezone))
 
   const categoryMap = computed(() => {
     const map = new Map<string, Category>()
@@ -497,6 +499,7 @@ export const useFinanceStore = defineStore('finance', () => {
     requestNotifications,
     notifyUpcoming,
     monthlyKpis,
+    expensePaymentCycles,
     applyTheme,
     setThemeMode,
     flushOfflineQueue,

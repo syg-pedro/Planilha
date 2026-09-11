@@ -29,6 +29,7 @@
       <p class="base-kpi__label">{{ label }}</p>
       <p class="base-kpi__value">{{ value }}</p>
       <p v-if="sub" class="base-kpi__sub">{{ sub }}</p>
+      <p v-if="detail" class="base-kpi__detail">{{ detail }}</p>
     </div>
   </div>
 </template>
@@ -41,12 +42,14 @@ withDefaults(defineProps<{
   label: string
   value: string
   sub?: string
+  detail?: string
   color?: string
   trend?: number
   alert?: boolean
   onClick?: () => void
 }>(), {
   sub: '',
+  detail: '',
   color: 'var(--primary)',
   trend: undefined,
   alert: false,
@@ -160,6 +163,13 @@ withDefaults(defineProps<{
   font-weight: 600;
 }
 
+.base-kpi__detail {
+  margin-top: 3px;
+  color: var(--text2);
+  font-size: 10px;
+  font-weight: 700;
+}
+
 @media (max-width: 640px) {
   .base-kpi {
     gap: 7px;
@@ -200,6 +210,11 @@ withDefaults(defineProps<{
   .base-kpi__sub {
     margin-top: 3px;
     font-size: 10px;
+  }
+
+  .base-kpi__detail {
+    margin-top: 2px;
+    font-size: 9px;
   }
 }
 </style>

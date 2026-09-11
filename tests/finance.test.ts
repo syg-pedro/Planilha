@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeKpis } from '../shared/finance'
+import { buildExpensePaymentCycles, computeKpis } from '../shared/finance'
 import type { Account, FinanceEntry } from '../shared/types'
 
 const accounts: Account[] = [
@@ -66,5 +66,29 @@ describe('computeKpis', () => {
     expect(kpis.totalExpense).toBe(500)
     expect(kpis.net).toBe(1500)
     expect(kpis.cardsUsedPercent).toBe(50)
+  })
+})
+
+describe('buildExpensePaymentCycles', () => {
+  it('separates pending expenses by due-date half and ends February on its last day', () => {
+    const benefitAccount: Account = {
+      ...accounts[0],
+      id: 'benefit-1',
+      type: 'benefit',
+      limitTotal: null,
+    }
+    const cycleEntries = [
+      { ...entries[1], id: 'first', accountId: null, amount: 100, dueDate: '2026-02-15', status: 'pending', excludeFromCalc: false },
+      { ...entries[1], id: 'second', accountId: null, amount: 200, dueDate: '2026-02-28', status: 'review', excludeFromCalc: false },
+      { ...entries[1], id: 'paid', accountId: null, amount: 300, dueDate: '2026-02-16', status: 'paid', excludeFromCalc: false },
+      { ...entries[1], id: 'excluded', accountId: null, amount: 400, dueDate: '2026-02-20', status: 'pending', excludeFromCalc: true },
+      { ...entries[1], id: 'benefit', accountId: benefitAccount.id, amount: 500, dueDate: '2026-02-10', status: 'pending', excludeFromCalc: false },
+      { ...entries[1], id: 'next-month', accountId: null, amount: 600, dueDate: '2026-03-01', status: 'pending', excludeFromCalc: false },
+    ]
+
+    expect(buildExpensePaymentCycles(cycleEntries, [...accounts, benefitAccount], new Date('2026-02-10T12:00:00Z'))).toEqual([
+      { id: 'first-half', startDay: 1, endDay: 15, pendingTotal: 100, pendingCount: 1, projectedBalanceImpact: -100 },
+      { id: 'second-half', startDay: 16, endDay: 28, pendingTotal: 200, pendingCount: 1, projectedBalanceImpact: -200 },
+    ])
   })
 })

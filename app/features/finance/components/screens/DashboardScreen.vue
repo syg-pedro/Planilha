@@ -5,7 +5,14 @@
 
     <div class="dash__kpis">
       <BaseKpiCard icon="balance"  label="Saldo previsto"   :value="fmt(store.monthlyKpis.net)"           :color="store.monthlyKpis.net >= 0 ? 'var(--success)' : 'var(--danger)'" sub="Inclui valores ainda pendentes" />
-      <BaseKpiCard icon="pending"  label="A pagar"         :value="fmt(pendingExpense)" color="var(--warning)" sub="Despesas pendentes" />
+      <BaseKpiCard
+        icon="calendar" label="1º ciclo · dias 1 a 15" :value="fmt(firstPaymentCycle.pendingTotal)" color="var(--warning)"
+        :sub="`${firstPaymentCycle.pendingCount} conta(s) pendente(s)`" :detail="`Impacto no saldo previsto: ${fmt(firstPaymentCycle.projectedBalanceImpact)}`"
+      />
+      <BaseKpiCard
+        icon="calendar" :label="`2º ciclo · dias 16 a ${secondPaymentCycle.endDay}`" :value="fmt(secondPaymentCycle.pendingTotal)" color="var(--warning)"
+        :sub="`${secondPaymentCycle.pendingCount} conta(s) pendente(s)`" :detail="`Impacto no saldo previsto: ${fmt(secondPaymentCycle.projectedBalanceImpact)}`"
+      />
       <BaseKpiCard icon="income" label="A receber" :value="fmt(pendingIncome)" color="var(--success)" sub="Receitas pendentes" />
     </div>
     <details class="dash__details"><summary>Ver receitas, despesas e limites</summary>
@@ -177,8 +184,9 @@ const savingsRateLabel = computed(() =>
 const router = useRouter()
 const route = useRoute()
 const newEntry = () => router.push({ query: { ...route.query, screen: 'planilha', create: 'expense' } })
-const pendingExpense = computed(() => store.cashableEntries.filter(e => e.kind === 'expense' && e.status !== 'paid').reduce((sum, e) => sum + e.amount, 0))
 const pendingIncome = computed(() => store.cashableEntries.filter(e => e.kind === 'income' && e.status !== 'paid').reduce((sum, e) => sum + e.amount, 0))
+const firstPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle => cycle.id === 'first-half') ?? { pendingTotal: 0, pendingCount: 0, projectedBalanceImpact: 0, endDay: 15 })
+const secondPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle => cycle.id === 'second-half') ?? { pendingTotal: 0, pendingCount: 0, projectedBalanceImpact: 0, endDay: 30 })
 const paying = ref<string | null>(null)
 const actionError = ref('')
 const pay = async (entry: FinanceEntry) => {
@@ -203,7 +211,7 @@ const pay = async (entry: FinanceEntry) => {
 
 .dash__kpis {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
