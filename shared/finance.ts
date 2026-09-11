@@ -1,5 +1,5 @@
 import { monthKey, parseIsoDate } from './date'
-import type { Account, DashboardFilters, FinanceEntry, FinanceKpis, PeriodMode } from './types'
+import type { Account, DashboardFilters, ExpensePaymentCycle, FinanceEntry, FinanceKpis, PeriodMode } from './types'
 
 export const applyFilters = (entries: FinanceEntry[], filters: DashboardFilters): FinanceEntry[] => {
   const now = new Date()
@@ -70,6 +70,45 @@ export const computeKpis = (entries: FinanceEntry[], accounts: Account[]): Finan
     upcoming7Days,
     cardsUsedPercent: totalLimit > 0 ? (cardExpenses / totalLimit) * 100 : 0
   }
+}
+
+export const buildExpensePaymentCycles = (
+  entries: FinanceEntry[],
+  accounts: Account[],
+  now = new Date(),
+  timezone = 'America/Sao_Paulo'
+): ExpensePaymentCycle[] => {
+  const dateParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(now)
+  const part = (type: Intl.DateTimeFormatPartTypes) => dateParts.find(item => item.type === type)?.value ?? ''
+  const currentMonth = `${part('year')}-${part('month')}`
+  const year = Number(currentMonth.slice(0, 4))
+  const month = Number(currentMonth.slice(5, 7))
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  const cycles: ExpensePaymentCycle[] = [
+    { id: 'first-half', startDay: 1, endDay: 15, pendingTotal: 0, pendingCount: 0, projectedBalanceImpact: 0 },
+    { id: 'second-half', startDay: 16, endDay: lastDay, pendingTotal: 0, pendingCount: 0, projectedBalanceImpact: 0 }
+  ]
+
+  for (const entry of excludeBenefitEntries(entries, accounts)) {
+    if (entry.kind !== 'expense' || entry.status === 'paid' || !entry.dueDate.startsWith(currentMonth)) {
+      continue
+    }
+    const dueDay = Number(entry.dueDate.slice(8, 10))
+    const cycle = dueDay <= 15 ? cycles[0] : cycles[1]
+    if (!cycle || dueDay > cycle.endDay) {
+      continue
+    }
+    cycle.pendingTotal += entry.amount
+    cycle.pendingCount += 1
+    cycle.projectedBalanceImpact -= entry.amount
+  }
+
+  return cycles
 }
 
 export const buildCashflowSeries = (entries: FinanceEntry[], periodMode: PeriodMode): { month: string; income: number; expense: number; net: number }[] => {

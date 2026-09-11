@@ -2,6 +2,18 @@
   <div class="dash">
     <BaseAlertBanner :alerts="smartAlerts" />
 
+    <!-- Ciclos de recebimento -->
+    <div class="dash__payment-cycles">
+      <BaseKpiCard
+        icon="calendar" label="1º ciclo · dias 1 a 15" :value="fmt(firstPaymentCycle.pendingTotal)" color="var(--warning)"
+        :sub="`${firstPaymentCycle.pendingCount} conta(s) pendente(s)`" :detail="`Impacto no saldo previsto: ${fmt(firstPaymentCycle.projectedBalanceImpact)}`"
+      />
+      <BaseKpiCard
+        icon="calendar" :label="`2º ciclo · dias 16 a ${secondPaymentCycle.endDay}`" :value="fmt(secondPaymentCycle.pendingTotal)" color="var(--warning)"
+        :sub="`${secondPaymentCycle.pendingCount} conta(s) pendente(s)`" :detail="`Impacto no saldo previsto: ${fmt(secondPaymentCycle.projectedBalanceImpact)}`"
+      />
+    </div>
+
     <!-- KPIs -->
     <div class="dash__kpis">
       <BaseKpiCard icon="income"   label="Receitas"        :value="fmt(store.monthlyKpis.totalIncome)"   color="var(--success)" :sub="currentMonthLabel" />
@@ -163,6 +175,8 @@ const savingsRateLabel = computed(() =>
     ? `${((store.monthlyKpis.net / store.monthlyKpis.totalIncome) * 100).toFixed(1)}%`
     : '0,0%'
 )
+const firstPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle => cycle.id === 'first-half') ?? { pendingTotal: 0, pendingCount: 0, projectedBalanceImpact: 0, endDay: 15 })
+const secondPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle => cycle.id === 'second-half') ?? { pendingTotal: 0, pendingCount: 0, projectedBalanceImpact: 0, endDay: 30 })
 </script>
 
 <style scoped>
@@ -175,6 +189,12 @@ const savingsRateLabel = computed(() =>
 .dash__kpis {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.dash__payment-cycles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -334,6 +354,10 @@ const savingsRateLabel = computed(() =>
 
   .dash__kpis {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .dash__payment-cycles {
     gap: 8px;
   }
 

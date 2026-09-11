@@ -121,6 +121,15 @@ export interface FinanceKpis {
   cardsUsedPercent: number
 }
 
+export interface ExpensePaymentCycle {
+  id: 'first-half' | 'second-half'
+  startDay: number
+  endDay: number
+  pendingTotal: number
+  pendingCount: number
+  projectedBalanceImpact: number
+}
+
 export interface BootstrapResponse {
   settings: HouseholdSettings
   accounts: Account[]
