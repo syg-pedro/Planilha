@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildExpensePaymentCycles, computeKpis } from '../shared/finance'
+import { buildExpensePaymentCycles, computeKpis, sortExpenseColumnTitlesByDueDate } from '../shared/finance'
 import type { Account, FinanceEntry } from '../shared/types'
 
 const accounts: Account[] = [
@@ -90,5 +90,27 @@ describe('buildExpensePaymentCycles', () => {
       { id: 'first-half', startDay: 1, endDay: 15, pendingTotal: 100, pendingCount: 1, projectedBalanceImpact: -100 },
       { id: 'second-half', startDay: 16, endDay: 28, pendingTotal: 200, pendingCount: 1, projectedBalanceImpact: -200 },
     ])
+  })
+})
+
+describe('sortExpenseColumnTitlesByDueDate', () => {
+  it('sorts expense columns chronologically across a year change and ignores income', () => {
+    const orderedTitles = sortExpenseColumnTitlesByDueDate([
+      { ...entries[1], id: 'jan-next-year', title: 'Janeiro', dueDate: '2027-01-02' },
+      { ...entries[1], id: 'december', title: 'Dezembro', dueDate: '2026-12-20' },
+      { ...entries[0], id: 'income', title: 'Salário', dueDate: '2026-01-01', kind: 'income' },
+    ])
+
+    expect(orderedTitles).toEqual(['Dezembro', 'Janeiro'])
+  })
+
+  it('uses the earliest due date for a recurring expense column', () => {
+    const orderedTitles = sortExpenseColumnTitlesByDueDate([
+      { ...entries[1], id: 'rent-next-year', title: 'Aluguel', dueDate: '2027-01-05' },
+      { ...entries[1], id: 'rent-current-year', title: 'Aluguel', dueDate: '2026-12-05' },
+      { ...entries[1], id: 'utilities', title: 'Contas', dueDate: '2026-12-10' },
+    ])
+
+    expect(orderedTitles).toEqual(['Aluguel', 'Contas'])
   })
 })

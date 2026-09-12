@@ -575,6 +575,7 @@ import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import FinanceEntryGrid from '~/features/finance/components/FinanceEntryGrid.vue'
 import type { EntryKind, EntryStatus, FinanceEntry } from '#shared/types'
+import { sortExpenseColumnTitlesByDueDate } from '#shared/finance'
 
 const store    = useFinanceStore()
 const currency = useCurrency()
@@ -663,20 +664,32 @@ const hiddenColumnCount = computed(() =>
   + (incomeColumns.value.length - visibleIncomeColumns.value.length))
 
 const COLUMN_ORDER_KEY = 'finance-matrix-column-order'
+const EXPENSE_ORDER_MODE_KEY = 'finance-matrix-expense-order-mode'
 const columnOrder = ref<Record<EntryKind, string[]>>({ expense: [], income: [] })
 const columnOrderReady = ref(false)
+const expenseOrderIsManual = ref(false)
 
-function buildColumns(kind: EntryKind): string[] {
+function collectColumnTitles(kind: EntryKind): string[] {
   const titles: string[] = []
   for (const e of store.entries) {
     if (e.kind === kind && !titles.includes(e.title)) titles.push(e.title)
+  }
+  return titles
+}
+
+function buildColumns(kind: EntryKind): string[] {
+  const titles = collectColumnTitles(kind)
+  if (kind === 'expense' && !expenseOrderIsManual.value) {
+    return sortExpenseColumnTitlesByDueDate(store.entries)
   }
   const saved = [...new Set(columnOrder.value[kind].filter(title => titles.includes(title)))]
   return [...saved, ...titles.filter(title => !saved.includes(title))]
 }
 
 const persistColumnOrder = () => {
-  if (import.meta.client) localStorage.setItem(COLUMN_ORDER_KEY, JSON.stringify(columnOrder.value))
+  if (!import.meta.client) return
+  localStorage.setItem(COLUMN_ORDER_KEY, JSON.stringify(columnOrder.value))
+  localStorage.setItem(EXPENSE_ORDER_MODE_KEY, JSON.stringify({ manual: expenseOrderIsManual.value }))
 }
 
 onMounted(() => {
@@ -689,6 +702,19 @@ onMounted(() => {
   } catch {
     // Mantém a ordem dos lançamentos se a preferência local estiver inválida.
   }
+  try {
+    const savedMode = JSON.parse(localStorage.getItem(EXPENSE_ORDER_MODE_KEY) ?? '{}') as { manual?: unknown }
+    if (typeof savedMode.manual === 'boolean') {
+      expenseOrderIsManual.value = savedMode.manual
+    } else {
+      const titles = collectColumnTitles('expense')
+      const saved = columnOrder.value.expense.filter(title => titles.includes(title))
+      expenseOrderIsManual.value = saved.length > 0
+        && saved.join('\0') !== titles.filter(title => saved.includes(title)).join('\0')
+    }
+  } catch {
+    expenseOrderIsManual.value = false
+  }
   columnOrderReady.value = true
 })
 
@@ -698,7 +724,10 @@ watch([columnOrderReady, expenseColumns, incomeColumns], ([ready, expenses, inco
     ...new Set(columnOrder.value[kind].filter(column => columns.includes(column))),
     ...columns.filter(column => !columnOrder.value[kind].includes(column)),
   ]
-  const next = { expense: sync('expense', expenses), income: sync('income', incomes) }
+  const next = {
+    expense: expenseOrderIsManual.value ? sync('expense', expenses) : expenses,
+    income: sync('income', incomes)
+  }
   if (next.expense.join('\0') === columnOrder.value.expense.join('\0') && next.income.join('\0') === columnOrder.value.income.join('\0')) return
   columnOrder.value = next
   persistColumnOrder()
@@ -890,6 +919,7 @@ const openColMenu = (kind: EntryKind, col: string, e: MouseEvent) => {
 const closeColMenu = () => { colMenu.value = null }
 
 const saveColumnOrder = (kind: EntryKind, columns: string[]) => {
+  if (kind === 'expense') expenseOrderIsManual.value = true
   columnOrder.value = { ...columnOrder.value, [kind]: columns }
   persistColumnOrder()
 }

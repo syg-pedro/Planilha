@@ -111,6 +111,23 @@ export const buildExpensePaymentCycles = (
   return cycles
 }
 
+export const sortExpenseColumnTitlesByDueDate = (entries: FinanceEntry[]): string[] => {
+  const firstDueDateByTitle = new Map<string, string>()
+
+  for (const entry of entries) {
+    if (entry.kind !== 'expense') continue
+    const firstDueDate = firstDueDateByTitle.get(entry.title)
+    if (!firstDueDate || entry.dueDate < firstDueDate) {
+      firstDueDateByTitle.set(entry.title, entry.dueDate)
+    }
+  }
+
+  return [...firstDueDateByTitle]
+    .sort(([firstTitle, firstDueDate], [secondTitle, secondDueDate]) =>
+      firstDueDate.localeCompare(secondDueDate) || firstTitle.localeCompare(secondTitle, 'pt-BR'))
+    .map(([title]) => title)
+}
+
 export const buildCashflowSeries = (entries: FinanceEntry[], periodMode: PeriodMode): { month: string; income: number; expense: number; net: number }[] => {
   const map = new Map<string, { income: number; expense: number }>()
 
