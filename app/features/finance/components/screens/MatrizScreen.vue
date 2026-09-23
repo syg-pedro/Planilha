@@ -57,22 +57,28 @@
     </div>
 
     <p v-if="viewMode === 'matrix'" class="plan-hint">
-      {{ months.length }} meses · {{ expenseColumns.length }} despesas · {{ incomeColumns.length }} receitas
+      {{ visibleMonths.length }} meses visíveis · {{ expenseColumns.length }} despesas · {{ incomeColumns.length }} receitas
       <template v-if="hiddenColumnCount > 0"> · {{ hiddenColumnCount }} coluna(s) ocultas pela busca</template>
       <template v-else> · clique em uma célula para editar</template>
     </p>
+
+    <details v-if="viewMode === 'matrix' && hiddenExistingMonths.length" class="hidden-months">
+      <summary>Meses ocultos ({{ hiddenExistingMonths.length }})</summary>
+      <p>Ocultar linhas não altera os lançamentos nem os totais. Preferência salva neste navegador.</p>
+      <button type="button" class="btn-cancel" @click="setHiddenMonths([])">Mostrar todos</button>
+      <button v-for="month in hiddenExistingMonths" :key="month" type="button" class="btn-cancel" @click="setHiddenMonths(hiddenMonths.filter(value => value !== month))">Mostrar {{ formatMonth(month) }}</button>
+    </details>
+    <p v-if="rowPreferenceError" role="alert">{{ rowPreferenceError }}</p>
 
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <!-- MATRIZ VIEW — cards (≤640px)                                    -->
     <!-- ═══════════════════════════════════════════════════════════════ -->
     <template v-if="viewMode === 'matrix' && isCompact">
-      <section v-for="month in months" :key="`card-${month}`" class="neo-panel mcard">
+      <section v-for="month in visibleMonths" :key="`card-${month}`" class="neo-panel mcard">
         <header class="neo-panel-header mcard-head">
           <span class="mcard-month">{{ formatMonthLong(month) }}</span>
           <span class="mcard-net ds-money" :class="sobra(month) >= 0 ? 'is-positive' : 'is-negative'">{{ fmt(sobra(month)) }}</span>
-          <button class="mcard-clear" title="Apagar valores do mês" @click.stop="openClearRow(month)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-          </button>
+          <FinanceRowActions :label="formatMonthLong(month)" @action="handleRowAction(month, $event)" />
         </header>
 
         <p class="mcard-group">Despesas</p>
@@ -84,7 +90,7 @@
         >
           <span class="mcard-swatch mcard-swatch--expense" />
           <div class="mcard-row-main">
-            <p class="mcard-row-title">{{ col }}</p>
+            <button type="button" class="mcard-row-title column-edit-button" @click.stop="columnEditor = { kind: 'expense', title: col, month }">{{ col }}</button>
             <p v-if="getColumnDueDay('expense', col)" class="mcard-row-sub">vence dia {{ getColumnDueDay('expense', col) }}</p>
           </div>
           <div class="mcard-row-side">
@@ -124,7 +130,7 @@
         >
           <span class="mcard-swatch mcard-swatch--income" />
           <div class="mcard-row-main">
-            <p class="mcard-row-title">{{ col }}</p>
+            <button type="button" class="mcard-row-title column-edit-button" @click.stop="columnEditor = { kind: 'income', title: col, month }">{{ col }}</button>
           </div>
           <div class="mcard-row-side">
             <input
@@ -195,13 +201,13 @@
                 >
                   <div class="col-head">
                     <div class="col-head-main">
-                      <span class="col-title" draggable="true" @dragstart="startColumnDrag('expense', col, $event)">{{ truncate(col) }}</span>
+                      <button type="button" class="col-title column-edit-button" :aria-label="`Editar ${col}`" draggable="true" @click.stop="columnEditor = { kind: 'expense', title: col, month: selectedMonth }" @dragstart="startColumnDrag('expense', col, $event)">{{ truncate(col) }}</button>
                       <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('expense', col, $event)">⋮</button>
                     </div>
                     <span
                       v-if="getColumnDueDay('expense', col)"
                       class="plan-pill plan-pill--warning due-day-badge"
-                      :title="`Vencimento recorrente: dia ${getColumnDueDay('expense', col)}`"
+                      :title="`Dias de vencimento dos lançamentos: ${getColumnDueDay('expense', col)}`"
                     >vence {{ getColumnDueDay('expense', col) }}</span>
                   </div>
                 </th>
@@ -213,7 +219,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="month in months"
+                v-for="month in visibleMonths"
                 :key="month"
                 @mouseenter="hoverMonth = month"
                 @mouseleave="hoverMonth = null"
@@ -221,14 +227,7 @@
                 <td class="td-sticky">
                   <div class="td-sticky-inner">
                     <span>{{ formatMonth(month) }}</span>
-                    <button
-                      class="row-clear-btn"
-                      :style="{ opacity: hoverMonth === month ? '1' : '0' }"
-                      title="Apagar valores do mês"
-                      @click.stop="openClearRow(month)"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-                    </button>
+                    <FinanceRowActions :label="formatMonthLong(month)" @action="handleRowAction(month, $event)" />
                   </div>
                 </td>
                 <td
@@ -307,7 +306,7 @@
                 >
                   <div class="col-head">
                     <div class="col-head-main">
-                      <span class="col-title" draggable="true" @dragstart="startColumnDrag('income', col, $event)">{{ truncate(col) }}</span>
+                      <button type="button" class="col-title column-edit-button" :aria-label="`Editar ${col}`" draggable="true" @click.stop="columnEditor = { kind: 'income', title: col, month: selectedMonth }" @dragstart="startColumnDrag('income', col, $event)">{{ truncate(col) }}</button>
                       <button class="col-menu-btn" title="Ações da coluna" @click.stop="openColMenu('income', col, $event)">⋮</button>
                     </div>
                   </div>
@@ -321,7 +320,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="month in months"
+                v-for="month in visibleMonths"
                 :key="month"
                 @mouseenter="hoverMonth = month"
                 @mouseleave="hoverMonth = null"
@@ -329,14 +328,7 @@
                 <td class="td-sticky">
                   <div class="td-sticky-inner">
                     <span>{{ formatMonth(month) }}</span>
-                    <button
-                      class="row-clear-btn"
-                      :style="{ opacity: hoverMonth === month ? '1' : '0' }"
-                      title="Apagar valores do mês"
-                      @click.stop="openClearRow(month)"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-                    </button>
+                    <FinanceRowActions :label="formatMonthLong(month)" @action="handleRowAction(month, $event)" />
                   </div>
                 </td>
                 <td
@@ -408,6 +400,8 @@
       </div>
       <FinanceEntryGrid :month="selectedMonth" />
     </template>
+
+    <FinanceColumnEditor v-if="columnEditor" v-bind="columnEditor" @close="columnEditor = null" />
 
     <!-- ── Tooltip ──────────────────────────────────────────────────── -->
     <Teleport to="body">
@@ -574,10 +568,13 @@
 import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import FinanceEntryGrid from '~/features/finance/components/FinanceEntryGrid.vue'
+import FinanceColumnEditor from '~/features/finance/components/FinanceColumnEditor.vue'
+import FinanceRowActions from '~/features/finance/components/FinanceRowActions.vue'
 import type { EntryKind, EntryStatus, FinanceEntry } from '#shared/types'
 import { sortExpenseColumnTitlesByDueDate } from '#shared/finance'
 
 const store    = useFinanceStore()
+const columnEditor = ref<{ kind: EntryKind; title: string; month: string } | null>(null)
 const currency = useCurrency()
 const fmt = (v: number) => currency.format(v)
 
@@ -718,6 +715,37 @@ onMounted(() => {
   columnOrderReady.value = true
 })
 
+const hiddenMonths = ref<string[]>([])
+const visibleMonths = computed(() => months.value.filter(month => !hiddenMonths.value.includes(month)))
+const hiddenExistingMonths = computed(() => months.value.filter(month => hiddenMonths.value.includes(month)))
+const rowPreferenceError = ref('')
+const hiddenMonthsKey = computed(() => `finance-matrix-hidden-months:${store.entries[0]?.householdId ?? store.accounts[0]?.householdId ?? 'default'}`)
+onMounted(() => {
+  watch(hiddenMonthsKey, (key) => {
+    try {
+      const saved: unknown = JSON.parse(localStorage.getItem(key) ?? '[]')
+      hiddenMonths.value = Array.isArray(saved) ? saved.filter((value): value is string => typeof value === 'string' && /^\d{4}-(0[1-9]|1[0-2])$/.test(value)) : []
+    } catch {
+      hiddenMonths.value = []
+    }
+  }, { immediate: true })
+})
+function setHiddenMonths(value: string[]) {
+  hiddenMonths.value = [...new Set(value)]
+  rowPreferenceError.value = ''
+  try {
+    localStorage.setItem(hiddenMonthsKey.value, JSON.stringify(hiddenMonths.value))
+  } catch {
+    rowPreferenceError.value = 'O navegador não permitiu salvar os meses ocultos. A preferência vale somente nesta sessão.'
+  }
+}
+function handleRowAction(month: string, action: 'view' | 'hide' | 'hidePrevious' | 'clear') {
+  if (action === 'hide') setHiddenMonths([...hiddenMonths.value, month])
+  if (action === 'hidePrevious') setHiddenMonths([...hiddenMonths.value, ...months.value.filter(value => value < month)])
+  if (action === 'view') { selectedMonth.value = month; viewMode.value = 'list' }
+  if (action === 'clear') openClearRow(month)
+}
+
 watch([columnOrderReady, expenseColumns, incomeColumns], ([ready, expenses, incomes]) => {
   if (!ready) return
   const sync = (kind: EntryKind, columns: string[]) => [
@@ -743,16 +771,14 @@ const columnDueDayMap = computed(() => {
     daysByColumn.set(key, days)
   }
 
-  const result = new Map<string, number>()
+  const result = new Map<string, string>()
   for (const [key, days] of daysByColumn) {
-    if (days.size === 1) {
-      result.set(key, [...days][0]!)
-    }
+    result.set(key, [...days].sort((a, b) => a - b).join(' / '))
   }
   return result
 })
 
-const getColumnDueDay = (kind: EntryKind, title: string): number | null =>
+const getColumnDueDay = (kind: EntryKind, title: string): string | null =>
   columnDueDayMap.value.get(`${kind}__${title}`) ?? null
 
 // ─── cell lookup maps ────────────────────────────────────────────────────────
@@ -1093,6 +1119,9 @@ const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending'
   flex-direction: column;
   gap: 12px;
 }
+.hidden-months { padding: 12px; border: 1px solid var(--ds-color-border-default); border-radius: 8px; }
+.hidden-months summary { cursor: pointer; font-weight: 700; }
+.hidden-months button { margin: 8px 8px 0 0; }
 
 /* ── Barra de filtros ────────────────────────────── */
 .plan-toolbar {
@@ -1504,6 +1533,9 @@ const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending'
   cursor: grab;
 }
 .col-title:active { cursor: grabbing; }
+.column-edit-button { background: transparent; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+.column-edit-button:hover { text-decoration: underline; }
+.column-edit-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .due-day-badge {
   align-self: flex-end;
   cursor: default;

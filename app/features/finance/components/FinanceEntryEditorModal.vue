@@ -27,6 +27,7 @@
 
           <!-- Body (scrollable) -->
           <div class="sheet-body">
+            <slot name="context" />
 
             <!-- Descrição -->
             <div class="field-group">
