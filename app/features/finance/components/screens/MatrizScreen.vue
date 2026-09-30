@@ -1,5 +1,5 @@
 <template>
-  <div class="plan-screen" @click="closeColMenu">
+  <div class="plan-screen" :class="{ 'is-selecting': selectionMode }" @click="closeColMenu" @keydown.esc="clearSelection">
 
     <!-- ── Barra de filtros ─────────────────────────────────────────── -->
     <div class="plan-toolbar">
@@ -35,6 +35,14 @@
       <button
         v-if="viewMode === 'matrix'"
         type="button"
+        class="plan-ghost-btn"
+        :aria-pressed="selectionMode"
+        @click.stop="toggleSelectionMode"
+      >{{ selectionMode ? 'Concluir seleção' : 'Selecionar células' }}</button>
+
+      <button
+        v-if="viewMode === 'matrix'"
+        type="button"
         class="plan-new-btn"
         @click.stop="openAdd('expense')"
       >+ Novo lançamento</button>
@@ -59,6 +67,7 @@
     <p v-if="viewMode === 'matrix'" class="plan-hint">
       {{ visibleMonths.length }} meses visíveis · {{ expenseColumns.length }} despesas · {{ incomeColumns.length }} receitas
       <template v-if="hiddenColumnCount > 0"> · {{ hiddenColumnCount }} coluna(s) ocultas pela busca</template>
+      <template v-if="selectionMode"> · clique ou toque para marcar · arraste ou use Shift para selecionar um intervalo</template>
       <template v-else> · clique em uma célula para editar</template>
     </p>
 
@@ -86,8 +95,10 @@
           v-for="col in visibleExpenseColumns"
           :key="`e-${month}-${col}`"
           class="mcard-row"
-          @click="startEdit('expense', col, month, $event)"
+          :class="{ 'is-selected': isCellSelected('expense', col, month) }"
+          @click="handleCellClick('expense', col, month, $event)"
         >
+          <input v-if="selectionMode" type="checkbox" :checked="isCellSelected('expense', col, month)" :aria-label="`Selecionar ${col}, ${formatMonthLong(month)}`" @click.stop @change="selectCell('expense', col, month)" />
           <span class="mcard-swatch mcard-swatch--expense" />
           <div class="mcard-row-main">
             <button type="button" class="mcard-row-title column-edit-button" @click.stop="columnEditor = { kind: 'expense', title: col, month }">{{ col }}</button>
@@ -111,7 +122,7 @@
                 {{ getAmount('expense', col, month) > 0 ? fmt(getAmount('expense', col, month)) : '—' }}
               </p>
               <button
-                v-if="getAmount('expense', col, month) > 0"
+                v-if="!selectionMode && getAmount('expense', col, month) > 0"
                 class="plan-pill"
                 :class="pillClass(getStatus('expense', col, month))"
                 @click.stop="toggleStatus('expense', col, month)"
@@ -126,8 +137,10 @@
           v-for="col in visibleIncomeColumns"
           :key="`i-${month}-${col}`"
           class="mcard-row"
-          @click="startEdit('income', col, month, $event)"
+          :class="{ 'is-selected': isCellSelected('income', col, month) }"
+          @click="handleCellClick('income', col, month, $event)"
         >
+          <input v-if="selectionMode" type="checkbox" :checked="isCellSelected('income', col, month)" :aria-label="`Selecionar ${col}, ${formatMonthLong(month)}`" @click.stop @change="selectCell('income', col, month)" />
           <span class="mcard-swatch mcard-swatch--income" />
           <div class="mcard-row-main">
             <button type="button" class="mcard-row-title column-edit-button" @click.stop="columnEditor = { kind: 'income', title: col, month }">{{ col }}</button>
@@ -150,7 +163,7 @@
                 {{ getAmount('income', col, month) > 0 ? fmt(getAmount('income', col, month)) : '—' }}
               </p>
               <button
-                v-if="getAmount('income', col, month) > 0"
+                v-if="!selectionMode && getAmount('income', col, month) > 0"
                 class="plan-pill"
                 :class="pillClass(getStatus('income', col, month))"
                 @click.stop="toggleStatus('income', col, month)"
@@ -234,9 +247,11 @@
                   v-for="col in visibleExpenseColumns"
                   :key="col"
                   class="td-data ds-money"
-                  :class="{ 'is-editing': editingKey === cellKey('expense', col, month), 'is-empty': getAmount('expense', col, month) === 0 }"
+                  :class="{ 'is-selected': isCellSelected('expense', col, month), 'is-editing': editingKey === cellKey('expense', col, month), 'is-empty': getAmount('expense', col, month) === 0 }"
                   :style="cellTint(getAmount('expense', col, month), editingKey === cellKey('expense', col, month), getStatus('expense', col, month), 'expense')"
-                  @click="startEdit('expense', col, month, $event)"
+                  @pointerdown="beginSelectionDrag('expense', col, month, $event)"
+                  @pointerenter="extendSelectionDrag('expense', col, month, $event)"
+                  @click="handleCellClick('expense', col, month, $event)"
                 >
                   <input
                     v-if="editingKey === cellKey('expense', col, month)"
@@ -250,11 +265,12 @@
                     @click.stop
                   />
                   <div v-else class="cell-content">
+                    <input v-if="selectionMode" type="checkbox" :checked="isCellSelected('expense', col, month)" :aria-label="`Selecionar ${col}, ${formatMonthLong(month)}`" @click.stop @change="selectCell('expense', col, month)" />
                     <sup v-if="getCellCount('expense', col, month) > 1" class="cell-count">×{{ getCellCount('expense', col, month) }}</sup>
                     <span v-if="getAmount('expense', col, month) > 0">{{ fmt(getAmount('expense', col, month)) }}</span>
                     <span v-else>—</span>
                     <button
-                      v-if="getAmount('expense', col, month) > 0"
+                      v-if="!selectionMode && getAmount('expense', col, month) > 0"
                       class="status-dot"
                       :class="`status-dot--${getStatus('expense', col, month) === 'paid' ? 'paid' : getStatus('expense', col, month) === 'mixed' ? 'mixed' : 'pending-expense'}`"
                       :title="getStatus('expense', col, month) === 'paid' ? 'Pago — clique para marcar como não pago' : 'Não pago — clique para marcar como pago'"
@@ -335,9 +351,11 @@
                   v-for="col in visibleIncomeColumns"
                   :key="col"
                   class="td-data ds-money"
-                  :class="{ 'is-editing': editingKey === cellKey('income', col, month), 'is-empty': getAmount('income', col, month) === 0 }"
+                  :class="{ 'is-selected': isCellSelected('income', col, month), 'is-editing': editingKey === cellKey('income', col, month), 'is-empty': getAmount('income', col, month) === 0 }"
                   :style="cellTint(getAmount('income', col, month), editingKey === cellKey('income', col, month), getStatus('income', col, month), 'income')"
-                  @click="startEdit('income', col, month, $event)"
+                  @pointerdown="beginSelectionDrag('income', col, month, $event)"
+                  @pointerenter="extendSelectionDrag('income', col, month, $event)"
+                  @click="handleCellClick('income', col, month, $event)"
                 >
                   <input
                     v-if="editingKey === cellKey('income', col, month)"
@@ -351,11 +369,12 @@
                     @click.stop
                   />
                   <div v-else class="cell-content">
+                    <input v-if="selectionMode" type="checkbox" :checked="isCellSelected('income', col, month)" :aria-label="`Selecionar ${col}, ${formatMonthLong(month)}`" @click.stop @change="selectCell('income', col, month)" />
                     <sup v-if="getCellCount('income', col, month) > 1" class="cell-count">×{{ getCellCount('income', col, month) }}</sup>
                     <span v-if="getAmount('income', col, month) > 0">{{ fmt(getAmount('income', col, month)) }}</span>
                     <span v-else>—</span>
                     <button
-                      v-if="getAmount('income', col, month) > 0"
+                      v-if="!selectionMode && getAmount('income', col, month) > 0"
                       class="status-dot"
                       :class="`status-dot--${getStatus('income', col, month) === 'paid' ? 'received' : getStatus('income', col, month) === 'mixed' ? 'mixed' : 'pending-income'}`"
                       :title="getStatus('income', col, month) === 'paid' ? 'Recebido — clique para marcar como pendente' : 'Pendente — clique para marcar como recebido'"
@@ -400,6 +419,14 @@
       </div>
       <FinanceEntryGrid :month="selectedMonth" />
     </template>
+
+    <div v-if="viewMode === 'matrix' && selectionMode" class="selection-summary">
+      <div role="status" aria-live="polite" aria-atomic="true">
+        <span>{{ selectionCount }} {{ selectionCount === 1 ? 'célula selecionada' : 'células selecionadas' }}</span>
+        <strong class="ds-money">Soma: {{ fmt(selectionSum) }}</strong>
+      </div>
+      <button type="button" class="plan-ghost-btn" :disabled="selectionCount === 0" @click="clearSelection">Limpar seleção</button>
+    </div>
 
     <FinanceColumnEditor v-if="columnEditor" v-bind="columnEditor" @close="columnEditor = null" />
 
@@ -570,6 +597,7 @@ import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import FinanceEntryGrid from '~/features/finance/components/FinanceEntryGrid.vue'
 import FinanceColumnEditor from '~/features/finance/components/FinanceColumnEditor.vue'
 import FinanceRowActions from '~/features/finance/components/FinanceRowActions.vue'
+import { useMatrixSelection, type MatrixCell } from '~/features/finance/composables/useMatrixSelection'
 import type { EntryKind, EntryStatus, FinanceEntry } from '#shared/types'
 import { sortExpenseColumnTitlesByDueDate } from '#shared/finance'
 
@@ -801,6 +829,61 @@ const cellKey         = (kind: string, title: string, month: string) => `${kind}
 const getAmount       = (kind: string, title: string, month: string) => amountMap.value.map.get(cellKey(kind, title, month)) ?? 0
 const getCellCount    = (kind: string, title: string, month: string) => amountMap.value.cnt.get(cellKey(kind, title, month)) ?? 0
 const getCellEntries  = (kind: string, title: string, month: string) => amountMap.value.ents.get(cellKey(kind, title, month)) ?? []
+
+const selectableCells = computed<MatrixCell[]>(() => visibleMonths.value.flatMap(month => [
+  ...visibleExpenseColumns.value.map(title => ({ kind: 'expense' as const, title, month })),
+  ...visibleIncomeColumns.value.map(title => ({ kind: 'income' as const, title, month })),
+]))
+const {
+  enabled: selectionMode, count: selectionCount, sum: selectionSum,
+  selected: selectedCells, anchor: selectionAnchor,
+  clear: clearSelection, toggle: toggleCell, range: selectRange, isSelected,
+} = useMatrixSelection(selectableCells, cell => getAmount(cell.kind, cell.title, cell.month))
+const isCellSelected = (kind: EntryKind, title: string, month: string) => isSelected({ kind, title, month })
+const selectCell = (kind: EntryKind, title: string, month: string) => toggleCell({ kind, title, month })
+
+let selectionDrag: { from: MatrixCell; base: Set<string> } | null = null
+let draggedSelection = false
+function toggleSelectionMode() {
+  cancelEdit()
+  selectionDrag = null
+  selectionMode.value = !selectionMode.value
+}
+function handleCellClick(kind: EntryKind, title: string, month: string, event: MouseEvent) {
+  if (!selectionMode.value) {
+    startEdit(kind, title, month, event)
+    return
+  }
+  if (draggedSelection) { draggedSelection = false; return }
+  const cell = { kind, title, month }
+  if (event.shiftKey && selectionAnchor.value?.kind === kind) {
+    selectRange(selectionAnchor.value, cell, selectedCells.value)
+  } else toggleCell(cell)
+}
+function beginSelectionDrag(kind: EntryKind, title: string, month: string, event: PointerEvent) {
+  draggedSelection = false
+  if (!selectionMode.value || event.pointerType !== 'mouse' || event.button !== 0
+    || (event.target as HTMLElement).closest('input, button')) return
+  selectionDrag = { from: { kind, title, month }, base: new Set(selectedCells.value) }
+}
+function extendSelectionDrag(kind: EntryKind, title: string, month: string, event: PointerEvent) {
+  if (!selectionDrag || !(event.buttons & 1) || selectionDrag.from.kind !== kind) return
+  const cell = { kind, title, month }
+  if (selectionDrag.from.title === title && selectionDrag.from.month === month && !draggedSelection) return
+  draggedSelection = true
+  selectionAnchor.value = selectionDrag.from
+  selectRange(selectionDrag.from, cell, selectionDrag.base)
+}
+const stopSelectionDrag = () => { selectionDrag = null }
+onMounted(() => {
+  window.addEventListener('pointerup', stopSelectionDrag)
+  window.addEventListener('pointercancel', stopSelectionDrag)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('pointerup', stopSelectionDrag)
+  window.removeEventListener('pointercancel', stopSelectionDrag)
+})
+watch(viewMode, () => { selectionMode.value = false; selectionDrag = null })
 
 // ─── status por célula ───────────────────────────────────────────────────────
 
@@ -1408,6 +1491,46 @@ const cellTint = (amount: number, isEditing: boolean, status: 'paid' | 'pending'
   font-feature-settings: "tnum" 1, "zero" 1;
 }
 .td-data.is-empty { color: var(--text3); font-weight: 600; }
+.is-selecting .td-data, .is-selecting .mcard-row { cursor: pointer; }
+.td-data.is-selected, .mcard-row.is-selected {
+  background: var(--primary-dim) !important;
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+.is-selecting input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.selection-summary {
+  position: sticky;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--primary);
+  border-radius: var(--ds-radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.selection-summary > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  font-size: 13px;
+}
+.selection-summary strong { color: var(--primary); }
+.selection-summary button:disabled { opacity: 0.5; cursor: default; }
+@media (max-width: 767px) {
+  .selection-summary { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+}
 .td-data.is-editing {
   outline: var(--border-width) solid var(--primary);
   outline-offset: calc(-1 * var(--border-width));
