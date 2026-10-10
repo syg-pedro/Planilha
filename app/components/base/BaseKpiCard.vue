@@ -66,7 +66,7 @@ withDefaults(defineProps<{
   gap: 8px;
   min-width: 0;
   overflow: hidden;
-  padding: 14px 15px;
+  padding: var(--ds-space-4) var(--ds-space-4);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--ds-radius-md);
@@ -173,7 +173,7 @@ withDefaults(defineProps<{
 @media (max-width: 640px) {
   .base-kpi {
     gap: 7px;
-    padding: 11px 12px 10px;
+    padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-3);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow-xs);
   }

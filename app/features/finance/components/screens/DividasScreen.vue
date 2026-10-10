@@ -286,19 +286,19 @@ const summary = computed(() => {
 .debts {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--ds-space-4);
 }
 
 .debts__kpis {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .debts__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: var(--ds-space-4);
   align-items: start;
 }
 
@@ -316,7 +316,7 @@ const summary = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 13px 16px;
+  padding: var(--ds-space-3) var(--ds-space-4);
 }
 
 .debts__toggle {
@@ -382,13 +382,13 @@ const summary = computed(() => {
 
 /* ── Corpo ───────────────────────────────────────────────── */
 .debts__body {
-  padding: 16px;
+  padding: var(--ds-space-4);
 }
 
 .debts__track {
   overflow: hidden;
   height: 9px;
-  margin-bottom: 11px;
+  margin-bottom: var(--ds-space-3);
   background: var(--track);
   border: 1px solid var(--track);
   border-radius: var(--radius-pill);
@@ -437,7 +437,7 @@ const summary = computed(() => {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   border-bottom: 1px solid var(--border);
 }
 
@@ -464,7 +464,7 @@ const summary = computed(() => {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 10px;
+  gap: var(--ds-space-3);
   flex-wrap: wrap;
 }
 
@@ -512,7 +512,7 @@ const summary = computed(() => {
   justify-content: center;
   gap: 4px;
   min-height: 28px;
-  padding: 5px 10px;
+  padding: 5px var(--ds-space-3);
   cursor: pointer;
   font-family: inherit;
   font-size: 11px;
@@ -569,11 +569,11 @@ const summary = computed(() => {
   }
 
   .debts__body {
-    padding: 14px;
+    padding: var(--ds-space-4);
   }
 
   .debt-installment {
-    padding: 12px;
+    padding: var(--ds-space-3);
   }
 }
 </style>

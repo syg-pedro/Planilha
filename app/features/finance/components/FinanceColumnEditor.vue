@@ -11,7 +11,7 @@
     <template #context>
       <div class="column-entry-picker">
         <label class="column-entry-picker__label">Lançamento de {{ title }}</label>
-        <BaseDropdown v-model="selectedId" :options="entryOptions" :height="48" />
+        <BaseDropdown v-model="selectedId" :options="entryOptions" />
         <p class="column-entry-picker__hint">As alterações serão aplicadas somente ao lançamento selecionado.</p>
         <p v-if="error" class="column-entry-picker__error" role="alert">{{ error }}</p>
       </div>

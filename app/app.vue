@@ -2,9 +2,9 @@
   <main v-if="!appReady" class="app-loading" aria-busy="true" aria-live="polite">
     <div class="app-loading__content">
       <span class="app-loading__mark" aria-hidden="true">$</span>
-      <p class="app-loading__eyebrow">FINANCEIRO FAMILIAR</p>
+      <p class="app-loading__eyebrow">PLANILHA</p>
       <div class="app-loading__bar" aria-hidden="true"><span /></div>
-      <p class="app-loading__message">Preparando seu financeiro...</p>
+      <p class="app-loading__message">Preparando sua planilha...</p>
     </div>
   </main>
 
@@ -196,7 +196,7 @@ const checkForWebUpdate = async () => {
     pendingWebUpdate.value = {
       type: 'web',
       version: response.version,
-      notes: ['Uma nova versão do Financeiro Familiar está disponível.']
+      notes: ['Uma nova versão da Planilha está disponível.']
     }
     void notifyAboutUpdate(pendingWebUpdate.value)
   } catch {
@@ -303,7 +303,7 @@ onUnmounted(() => {
   display: grid;
   min-height: 100dvh;
   place-items: center;
-  padding: 24px;
+  padding: var(--ds-space-6);
   background: var(--bg);
   color: var(--text);
 }
@@ -312,7 +312,7 @@ onUnmounted(() => {
   display: grid;
   width: min(100%, 320px);
   justify-items: center;
-  gap: 14px;
+  gap: var(--ds-space-4);
 }
 
 .app-loading__mark {
@@ -377,11 +377,11 @@ onUnmounted(() => {
   display: grid;
   place-items: center;
   box-sizing: border-box;
-  padding: 14px;
-  padding-top: max(14px, env(safe-area-inset-top, 0px));
-  padding-right: max(14px, env(safe-area-inset-right, 0px));
-  padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
-  padding-left: max(14px, env(safe-area-inset-left, 0px));
+  padding: var(--ds-space-4);
+  padding-top: max(var(--ds-space-4), env(safe-area-inset-top, 0px));
+  padding-right: max(var(--ds-space-4), env(safe-area-inset-right, 0px));
+  padding-bottom: max(var(--ds-space-4), env(safe-area-inset-bottom, 0px));
+  padding-left: max(var(--ds-space-4), env(safe-area-inset-left, 0px));
   overflow: hidden;
   background: var(--overlay);
   backdrop-filter: blur(3px);
@@ -400,7 +400,7 @@ onUnmounted(() => {
   border: 3px solid var(--border);
   background: var(--surface);
   box-shadow: 8px 8px 0 var(--ds-shadow-color);
-  padding: 22px;
+  padding: var(--ds-space-5);
 }
 
 .ota-update-dialog__eyebrow {
@@ -422,7 +422,7 @@ onUnmounted(() => {
   display: grid;
   gap: 8px;
   margin: 18px 0;
-  padding-left: 20px;
+  padding-left: var(--ds-space-5);
   color: var(--text2);
   font-size: 14px;
   line-height: 1.4;
@@ -433,7 +433,7 @@ onUnmounted(() => {
   border: 1px solid var(--border);
   background: var(--primary-dim);
   color: var(--text);
-  padding: 10px;
+  padding: var(--ds-space-3);
   font-size: 13px;
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -443,15 +443,15 @@ onUnmounted(() => {
   display: flex;
   justify-content: flex-end;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 18px;
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-5);
 }
 
 .ota-update-dialog button,
 .ota-update-dialog__apply {
-  min-height: 42px;
+  min-height: var(--ds-control-height);
   border: 2px solid var(--border);
-  padding: 8px 12px;
+  padding: 8px var(--ds-space-3);
   font: inherit;
   font-size: 13px;
   font-weight: 900;
@@ -486,7 +486,7 @@ onUnmounted(() => {
 }
 
 @media (max-width: 480px) {
-  .ota-update-dialog { padding: 18px; }
+  .ota-update-dialog { padding: var(--ds-space-5); }
   .ota-update-dialog__actions {
     align-items: stretch;
     flex-direction: column-reverse;

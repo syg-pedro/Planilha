@@ -23,13 +23,12 @@
       }"
     >
       <!-- Logo -->
-      <div :style="{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 14px', borderBottom: '2px solid var(--border)', height: '58px', flexShrink: 0, overflow: 'hidden' }">
+      <div :style="{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)', padding: '0 var(--ds-space-4)', borderBottom: '2px solid var(--border)', height: '48px', flexShrink: 0, overflow: 'hidden' }">
         <div class="app-brand-mark" style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0">
           <BaseIcon name="balance" :size="17" color="var(--on-primary)" />
         </div>
         <div :style="{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: collapsed ? 0 : 1, transition: 'opacity .15s', pointerEvents: collapsed ? 'none' : 'auto' }">
-          <p style="font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">Financeiro</p>
-          <p style="font-size: 14px; font-weight: 800; color: var(--text)">Familiar <span class="app-version-inline">{{ appVersion }}</span></p>
+          <p style="font-size: 14px; font-weight: 800; color: var(--text)">Planilha <span class="app-version-inline">{{ appVersion }}</span></p>
         </div>
       </div>
 
@@ -157,7 +156,7 @@
         <!-- Net worth badge -->
         <div
           v-if="!collapsed"
-          style="margin: 8px 4px 0; padding: 9px 10px; border-radius: var(--radius-sm); background: var(--primary-dim); border: 1px solid var(--primary)"
+          style="margin: 8px 4px 0; padding: 9px var(--ds-space-3); border-radius: var(--radius-sm); background: var(--primary-dim); border: 1px solid var(--primary)"
         >
           <p style="font-size: 9px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em">{{ currentMonthName }}</p>
           <p class="ds-money" style="margin-top: 2px; font-size: 14px; font-weight: 800; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</p>
@@ -166,7 +165,7 @@
 
         <!-- Collapse button -->
         <button
-          style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-xs); border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 12px; font-weight: 600; width: 100%; transition: background .12s; white-space: nowrap; overflow: hidden"
+          style="display: flex; align-items: center; gap: 8px; padding: 8px var(--ds-space-3); border-radius: var(--radius-xs); border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 12px; font-weight: 600; width: 100%; transition: background .12s; white-space: nowrap; overflow: hidden"
           :style="{ justifyContent: collapsed ? 'center' : 'flex-start' }"
           @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
           @mouseleave="($event.currentTarget as HTMLElement).style.background = 'transparent'"
@@ -192,13 +191,12 @@
         style="position: relative; width: 280px; height: 100%; background: var(--surface); border-right: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 1; display: flex; flex-direction: column; animation: slideInLeft .22s cubic-bezier(.4,0,.2,1); overflow-y: auto"
         @click.stop
       >
-        <div style="display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--border); height: 58px; flex-shrink: 0">
+        <div style="display: flex; align-items: center; gap: var(--ds-space-3); padding: 0 var(--ds-space-4); border-bottom: 1px solid var(--border); height: 48px; flex-shrink: 0">
           <div class="app-brand-mark" style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center">
             <BaseIcon name="balance" :size="17" color="var(--on-primary)" />
           </div>
           <div>
-            <p style="font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">Financeiro</p>
-            <p style="font-size: 14px; font-weight: 800; color: var(--text)">Familiar <span class="app-version-inline">{{ appVersion }}</span></p>
+            <p style="font-size: 14px; font-weight: 800; color: var(--text)">Planilha <span class="app-version-inline">{{ appVersion }}</span></p>
           </div>
         </div>
         <nav style="flex: 1; padding: 6px 8px">
@@ -213,8 +211,8 @@
               :style="{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                padding: '8px 10px',
+                gap: 'var(--ds-space-3)',
+                padding: '8px var(--ds-space-3)',
                 borderRadius: 'var(--radius-sm)',
                 border: 'none',
                 cursor: 'pointer',
@@ -245,7 +243,7 @@
             class="app-nav-item"
             :class="{ 'app-nav-item--active': isItemActive(item.id) }"
             :style="{
-              display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 10px',
+              display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)', padding: 'var(--ds-space-3) var(--ds-space-3)',
               borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
               fontWeight: 600, fontSize: '14px',
               background: isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent',
@@ -258,7 +256,7 @@
           </button>
           <button
             :style="{
-              display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 10px',
+              display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)', padding: 'var(--ds-space-3) var(--ds-space-3)',
               borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
               fontWeight: 600, fontSize: '14px',
               background: 'transparent',
@@ -277,7 +275,7 @@
     <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
 
       <!-- Top bar -->
-      <div class="app-topbar" style="height: 58px; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 90; flex-shrink: 0">
+      <div class="app-topbar" style="height: 48px; display: flex; align-items: center; gap: var(--ds-space-3); padding: 0 var(--ds-space-5); border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 90; flex-shrink: 0">
         <!-- Mobile: hamburger -->
         <button
           v-if="isMobile"
@@ -324,7 +322,7 @@
             <BaseIcon name="alerts" :size="20" />
             <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: var(--on-danger)">{{ alertCount }}</span>
           </button>
-          <div class="app-balance-chip" style="padding: 5px 12px; background: var(--primary-dim)">
+          <div class="app-balance-chip" style="padding: 5px var(--ds-space-3); background: var(--primary-dim)">
             <span class="ds-money" style="font-size: 12px; font-weight: 700; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</span>
           </div>
         </div>
@@ -334,7 +332,7 @@
       <main
         :style="{
           flex: 1,
-          padding: isMobile ? '16px 12px calc(80px + env(safe-area-inset-bottom, 0px))' : activeScreen === 'planilha' ? '12px 16px' : '24px',
+          padding: isMobile ? 'var(--ds-space-3) var(--ds-space-3) calc(72px + env(safe-area-inset-bottom, 0px))' : 'var(--ds-panel-padding)',
           maxWidth: activeScreen === 'planilha' ? 'none' : '1080px',
           width: '100%',
           margin: '0 auto',
@@ -364,7 +362,7 @@
           alignItems: 'center',
           justifyContent: 'center',
           gap: '3px',
-          padding: '10px 4px 8px',
+          padding: 'var(--ds-space-3) 4px 8px',
           border: 'none',
           cursor: 'pointer',
           background: 'transparent',
@@ -384,7 +382,7 @@
       </button>
       <button
         class="app-mobile-nav__item"
-        style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px 4px 8px; border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 10px; font-weight: 700; touch-action: manipulation; min-height: 56px"
+        style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: var(--ds-space-3) 4px 8px; border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 10px; font-weight: 700; touch-action: manipulation; min-height: 56px"
         @click="drawerOpen = true"
       >
         <BaseIcon name="menu" :size="22" />Mais
@@ -655,7 +653,7 @@ const goTo = (id: string) => {
 }
 
 @media (max-width: 767px) {
-  .app-topbar { padding-inline: 10px !important; gap: 8px !important; }
+  .app-topbar { padding-inline: var(--ds-space-3) !important; gap: 8px !important; }
   .app-balance-chip { padding-inline: 7px !important; }
 }
 
@@ -687,7 +685,7 @@ const goTo = (id: string) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px 10px;
+  padding: 8px var(--ds-space-3) var(--ds-space-3);
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -705,7 +703,7 @@ const goTo = (id: string) => {
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 9px var(--ds-space-3);
   border: 2px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -723,7 +721,7 @@ const goTo = (id: string) => {
   color: var(--text);
 }
 .help-pop__empty {
-  padding: 10px;
+  padding: var(--ds-space-3);
   font-size: 12.5px;
   color: var(--text3);
 }
@@ -733,7 +731,7 @@ const goTo = (id: string) => {
   gap: 8px;
   width: 100%;
   margin-top: 4px;
-  padding: 10px;
+  padding: var(--ds-space-3);
   border: 2px solid transparent;
   border-top: 2px solid var(--border);
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);

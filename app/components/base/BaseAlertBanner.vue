@@ -71,13 +71,13 @@ const dismiss = (index: number) => {
 .base-alert-stack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--ds-space-3);
 }
 
 .base-alert {
   display: flex;
-  gap: 10px;
-  padding: 12px 16px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
   border: var(--border-width) solid var(--border);
   border-radius: var(--ds-radius-md);
   box-shadow: var(--shadow-sm);
@@ -123,7 +123,7 @@ const dismiss = (index: number) => {
 @media (max-width: 640px) {
   .base-alert {
     gap: 9px;
-    padding: 10px 12px;
+    padding: var(--ds-space-3) var(--ds-space-3);
     box-shadow: var(--shadow-xs);
   }
 

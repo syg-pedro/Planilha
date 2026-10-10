@@ -35,7 +35,7 @@
               </div>
               <div class="field-group">
                 <label class="field-label">Tipo</label>
-                <BaseDropdown v-model="draft.type" :height="48">
+                <BaseDropdown v-model="draft.type">
                   <option value="bank">Conta bancária</option>
                   <option value="credit_card">Cartão de crédito</option>
                   <option value="benefit">Benefício (VR/VA)</option>
@@ -184,7 +184,7 @@ const onSave = () => {
 .sheet-handle-area {
   display: flex;
   justify-content: center;
-  padding: 12px 0 4px;
+  padding: var(--ds-space-3) 0 4px;
   cursor: pointer;
 }
 .sheet-handle {
@@ -197,8 +197,8 @@ const onSave = () => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 20px 14px;
+  gap: var(--ds-space-3);
+  padding: 8px var(--ds-space-5) var(--ds-space-4);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -237,10 +237,10 @@ const onSave = () => {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 20px;
+  padding: var(--ds-space-4) var(--ds-space-5);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--ds-space-4);
 }
 .field-group {
   display: flex;
@@ -251,7 +251,7 @@ const onSave = () => {
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 .field-label {
   font-size: 12px;
@@ -265,9 +265,9 @@ const onSave = () => {
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 14px;
-  height: 48px;
-  font-size: 15px;
+  padding: 0 var(--ds-space-4);
+  height: var(--ds-control-height);
+  font-size: var(--ds-control-font-size);
   font-weight: 500;
   color: var(--text);
   font-family: inherit;
@@ -286,9 +286,9 @@ const onSave = () => {
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 14px;
-  height: 48px;
-  font-size: 15px;
+  padding: 0 var(--ds-space-4);
+  height: var(--ds-control-height);
+  font-size: var(--ds-control-font-size);
   font-weight: 500;
   color: var(--text);
   font-family: inherit;
@@ -325,8 +325,8 @@ const onSave = () => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 14px 20px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
   border-top: 1px solid var(--border);
   background: var(--surface);
   flex-shrink: 0;
@@ -336,8 +336,8 @@ const onSave = () => {
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 18px;
-  height: 46px;
+  padding: 0 var(--ds-space-5);
+  height: var(--ds-control-height);
   font-size: 14px;
   font-weight: 600;
   color: var(--text2);
@@ -351,8 +351,8 @@ const onSave = () => {
   background: var(--primary);
   border: none;
   border-radius: 10px;
-  padding: 0 24px;
-  height: 46px;
+  padding: 0 var(--ds-space-6);
+  height: var(--ds-control-height);
   font-size: 14px;
   font-weight: 700;
   color: var(--on-primary);
@@ -371,7 +371,7 @@ const onSave = () => {
 .sheet-enter-from .sheet-container,
 .sheet-leave-to .sheet-container { transform: translateY(100%); }
 @media (min-width: 640px) {
-  .sheet-overlay { align-items: center; padding: 16px; }
+  .sheet-overlay { align-items: center; padding: var(--ds-space-4); }
   .sheet-container { border-radius: 20px; border: 1px solid var(--border); max-height: 92dvh; }
   .sheet-handle-area { display: none; }
   .sheet-enter-from .sheet-container,

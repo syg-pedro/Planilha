@@ -11,8 +11,7 @@
           </svg>
         </div>
         <div>
-          <p class="auth-card__eyebrow">Financeiro</p>
-          <p class="auth-card__brand">Familiar</p>
+          <p class="auth-card__brand">Planilha</p>
         </div>
       </div>
       <div class="auth-card__body">
@@ -29,7 +28,7 @@
   min-height: 100vh;
   place-items: center;
   overflow: hidden;
-  padding: 32px 18px;
+  padding: var(--ds-space-7) var(--ds-space-5);
   background: var(--bg);
 }
 
@@ -73,8 +72,8 @@
 .auth-card__header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 22px 28px;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-5) var(--ds-space-7);
   background: var(--accent);
   border-bottom: 3px solid var(--border);
 }
@@ -109,11 +108,11 @@
 }
 
 .auth-card__body {
-  padding: 28px 32px 32px;
+  padding: var(--ds-space-7) var(--ds-space-7) var(--ds-space-7);
 }
 
 .auth-card__body :deep(input:not([type='checkbox']):not([type='radio'])) {
-  min-height: 42px;
+  min-height: var(--ds-control-height);
   background: var(--surface) !important;
   border: 2px solid var(--border) !important;
   border-radius: var(--radius-sm) !important;
@@ -128,7 +127,7 @@
 }
 
 .auth-card__body :deep(button[type='submit']) {
-  min-height: 42px;
+  min-height: var(--ds-control-height);
   border: 2px solid var(--border) !important;
   border-radius: var(--radius-sm) !important;
   box-shadow: 4px 4px 0 var(--ds-shadow-color);
@@ -147,7 +146,7 @@
   }
 
   .auth-card__body {
-    padding: 24px 20px 26px;
+    padding: var(--ds-space-6) var(--ds-space-5) var(--ds-space-6);
   }
 }
 </style>

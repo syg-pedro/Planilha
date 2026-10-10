@@ -63,7 +63,7 @@
         <div class="cfg__install">
           <img src="/icon-192.png" alt="" class="cfg__install-icon" />
           <div>
-            <p class="cfg__row-label">Financeiro Familiar</p>
+            <p class="cfg__row-label">Planilha</p>
             <p class="cfg__row-sub">Acesso rápido, funciona offline</p>
           </div>
         </div>
@@ -108,7 +108,7 @@
       <div class="cfg__row">
         <span class="cfg__row-label">Regra de período</span>
         <div class="cfg__row-control cfg__row-control--select">
-          <BaseDropdown v-model="store.filters.periodMode" :height="34">
+          <BaseDropdown v-model="store.filters.periodMode">
             <option value="due_date">Por vencimento</option>
             <option value="competence">Por competência</option>
           </BaseDropdown>
@@ -210,7 +210,7 @@
         />
         <div class="cfg__field">
           <label class="cfg__section-label">Conta destino</label>
-          <BaseDropdown v-model="importAccountId" :height="38">
+          <BaseDropdown v-model="importAccountId">
             <option value="">Sem conta</option>
             <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
           </BaseDropdown>
@@ -432,7 +432,7 @@ const initialsOf = (raw: string) => {
 }
 
 const profileName = computed(() => authUser.value?.email ?? 'Modo demonstração')
-const profileInitials = computed(() => initialsOf(authUser.value?.email ?? 'Financeiro Familiar'))
+const profileInitials = computed(() => initialsOf(authUser.value?.email ?? 'Planilha'))
 const profileSub = computed(() => isSupabaseConfigured.value ? 'household · sincronizado' : 'household · modo local')
 
 const CURRENCY_LABELS: Record<string, string> = {
@@ -629,22 +629,22 @@ const copyInviteLink = async () => {
 .cfg {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--ds-space-4);
 }
 
 /* ── Topo: conta + tema ─────────────────────────────────────── */
 .cfg__top {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--ds-space-4);
   align-items: stretch;
 }
 
 .cfg__account {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 18px;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-5);
 }
 
 .cfg__avatar {
@@ -709,7 +709,7 @@ const copyInviteLink = async () => {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 13px;
+  padding: 6px var(--ds-space-3);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-pill);
@@ -745,7 +745,7 @@ const copyInviteLink = async () => {
 
 /* ── Painéis ────────────────────────────────────────────────── */
 .cfg__panel-head {
-  padding: 14px 18px;
+  padding: var(--ds-space-4) var(--ds-space-5);
 }
 
 .cfg__panel-title {
@@ -764,19 +764,19 @@ const copyInviteLink = async () => {
 }
 
 .cfg__panel-body {
-  padding: 16px 18px;
+  padding: var(--ds-space-4) var(--ds-space-5);
 }
 
 .cfg__panel-foot {
   display: flex;
   justify-content: flex-end;
-  padding: 14px 18px;
+  padding: var(--ds-space-4) var(--ds-space-5);
 }
 
 .cfg__stack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--ds-space-3);
 }
 
 .cfg__field {
@@ -789,16 +789,16 @@ const copyInviteLink = async () => {
 .cfg__shortcut-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  padding: 0 18px 16px;
+  gap: var(--ds-space-3);
+  padding: 0 var(--ds-space-5) var(--ds-space-4);
 }
 
 .cfg__shortcut {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: var(--ds-space-3);
   min-height: 70px;
-  padding: 12px;
+  padding: var(--ds-space-3);
   background: var(--surface2);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -826,7 +826,7 @@ const copyInviteLink = async () => {
   align-items: center;
   justify-content: center;
   width: 38px;
-  height: 38px;
+  height: var(--ds-control-height);
   background: var(--primary);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -858,8 +858,8 @@ const copyInviteLink = async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 18px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
   border-bottom: 1px solid var(--border);
 }
 
@@ -870,7 +870,7 @@ const copyInviteLink = async () => {
 .cfg__row-main {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--ds-space-3);
   min-width: 0;
   flex: 1;
 }
@@ -902,7 +902,7 @@ const copyInviteLink = async () => {
 }
 
 .cfg__row-sub--block {
-  margin-bottom: 10px;
+  margin-bottom: var(--ds-space-3);
 }
 
 .cfg__row-value {
@@ -999,7 +999,7 @@ const copyInviteLink = async () => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 9px 16px;
+  padding: 9px var(--ds-space-4);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -1068,7 +1068,7 @@ const copyInviteLink = async () => {
   align-self: flex-start;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  padding: var(--ds-space-3) var(--ds-space-5);
   background: var(--danger-light);
   border: var(--border-width) solid var(--border);
   border-radius: var(--ds-radius-md);
@@ -1099,8 +1099,8 @@ const copyInviteLink = async () => {
 /* ── Campos ─────────────────────────────────────────────────── */
 .cfg__input {
   box-sizing: border-box;
-  height: 38px;
-  padding: 0 12px;
+  height: var(--ds-control-height);
+  padding: 0 var(--ds-space-3);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -1136,8 +1136,8 @@ const copyInviteLink = async () => {
 .cfg__install {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: var(--ds-space-4);
+  margin-bottom: var(--ds-space-4);
 }
 
 .cfg__install-icon {
@@ -1165,8 +1165,8 @@ const copyInviteLink = async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 12px;
+  gap: var(--ds-space-3);
+  padding: 8px var(--ds-space-3);
   background: var(--surface2);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -1194,7 +1194,7 @@ const copyInviteLink = async () => {
 .hex-input {
   width: 88px;
   height: 30px;
-  padding: 0 10px;
+  padding: 0 var(--ds-space-3);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -1212,15 +1212,15 @@ const copyInviteLink = async () => {
 .cfg__actions {
   display: flex;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: var(--ds-space-4);
 }
 
 /* Preview do tema personalizado: cores vindas dos dados (--pv-*). */
 .cc-preview {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
   border: var(--border-width-strong) solid var(--pv-border);
   border-radius: var(--radius);
   box-shadow: 6px 6px 0 var(--pv-border);
@@ -1228,10 +1228,10 @@ const copyInviteLink = async () => {
 .cc-prow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--ds-space-3);
 }
 .cc-btn {
-  padding: 8px 18px;
+  padding: 8px var(--ds-space-5);
   background: var(--pv-primary);
   border: var(--border-width) solid var(--pv-border);
   border-radius: var(--radius-sm);
@@ -1243,7 +1243,7 @@ const copyInviteLink = async () => {
   cursor: default;
 }
 .cc-chip {
-  padding: 5px 12px;
+  padding: 5px var(--ds-space-3);
   background: color-mix(in srgb, var(--pv-accent) 22%, transparent);
   border: var(--border-width) solid var(--pv-border);
   border-radius: var(--radius-sm);
@@ -1255,7 +1255,7 @@ const copyInviteLink = async () => {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 12px 14px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   background: var(--pv-card);
   border: var(--border-width) solid var(--pv-border);
   border-radius: var(--radius-sm);
@@ -1275,7 +1275,7 @@ const copyInviteLink = async () => {
 .cc-dots {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: var(--ds-space-4);
 }
 .cc-dot {
   display: inline-flex;
@@ -1295,7 +1295,7 @@ const copyInviteLink = async () => {
 /* ── Importar CSV ───────────────────────────────────────────── */
 .textarea-field {
   width: 100%;
-  padding: 9px 12px;
+  padding: 9px var(--ds-space-3);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -1334,8 +1334,8 @@ const copyInviteLink = async () => {
 }
 
 .cfg__invite-link {
-  margin-top: 10px;
-  padding: 10px 12px;
+  margin-top: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-3);
   background: var(--success-light);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -1399,12 +1399,12 @@ const copyInviteLink = async () => {
 
 @media (max-width: 640px) {
   .cfg {
-    gap: 14px;
+    gap: var(--ds-space-4);
   }
 
   .cfg__account {
-    gap: 12px;
-    padding: 14px;
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-4);
   }
 
   .cfg__avatar {
@@ -1419,16 +1419,16 @@ const copyInviteLink = async () => {
 
   .cfg__panel-head,
   .cfg__panel-foot {
-    padding: 12px 14px;
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
   .cfg__panel-body {
-    padding: 12px 14px;
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
   .cfg__shortcut-grid {
     grid-template-columns: 1fr;
-    padding: 0 14px 14px;
+    padding: 0 var(--ds-space-4) var(--ds-space-4);
   }
 
   .cfg__shortcut {
@@ -1436,7 +1436,7 @@ const copyInviteLink = async () => {
   }
 
   .cfg__row {
-    padding: 13px 14px;
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
   .cfg__row-control--select {

@@ -1,7 +1,7 @@
 /* ── Form fields ──────────────────────────────────────────── */
 .ds-field {
   @apply w-full px-3 text-sm outline-none;
-  height: 42px;
+  height: var(--ds-control-height);
   background: var(--ds-color-surface-card);
   border: var(--ds-border-width) solid var(--ds-color-border-default);
   border-radius: var(--ds-radius-sm);
@@ -22,11 +22,11 @@
   select,
   textarea {
     font-size: 16px !important;
-    height: 44px;
+    height: var(--ds-control-height);
   }
   textarea {
     height: auto;
-    min-height: 88px;
+    min-height: 64px;
   }
 }
 
@@ -43,9 +43,9 @@
 
 textarea.ds-field {
   height: auto;
-  min-height: 96px;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  min-height: 64px;
+  padding-top: var(--ds-space-3);
+  padding-bottom: var(--ds-space-3);
   resize: vertical;
 }
 
@@ -66,26 +66,26 @@ textarea.ds-field {
   border: var(--ds-border-width) solid var(--ds-color-border-default);
   border-radius: var(--ds-radius-lg);
   box-shadow: var(--ds-shadow-sm);
-  padding: 18px 20px;
+  padding: var(--ds-space-5) var(--ds-space-5);
 }
 
 .ds-panel-header {
-  padding: 16px 20px 0;
+  padding: var(--ds-space-4) var(--ds-space-5) 0;
 }
 
 .ds-panel-body {
-  padding: 16px 20px;
+  padding: var(--ds-space-4) var(--ds-space-5);
 }
 
 .ds-kpi-card {
   background: var(--surface);
   border-radius: var(--radius);
-  padding: 18px 20px;
+  padding: var(--ds-space-5) var(--ds-space-5);
   border: var(--border-width) solid var(--border);
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--ds-space-3);
   position: relative;
   overflow: hidden;
   transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
@@ -99,7 +99,7 @@ textarea.ds-field {
 
 @media (max-width: 640px) {
   .ds-kpi-card {
-    padding: 14px 14px;
+    padding: var(--ds-space-4) var(--ds-space-4);
   }
 }
 
@@ -120,7 +120,7 @@ textarea.ds-field {
   background: var(--ds-color-state-success-light);
   color: var(--ds-color-state-success);
   border-radius: var(--radius-pill);
-  padding: 2px 10px;
+  padding: 2px var(--ds-space-3);
   font-size: 10.5px;
   font-weight: 700;
   white-space: nowrap;
@@ -130,7 +130,7 @@ textarea.ds-field {
   background: var(--ds-color-state-warning-light);
   color: var(--ds-color-state-warning);
   border-radius: var(--radius-pill);
-  padding: 2px 10px;
+  padding: 2px var(--ds-space-3);
   font-size: 10.5px;
   font-weight: 700;
   white-space: nowrap;
@@ -140,7 +140,7 @@ textarea.ds-field {
   background: var(--ds-color-state-danger-light);
   color: var(--ds-color-state-danger);
   border-radius: var(--radius-pill);
-  padding: 2px 10px;
+  padding: 2px var(--ds-space-3);
   font-size: 10.5px;
   font-weight: 700;
   white-space: nowrap;

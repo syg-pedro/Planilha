@@ -1,9 +1,9 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 16px; max-width: 860px; margin: 0 auto; width: 100%">
+  <div style="display: flex; flex-direction: column; gap: var(--ds-space-4); max-width: 860px; margin: 0 auto; width: 100%">
 
     <!-- Cabeçalho -->
     <div>
-      <h2 style="font-size: 20px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 10px">
+      <h2 style="font-size: 20px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: var(--ds-space-3)">
         <span style="display: inline-flex; width: 34px; height: 34px; border-radius: 10px; background: var(--primary-dim); align-items: center; justify-content: center">
           <BaseIcon name="help" :size="19" color="var(--primary)" />
         </span>
@@ -19,7 +19,7 @@
       :style="{
         display: 'flex', alignItems: 'center', gap: '8px',
         background: 'var(--surface2)', borderRadius: 'var(--radius-sm)',
-        padding: '0 14px', height: '44px',
+        padding: '0 var(--ds-space-4)', height: '44px',
         border: searchFocused ? '1.5px solid var(--primary)' : '1.5px solid var(--border)',
         boxShadow: searchFocused ? '0 0 0 3px var(--primary-dim)' : 'none',
         transition: 'border-color .15s, box-shadow .15s',
@@ -174,8 +174,8 @@ onMounted(() => {
 .help-group__head {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 16px 18px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
   border-bottom: 1px solid var(--border);
   background: var(--surface2);
 }
@@ -213,9 +213,9 @@ onMounted(() => {
 .help-topic__btn {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--ds-space-3);
   width: 100%;
-  padding: 13px 18px;
+  padding: var(--ds-space-3) var(--ds-space-5);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -242,13 +242,13 @@ onMounted(() => {
   color: var(--text);
 }
 .help-topic__body {
-  padding: 4px 18px 18px 18px;
+  padding: 4px var(--ds-space-5) var(--ds-space-5) var(--ds-space-5);
   overflow: hidden;
 }
 .help-steps {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--ds-space-3);
   margin: 0;
   padding: 0 0 0 4px;
   list-style: none;
@@ -287,8 +287,8 @@ onMounted(() => {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  margin-top: 14px;
-  padding: 10px 12px;
+  margin-top: var(--ds-space-4);
+  padding: var(--ds-space-3) var(--ds-space-3);
   border-radius: var(--radius-sm);
   background: var(--primary-dim);
   border: 1px solid var(--primary);

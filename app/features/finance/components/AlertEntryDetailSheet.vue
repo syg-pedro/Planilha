@@ -188,9 +188,9 @@ const confirmDelete = () => {
 .sheet-alert-banner {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  margin-top: 12px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-5);
+  margin-top: var(--ds-space-3);
 }
 
 .sheet-alert-icon { font-size: 18px; flex-shrink: 0 }
@@ -202,10 +202,10 @@ const confirmDelete = () => {
 }
 
 .sheet-body {
-  padding: 20px 20px 32px;
+  padding: var(--ds-space-5) var(--ds-space-5) var(--ds-space-7);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--ds-space-4);
 }
 
 .sheet-hero {
@@ -231,7 +231,7 @@ const confirmDelete = () => {
 .sheet-status-badge {
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 12px;
+  padding: 3px var(--ds-space-3);
   border-radius: 99px;
   letter-spacing: 0.04em;
 }
@@ -246,9 +246,9 @@ const confirmDelete = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 11px 14px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   border-bottom: 1px solid var(--border);
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .sheet-row:last-child { border-bottom: none }
@@ -271,7 +271,7 @@ const confirmDelete = () => {
 
 .sheet-btn {
   width: 100%;
-  padding: 14px;
+  padding: var(--ds-space-4);
   border-radius: 12px;
   border: none;
   cursor: pointer;
@@ -296,7 +296,7 @@ const confirmDelete = () => {
 .sheet-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--ds-space-3);
 }
 
 .sheet-btn-secondary {

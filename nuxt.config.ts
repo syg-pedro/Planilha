@@ -20,6 +20,7 @@ const envSupabasePublishableKey =
   ''
 
 const envNitroOutputDir = process.env.NITRO_OUTPUT_DIR || ''
+const envDevApiProxyTarget = process.env.NUXT_DEV_API_PROXY_TARGET || ''
 const resolveWebBuildVersion = () => {
   const versionFromEnvironment = process.env.NUXT_PUBLIC_WEB_BUILD_VERSION ||
     process.env.VERCEL_GIT_COMMIT_SHA ||
@@ -44,13 +45,13 @@ export default defineNuxtConfig({
     'ag-grid-community/styles/ag-theme-quartz.css'
   ],
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@vite-pwa/nuxt', '@nuxt/eslint'],
-  nitro: envNitroOutputDir
-    ? {
-        output: {
-          dir: envNitroOutputDir
-        }
-      }
-    : {},
+  nitro: {
+    ...(envNitroOutputDir ? { output: { dir: envNitroOutputDir } } : {}),
+    // Encaminha a API no desenvolvimento sem exigir CORS no backend remoto.
+    ...(envDevApiProxyTarget
+      ? { devProxy: { '/api': { target: `${envDevApiProxyTarget.replace(/\/$/, '')}/api`, changeOrigin: true } } }
+      : {})
+  },
   vite: {
     optimizeDeps: {
       include: [
@@ -72,7 +73,7 @@ export default defineNuxtConfig({
     supabaseServiceKey: envSupabaseServiceKey,
     dataFilePath: process.env.DATA_FILE_PATH || '',
     public: {
-      appName: 'Financeiro Familiar',
+      appName: 'Planilha',
       appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.1.1',
       webBuildVersion,
       webVersionUrl: '/api/web-version',
@@ -91,9 +92,9 @@ export default defineNuxtConfig({
       enabled: true,
     },
     manifest: {
-      name: 'Financeiro Familiar',
-      short_name: 'Financeiro',
-      description: 'Planejamento financeiro familiar com dashboard, planilha e calendario.',
+      name: 'Planilha',
+      short_name: 'Planilha',
+      description: 'Organize despesas, receitas e cartões em uma planilha financeira.',
       theme_color: '#090b10',
       background_color: '#090b10',
       display: 'standalone',
@@ -142,7 +143,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Financeiro Familiar',
+      title: 'Planilha',
       htmlAttrs: {
         class: 'dark',
         'data-theme': 'dark'
@@ -159,7 +160,7 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#090b10' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-        { name: 'apple-mobile-web-app-title', content: 'Financeiro' },
+        { name: 'apple-mobile-web-app-title', content: 'Planilha' },
         { name: 'mobile-web-app-capable', content: 'yes' }
       ]
     }

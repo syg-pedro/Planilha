@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col gap-2">
     <!-- Charts row -->
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div class="grid gap-2 lg:grid-cols-2">
       <!-- Cashflow Chart -->
       <div class="panel">
         <div class="panel-header">
@@ -52,7 +52,7 @@
               <span :style="{ fontSize:'10px', color:'var(--text3)', fontWeight: i===currentIdx?700:400 }">{{ d.month }}</span>
             </div>
           </div>
-          <div style="margin-top:12px;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-xs);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div style="margin-top:var(--ds-space-3);padding:var(--ds-space-3) var(--ds-space-4);background:var(--surface2);border-radius:var(--radius-xs);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
             <div v-for="(d, i) in cashflowData" :key="i" style="text-align:center">
               <p style="font-size:10px;color:var(--text3);font-weight:600">{{ d.month }}</p>
               <p :style="{ fontSize:'12px', fontWeight:700, color: (d.income - d.expense) >= 0 ? 'var(--success)' : 'var(--danger)' }">{{ fmt(d.income - d.expense) }}</p>
@@ -70,7 +70,7 @@
           </div>
         </div>
         <div class="panel-body">
-          <div v-if="donutSegments.length > 0" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div v-if="donutSegments.length > 0" style="display:flex;align-items:center;gap:var(--ds-space-4);flex-wrap:wrap">
             <svg width="180" height="180" viewBox="0 0 180 180">
               <path
                 v-for="(s, i) in donutSegments"
@@ -110,7 +110,7 @@
         </div>
       </div>
       <div class="panel-body">
-        <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:var(--ds-space-4)">
           <div v-for="card in cardLimits" :key="card.id">
             <div style="display:flex;justify-content:space-between;margin-bottom:5px">
               <span style="font-size:13px;font-weight:600;color:var(--text)">{{ card.name }}</span>
@@ -153,7 +153,7 @@
                 <th
                   v-for="h in ['Vencimento','Descrição','Conta','Valor','Urgência']"
                   :key="h"
-                  style="padding:8px 10px;text-align:left;color:var(--text3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap"
+                  style="padding:8px var(--ds-space-3);text-align:left;color:var(--text3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap"
                 >
                   {{ h }}
                 </th>
@@ -167,21 +167,21 @@
                 @mouseenter="($event.currentTarget as HTMLElement).style.background='var(--surface2)'"
                 @mouseleave="($event.currentTarget as HTMLElement).style.background='transparent'"
               >
-                <td style="padding:10px;font-weight:600;color:var(--text);white-space:nowrap">{{ fmtDateBR(e.dueDate) }}</td>
-                <td style="padding:10px;color:var(--text)">
+                <td style="padding:var(--ds-space-3);font-weight:600;color:var(--text);white-space:nowrap">{{ fmtDateBR(e.dueDate) }}</td>
+                <td style="padding:var(--ds-space-3);color:var(--text)">
                   {{ e.title }}
                   <span v-if="e.installmentIndex" style="font-size:11px;color:var(--text3);margin-left:6px">{{ e.installmentIndex }}/{{ e.installmentTotal }}</span>
                 </td>
-                <td style="padding:10px;color:var(--text2);white-space:nowrap">{{ store.accountMap.get(e.accountId ?? '')?.name || '—' }}</td>
-                <td style="padding:10px;font-weight:700;color:var(--danger);white-space:nowrap">{{ fmt(e.amount) }}</td>
-                <td style="padding:10px">
+                <td style="padding:var(--ds-space-3);color:var(--text2);white-space:nowrap">{{ store.accountMap.get(e.accountId ?? '')?.name || '—' }}</td>
+                <td style="padding:var(--ds-space-3);font-weight:700;color:var(--danger);white-space:nowrap">{{ fmt(e.amount) }}</td>
+                <td style="padding:var(--ds-space-3)">
                   <span
-                    :style="{ background: urgency(e.dueDate).bg, color: urgency(e.dueDate).color, borderRadius:'99px', padding:'2px 10px', fontSize:'11px', fontWeight:700, whiteSpace:'nowrap' }"
+                    :style="{ background: urgency(e.dueDate).bg, color: urgency(e.dueDate).color, borderRadius:'99px', padding:'2px var(--ds-space-3)', fontSize:'11px', fontWeight:700, whiteSpace:'nowrap' }"
                   >{{ urgency(e.dueDate).label }}</span>
                 </td>
               </tr>
               <tr v-if="upcomingEntries.length === 0">
-                <td colspan="5" style="padding:24px;text-align:center;color:var(--text3)">Nenhum vencimento próximo</td>
+                <td colspan="5" style="padding:var(--ds-space-6);text-align:center;color:var(--text3)">Nenhum vencimento próximo</td>
               </tr>
             </tbody>
           </table>
@@ -300,11 +300,11 @@ const urgency = (dueDate: string) => {
   overflow: hidden;
 }
 .panel-header {
-  padding: 16px 20px 0;
+  padding: var(--ds-space-4) var(--ds-space-5) 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 .panel-title {
   font-size: 14px;
@@ -317,6 +317,6 @@ const urgency = (dueDate: string) => {
   margin-top: 2px;
 }
 .panel-body {
-  padding: 16px 20px;
+  padding: var(--ds-space-4) var(--ds-space-5);
 }
 </style>

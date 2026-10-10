@@ -63,7 +63,7 @@ watch(() => props.open, (val) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: var(--ds-space-4);
   background: var(--overlay);
 }
 
@@ -81,8 +81,8 @@ watch(() => props.open, (val) => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  padding: 18px 22px 14px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-5) var(--ds-space-5) var(--ds-space-4);
   background: var(--surface2);
   border-bottom: var(--border-width) solid var(--border);
 }
@@ -122,6 +122,6 @@ watch(() => props.open, (val) => {
 }
 
 .base-modal__body {
-  padding: 20px 22px;
+  padding: var(--ds-space-5) var(--ds-space-5);
 }
 </style>

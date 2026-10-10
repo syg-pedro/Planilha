@@ -17,7 +17,7 @@ export default cachedEventHandler(async () => {
   const release = await $fetch<GitHubRelease>(RELEASE_URL, {
     headers: {
       Accept: 'application/vnd.github+json',
-      'User-Agent': 'Financeiro-Familiar'
+      'User-Agent': 'Planilha'
     }
   })
   const apk = release.assets.find((asset) => asset.name.endsWith('.apk'))

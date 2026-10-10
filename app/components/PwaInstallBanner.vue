@@ -5,7 +5,7 @@
       <div v-if="showAutoPrompt" class="pwa-banner" role="banner" aria-label="Instalar aplicativo">
         <img src="/icon-192.png" alt="" class="pwa-banner-icon" />
         <div class="pwa-banner-text">
-          <p class="pwa-banner-title">Financeiro Familiar</p>
+          <p class="pwa-banner-title">Planilha</p>
           <p class="pwa-banner-desc">Instale o app para acesso rápido e offline</p>
         </div>
         <button class="pwa-banner-btn pwa-banner-install" @click="install">Instalar</button>
@@ -18,7 +18,7 @@
           <div class="pwa-manual-header">
             <img src="/icon-192.png" alt="" class="pwa-manual-icon" />
             <div>
-              <p class="pwa-manual-title">Instalar Financeiro Familiar</p>
+              <p class="pwa-manual-title">Instalar Planilha</p>
               <p class="pwa-manual-sub">Adicione à tela inicial do seu celular</p>
             </div>
             <button class="pwa-manual-close" @click="closeManual">✕</button>
@@ -90,8 +90,8 @@ const closeManual = () => { showManual.value = false }
   z-index: 9999;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-4);
   background: var(--surface);
   border-top: 3px solid var(--border);
   box-shadow: 0 -4px 0 var(--ds-shadow-color);
@@ -124,7 +124,7 @@ const closeManual = () => { showManual.value = false }
   font-size: 13px;
   font-weight: 600;
   border-radius: 8px;
-  padding: 8px 14px;
+  padding: 8px var(--ds-space-4);
   transition: opacity 0.15s;
 }
 .pwa-banner-btn:active { opacity: 0.7 }
@@ -139,7 +139,7 @@ const closeManual = () => { showManual.value = false }
   background: var(--overlay);
   display: flex;
   align-items: flex-end;
-  padding: 16px;
+  padding: var(--ds-space-4);
 }
 
 .pwa-manual {
@@ -148,16 +148,16 @@ const closeManual = () => { showManual.value = false }
   border: 3px solid var(--border);
   border-radius: var(--radius) var(--radius) 0 0;
   box-shadow: 0 -6px 0 var(--ds-shadow-color);
-  padding: 20px;
+  padding: var(--ds-space-5);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--ds-space-4);
 }
 
 .pwa-manual-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .pwa-manual-icon {
@@ -183,12 +183,12 @@ const closeManual = () => { showManual.value = false }
   padding: 4px;
 }
 
-.pwa-manual-steps { display: flex; flex-direction: column; gap: 12px }
+.pwa-manual-steps { display: flex; flex-direction: column; gap: var(--ds-space-3) }
 
 .pwa-manual-step {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--ds-space-3);
   font-size: 13px;
   color: var(--text2);
   line-height: 1.5;
@@ -216,7 +216,7 @@ const closeManual = () => { showManual.value = false }
   background: var(--surface2);
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 10px 12px;
+  padding: var(--ds-space-3) var(--ds-space-3);
   line-height: 1.5;
 }
 

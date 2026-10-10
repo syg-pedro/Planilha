@@ -30,15 +30,15 @@ withDefaults(
 
 <style scoped>
 .base-panel--dense {
-  padding: 12px;
+  padding: var(--ds-space-3);
 }
 
 .base-panel__header {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 14px;
-  padding-bottom: 10px;
+  gap: var(--ds-space-3);
+  margin-bottom: var(--ds-space-4);
+  padding-bottom: var(--ds-space-3);
   border-bottom: 2px solid var(--border);
 }
 

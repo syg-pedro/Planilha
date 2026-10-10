@@ -15,7 +15,7 @@
           <!-- Header -->
           <div class="sheet-header">
             <div>
-              <h2 class="sheet-title">{{ entry ? 'Editar lançamento' : 'Novo lançamento' }}</h2>
+              <h2 class="sheet-title">{{ entry && !creating ? 'Editar lançamento' : 'Novo lançamento' }}</h2>
               <p class="sheet-subtitle">{{ draft.title || 'Preencha os dados abaixo' }}</p>
             </div>
             <button class="sheet-close" @click="emit('close')">
@@ -82,7 +82,7 @@
               </div>
               <div class="field-group">
                 <label class="field-label">Status</label>
-                <BaseDropdown v-model="draft.status" :height="48">
+                <BaseDropdown v-model="draft.status">
                   <option value="pending">Pendente</option>
                   <option value="paid">{{ draft.kind === 'income' ? 'Recebido' : 'Pago' }}</option>
                   <option value="review">Revisar</option>
@@ -106,14 +106,14 @@
             <div class="field-row">
               <div class="field-group">
                 <label class="field-label">Conta</label>
-                <BaseDropdown v-model="draft.accountId" :height="48">
+                <BaseDropdown v-model="draft.accountId">
                   <option value="">Sem conta</option>
                   <option v-for="acc in accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
                 </BaseDropdown>
               </div>
               <div class="field-group">
                 <label class="field-label">Categoria</label>
-                <BaseDropdown v-model="draft.categoryId" :height="48">
+                <BaseDropdown v-model="draft.categoryId">
                   <option value="">Sem categoria</option>
                   <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                 </BaseDropdown>
@@ -194,7 +194,7 @@
 
           <!-- Footer com ações (fixo) -->
           <div class="sheet-footer">
-            <button v-if="entry" type="button" class="btn-delete" @click="onDelete">
+            <button v-if="entry && !creating" type="button" class="btn-delete" :disabled="busy" @click="onDelete">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
               </svg>
@@ -202,7 +202,7 @@
             </button>
             <div class="btn-group">
               <button type="button" class="btn-cancel" @click="emit('close')">Cancelar</button>
-              <button type="button" class="btn-save" @click="onSave">Salvar</button>
+              <button type="button" class="btn-save" :disabled="busy" @click="onSave">{{ busy ? 'Salvando…' : 'Salvar' }}</button>
             </div>
           </div>
         </div>
@@ -221,8 +221,12 @@ const props = withDefaults(defineProps<{
   accounts: Account[]
   categories: Category[]
   allowRecurrence?: boolean
+  creating?: boolean
+  busy?: boolean
 }>(), {
   allowRecurrence: false,
+  creating: false,
+  busy: false,
 })
 
 const emit = defineEmits<{
@@ -368,7 +372,7 @@ const onDelete = () => {
 .sheet-handle-area {
   display: flex;
   justify-content: center;
-  padding: 12px 0 4px;
+  padding: var(--ds-space-3) 0 4px;
   cursor: pointer;
 }
 .sheet-handle {
@@ -383,8 +387,8 @@ const onDelete = () => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 20px 14px;
+  gap: var(--ds-space-3);
+  padding: 8px var(--ds-space-5) var(--ds-space-4);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -425,23 +429,23 @@ const onDelete = () => {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 20px;
+  padding: var(--ds-space-4) var(--ds-space-5);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--ds-space-4);
 }
 
 /* ── Field primitives ────────────────────────────────────── */
 .field-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--ds-field-gap);
   flex: 1;
 }
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 .field-label {
   font-size: 12px;
@@ -455,9 +459,9 @@ const onDelete = () => {
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 14px;
-  height: 48px;
-  font-size: 15px;
+  padding: 0 var(--ds-space-4);
+  height: var(--ds-control-height);
+  font-size: var(--ds-control-font-size);
   font-weight: 500;
   color: var(--text);
   font-family: inherit;
@@ -477,9 +481,9 @@ const onDelete = () => {
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 14px;
-  height: 48px;
-  font-size: 15px;
+  padding: 0 var(--ds-space-4);
+  height: var(--ds-control-height);
+  font-size: var(--ds-control-font-size);
   font-weight: 500;
   color: var(--text);
   font-family: inherit;
@@ -501,7 +505,7 @@ const onDelete = () => {
 
 .field-textarea {
   height: auto;
-  padding: 12px 14px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   resize: none;
   line-height: 1.5;
 }
@@ -535,7 +539,7 @@ const onDelete = () => {
   border: 1.5px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
-  height: 48px;
+  height: var(--ds-control-height);
 }
 .seg-btn {
   display: flex;
@@ -567,11 +571,11 @@ const onDelete = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--ds-space-3);
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   cursor: pointer;
 }
 .toggle-content {
@@ -625,8 +629,8 @@ const onDelete = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 14px 20px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
   border-top: 1px solid var(--border);
   background: var(--surface);
   flex-shrink: 0;
@@ -640,8 +644,8 @@ const onDelete = () => {
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 18px;
-  height: 46px;
+  padding: 0 var(--ds-space-5);
+  height: var(--ds-control-height);
   font-size: 14px;
   font-weight: 600;
   color: var(--text2);
@@ -655,8 +659,8 @@ const onDelete = () => {
   background: var(--primary);
   border: none;
   border-radius: 10px;
-  padding: 0 24px;
-  height: 46px;
+  padding: 0 var(--ds-space-6);
+  height: var(--ds-control-height);
   font-size: 14px;
   font-weight: 700;
   color: var(--on-primary);
@@ -673,8 +677,8 @@ const onDelete = () => {
   background: transparent;
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 14px;
-  height: 46px;
+  padding: 0 var(--ds-space-4);
+  height: var(--ds-control-height);
   font-size: 13px;
   font-weight: 600;
   color: var(--danger);
@@ -708,7 +712,7 @@ const onDelete = () => {
 @media (min-width: 640px) {
   .sheet-overlay {
     align-items: center;
-    padding: 16px;
+    padding: var(--ds-space-4);
   }
   .sheet-container {
     border-radius: 20px;

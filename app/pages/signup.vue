@@ -1,9 +1,9 @@
 <template>
   <div>
     <h1 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 6px">Criar conta</h1>
-    <p style="font-size: 13px; color: var(--text3); margin-bottom: 24px">Crie sua conta do Financeiro Familiar</p>
+    <p style="font-size: 13px; color: var(--text3); margin-bottom: var(--ds-space-6)">Crie sua conta da Planilha</p>
 
-    <form style="display: flex; flex-direction: column; gap: 16px" @submit.prevent="onSubmit">
+    <form style="display: flex; flex-direction: column; gap: var(--ds-space-4)" @submit.prevent="onSubmit">
       <div>
         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">E-mail</label>
         <input
@@ -40,7 +40,7 @@
         </div>
 
         <!-- Checklist de regras -->
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px">
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--ds-space-3)">
           <span v-for="rule in passwordRules" :key="rule.key" :style="ruleChipStyle(rule.met)">
             <svg v-if="rule.met" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12" />
@@ -80,14 +80,14 @@
 
       <div
         v-if="errorMsg"
-        style="padding: 10px 14px; border-radius: var(--radius-xs); background: var(--danger-light); border: 1px solid var(--danger); font-size: 13px; color: var(--danger); font-weight: 600"
+        style="padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--radius-xs); background: var(--danger-light); border: 1px solid var(--danger); font-size: 13px; color: var(--danger); font-weight: 600"
       >
         {{ errorMsg }}
       </div>
 
       <div
         v-if="successMsg"
-        style="padding: 10px 14px; border-radius: var(--radius-xs); background: var(--success-light); border: 1px solid var(--success); font-size: 13px; color: var(--success); font-weight: 600"
+        style="padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--radius-xs); background: var(--success-light); border: 1px solid var(--success); font-size: 13px; color: var(--success); font-weight: 600"
       >
         {{ successMsg }}
       </div>
@@ -97,7 +97,7 @@
         :disabled="!canSubmit || loading"
         :style="{
           width: '100%',
-          padding: '11px 16px',
+          padding: 'var(--ds-space-3) var(--ds-space-4)',
           borderRadius: 'var(--radius-sm)',
           border: 'none',
           background: canSubmit && !loading ? 'var(--primary)' : 'var(--primary-dim)',
@@ -120,7 +120,7 @@
       </button>
     </form>
 
-    <p style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--text3)">
+    <p style="margin-top: var(--ds-space-5); text-align: center; font-size: 13px; color: var(--text3)">
       Já tem conta?
       <a href="/login" style="color: var(--primary); font-weight: 700; text-decoration: none">Entrar</a>
     </p>
@@ -145,7 +145,7 @@ const successMsg = ref<string | null>(null)
 
 const inputStyle = {
   width: '100%',
-  padding: '10px 12px',
+  padding: 'var(--ds-space-3) var(--ds-space-3)',
   borderRadius: 'var(--radius-xs)',
   border: '1.5px solid var(--border)',
   background: 'var(--surface2)',

@@ -116,7 +116,7 @@
       </section>
     </template>
 
-    <BaseModal :open="tourOpen" title="Conheça o Financeiro Familiar" subtitle="Um roteiro rápido pelos pontos que você mais vai usar." @close="closeTour">
+    <BaseModal :open="tourOpen" title="Conheça a Planilha" subtitle="Um roteiro rápido pelos pontos que você mais vai usar." @close="closeTour">
       <div class="onboarding__tour">
         <p class="onboarding__tour-count">PASSO {{ tourStep + 1 }} DE {{ TOUR_STEPS.length }}</p>
         <div class="onboarding__tour-icon"><BaseIcon :name="TOUR_STEPS[tourStep]?.icon ?? 'help'" :size="28" /></div>
@@ -268,8 +268,8 @@ const confirmImport = async () => {
 </script>
 
 <style scoped>
-.onboarding { max-width: 980px; margin: 0 auto; display: grid; gap: 18px; }
-.onboarding__hero { position: relative; overflow: hidden; display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: start; padding: 24px; border: 3px solid var(--border); background: var(--surface); box-shadow: 7px 7px 0 var(--ds-shadow-color); }
+.onboarding { max-width: 980px; margin: 0 auto; display: grid; gap: var(--ds-space-5); }
+.onboarding__hero { position: relative; overflow: hidden; display: grid; grid-template-columns: auto 1fr auto; gap: var(--ds-space-5); align-items: start; padding: var(--ds-space-6); border: 3px solid var(--border); background: var(--surface); box-shadow: 7px 7px 0 var(--ds-shadow-color); }
 .onboarding__hero::after { content: ''; position: absolute; right: -45px; bottom: -76px; width: 190px; height: 190px; border: 3px solid var(--border); background: var(--primary-dim); transform: rotate(16deg); }
 .onboarding__hero > * { position: relative; z-index: 1; }
 .onboarding__hero-mark, .onboarding__choice-icon, .onboarding__tour-icon { display: grid; place-items: center; flex: 0 0 auto; width: 46px; height: 46px; border: 2px solid var(--border); background: var(--primary); color: var(--bg); box-shadow: var(--shadow-sm); }
@@ -277,13 +277,13 @@ const confirmImport = async () => {
 .onboarding__hero h2 { margin: 0; color: var(--text); font-size: clamp(24px, 4vw, 34px); font-weight: 900; line-height: 1; }
 .onboarding__hero p:not(.onboarding__eyebrow) { max-width: 630px; margin: 9px 0 0; color: var(--text2); font-size: 14px; line-height: 1.5; }
 .onboarding__dismiss { border: 0; background: transparent; color: var(--text3); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: underline; }
-.onboarding__trail { display: flex; gap: 10px; margin: 0; padding: 0; list-style: none; overflow-x: auto; }
+.onboarding__trail { display: flex; gap: var(--ds-space-3); margin: 0; padding: 0; list-style: none; overflow-x: auto; }
 .onboarding__trail-item { display: inline-flex; align-items: center; gap: 7px; min-width: max-content; color: var(--text3); font-size: 12px; font-weight: 800; }
 .onboarding__trail-item span { display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid var(--border); background: var(--surface2); color: var(--text2); font-size: 11px; }
 .onboarding__trail-item--done { color: var(--success); }
 .onboarding__trail-item--done span { background: var(--success); color: var(--bg); }
-.onboarding__choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.onboarding__choice { display: grid; grid-template-columns: auto 1fr; gap: 15px; padding: 20px; border: 2px solid var(--border); background: var(--surface); box-shadow: 4px 4px 0 var(--ds-shadow-color); }
+.onboarding__choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-4); }
+.onboarding__choice { display: grid; grid-template-columns: auto 1fr; gap: var(--ds-space-4); padding: var(--ds-space-5); border: 2px solid var(--border); background: var(--surface); box-shadow: 4px 4px 0 var(--ds-shadow-color); }
 .onboarding__choice--featured { border-width: 3px; background: var(--primary-dim); }
 .onboarding__choice-icon--quiet { background: var(--surface2); color: var(--primary); }
 .onboarding__choice h3, .onboarding__import h3, .onboarding__learn h3, .onboarding__tour h3 { margin: 0; color: var(--text); font-size: 17px; font-weight: 900; }
@@ -291,21 +291,21 @@ const confirmImport = async () => {
 .onboarding__choice-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 9px; }
 .onboarding__choice-note { grid-column: 1 / -1; margin: 0 !important; color: var(--text3) !important; font-size: 11px !important; }
 .onboarding__file-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.onboarding__import, .onboarding__learn, .onboarding__success { border: 2px solid var(--border); background: var(--surface); box-shadow: 4px 4px 0 var(--ds-shadow-color); padding: 20px; }
-.onboarding__import-heading, .onboarding__success { display: flex; align-items: center; gap: 12px; }
-.onboarding__loading { display: flex; align-items: center; gap: 9px; padding-top: 16px; color: var(--text2); font-size: 13px; font-weight: 700; }
+.onboarding__import, .onboarding__learn, .onboarding__success { border: 2px solid var(--border); background: var(--surface); box-shadow: 4px 4px 0 var(--ds-shadow-color); padding: var(--ds-space-5); }
+.onboarding__import-heading, .onboarding__success { display: flex; align-items: center; gap: var(--ds-space-3); }
+.onboarding__loading { display: flex; align-items: center; gap: 9px; padding-top: var(--ds-space-4); color: var(--text2); font-size: 13px; font-weight: 700; }
 .onboarding__loading span { width: 15px; height: 15px; border: 2px solid var(--primary); border-right-color: transparent; border-radius: 50%; animation: onboarding-spin .7s linear infinite; }
 .onboarding__summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 12px; }
-.onboarding__summary div { min-width: 0; padding: 12px 8px; border: 1px solid var(--border); background: var(--surface2); text-align: center; }
+.onboarding__summary div { min-width: 0; padding: var(--ds-space-3) 8px; border: 1px solid var(--border); background: var(--surface2); text-align: center; }
 .onboarding__summary strong { display: block; color: var(--primary); font-size: 21px; font-weight: 900; }
 .onboarding__summary span { display: block; margin-top: 2px; color: var(--text3); font-size: 10px; font-weight: 800; }
-.onboarding__errors, .onboarding__warnings { display: grid; gap: 7px; margin: 16px 0; padding: 12px; list-style: none; border: 1px solid var(--danger); background: var(--danger-light); color: var(--danger); font-size: 12px; font-weight: 700; }
+.onboarding__errors, .onboarding__warnings { display: grid; gap: 7px; margin: 16px 0; padding: var(--ds-space-3); list-style: none; border: 1px solid var(--danger); background: var(--danger-light); color: var(--danger); font-size: 12px; font-weight: 700; }
 .onboarding__warnings { border-color: var(--warning); background: var(--warning-light); color: var(--warning); }
 .onboarding__errors li, .onboarding__warnings li { display: flex; align-items: flex-start; gap: 7px; line-height: 1.35; }
 .onboarding__import-copy { margin: 0 0 14px; color: var(--text3); font-size: 12px; line-height: 1.45; }
-.onboarding__learn { display: grid; grid-template-columns: .9fr 1.1fr; gap: 18px; align-items: center; background: var(--surface2); }
+.onboarding__learn { display: grid; grid-template-columns: .9fr 1.1fr; gap: var(--ds-space-5); align-items: center; background: var(--surface2); }
 .onboarding__learn-grid { display: grid; gap: 8px; }
-.onboarding__learn-grid button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; width: 100%; padding: 11px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; text-align: left; box-shadow: var(--shadow-xs); cursor: pointer; }
+.onboarding__learn-grid button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--ds-space-3); width: 100%; padding: var(--ds-space-3); border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; text-align: left; box-shadow: var(--shadow-xs); cursor: pointer; }
 .onboarding__learn-grid button:hover { transform: translate(-1px, -1px); box-shadow: var(--shadow-sm); }
 .onboarding__learn-grid span { display: grid; gap: 2px; }
 .onboarding__learn-grid strong { font-size: 13px; }
@@ -313,14 +313,14 @@ const confirmImport = async () => {
 .onboarding__success { justify-content: space-between; border-width: 3px; background: var(--success-light); color: var(--success); }
 .onboarding__success strong { display: block; color: var(--text); font-size: 15px; }
 .onboarding__success p { margin: 3px 0 0; color: var(--text2); font-size: 12px; }
-.onboarding__tour { display: grid; justify-items: start; gap: 12px; }
+.onboarding__tour { display: grid; justify-items: start; gap: var(--ds-space-3); }
 .onboarding__tour-icon { width: 56px; height: 56px; }
 .onboarding__tour > p:not(.onboarding__tour-count) { margin: 0; color: var(--text2); font-size: 14px; line-height: 1.5; }
 .onboarding__tour-dots { display: flex; gap: 6px; }
 .onboarding__tour-dots span { width: 9px; height: 9px; border: 1px solid var(--border); background: var(--surface2); }
 .onboarding__tour-dots .active { width: 24px; background: var(--primary); }
-.onboarding__tour-actions { display: flex; justify-content: flex-end; gap: 10px; width: 100%; margin-top: 4px; }
+.onboarding__tour-actions { display: flex; justify-content: flex-end; gap: var(--ds-space-3); width: 100%; margin-top: 4px; }
 @keyframes onboarding-spin { to { transform: rotate(360deg); } }
-@media (max-width: 720px) { .onboarding__hero { grid-template-columns: auto 1fr; padding: 18px; } .onboarding__dismiss { grid-column: 1 / -1; justify-self: start; } .onboarding__choices, .onboarding__learn { grid-template-columns: 1fr; } .onboarding__summary { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 420px) { .onboarding__choice { padding: 16px; } .onboarding__choice-actions .base-button { width: 100%; } .onboarding__success { align-items: flex-start; flex-wrap: wrap; } }
+@media (max-width: 720px) { .onboarding__hero { grid-template-columns: auto 1fr; padding: var(--ds-space-5); } .onboarding__dismiss { grid-column: 1 / -1; justify-self: start; } .onboarding__choices, .onboarding__learn { grid-template-columns: 1fr; } .onboarding__summary { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 420px) { .onboarding__choice { padding: var(--ds-space-4); } .onboarding__choice-actions .base-button { width: 100%; } .onboarding__success { align-items: flex-start; flex-wrap: wrap; } }
 </style>

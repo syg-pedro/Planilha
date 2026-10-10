@@ -44,7 +44,7 @@ describe('onboarding workbook parser', () => {
 
     const buffer = await workbook.xlsx.writeBuffer() as ArrayBuffer
     const file = {
-      name: 'modelo-financeiro-familiar.xlsx',
+      name: 'modelo-planilha.xlsx',
       size: buffer.byteLength,
       arrayBuffer: async () => buffer,
     } as File

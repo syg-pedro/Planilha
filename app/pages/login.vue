@@ -1,9 +1,9 @@
 <template>
   <div>
     <h1 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 6px">Entrar</h1>
-    <p style="font-size: 13px; color: var(--text3); margin-bottom: 24px">Acesse sua conta do Financeiro Familiar</p>
+    <p style="font-size: 13px; color: var(--text3); margin-bottom: var(--ds-space-6)">Acesse sua conta da Planilha</p>
 
-    <form style="display: flex; flex-direction: column; gap: 16px" @submit.prevent="onSubmit">
+    <form style="display: flex; flex-direction: column; gap: var(--ds-space-4)" @submit.prevent="onSubmit">
       <div>
         <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">E-mail</label>
         <input
@@ -76,7 +76,7 @@
 
       <div
         v-if="errorMsg"
-        style="padding: 10px 14px; border-radius: var(--radius-xs); background: var(--danger-light); border: 1px solid var(--danger); font-size: 13px; color: var(--danger); font-weight: 600"
+        style="padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--radius-xs); background: var(--danger-light); border: 1px solid var(--danger); font-size: 13px; color: var(--danger); font-weight: 600"
       >
         {{ errorMsg }}
       </div>
@@ -86,7 +86,7 @@
         :disabled="loading"
         :style="{
           width: '100%',
-          padding: '11px 16px',
+          padding: 'var(--ds-space-3) var(--ds-space-4)',
           borderRadius: 'var(--radius-sm)',
           border: 'none',
           background: loading ? 'var(--primary-dim)' : 'var(--primary)',
@@ -109,7 +109,7 @@
       </button>
     </form>
 
-    <p style="margin-top: 20px; text-align: center; font-size: 13px; color: var(--text3)">
+    <p style="margin-top: var(--ds-space-5); text-align: center; font-size: 13px; color: var(--text3)">
       Não tem conta?
       <a href="/signup" style="color: var(--primary); font-weight: 700; text-decoration: none">Criar conta</a>
     </p>
@@ -145,7 +145,7 @@ const recentUsers = ref<RecentUser[]>([])
 
 const inputStyle = {
   width: '100%',
-  padding: '10px 12px',
+  padding: 'var(--ds-space-3) var(--ds-space-3)',
   borderRadius: 'var(--radius-xs)',
   border: '1.5px solid var(--border)',
   background: 'var(--surface2)',

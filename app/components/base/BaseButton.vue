@@ -98,15 +98,15 @@ const buttonClass = computed(() => {
 }
 
 .base-button--sm {
-  min-height: 32px;
-  padding: 6px 10px;
+  min-height: var(--ds-control-height-sm);
+  padding: 6px var(--ds-space-3);
   font-size: 12px;
 }
 
 .base-button--md {
-  min-height: 40px;
-  padding: 9px 14px;
-  font-size: 14px;
+  min-height: var(--ds-control-height);
+  padding: var(--ds-space-2) var(--ds-space-4);
+  font-size: 13px;
 }
 
 .base-button--block {

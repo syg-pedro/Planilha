@@ -26,7 +26,7 @@
       <ChangelogScreen    v-else-if="activeScreen === 'changelog'"     key="changelog"    />
       <DesignSystemScreen v-else-if="activeScreen === 'design-system'" key="design-system"/>
       <ConfiguracoesScreen v-else-if="activeScreen === 'config'"       key="config"       @navigate="goTo" />
-      <div v-else key="empty" style="text-align: center; padding: 60px 20px">
+      <div v-else key="empty" style="text-align: center; padding: var(--ds-space-9) var(--ds-space-5)">
         <p style="font-size: 15px; font-weight: 700; color: var(--text)">Em desenvolvimento</p>
         <p style="font-size: 13px; color: var(--text3); margin-top: 6px">Este módulo estará disponível em breve.</p>
       </div>

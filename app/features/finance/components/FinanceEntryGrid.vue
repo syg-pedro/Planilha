@@ -1,10 +1,10 @@
 <template>
-  <div style="display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;flex-direction:column;gap:var(--ds-space-4)">
     <!-- Toolbar -->
     <div class="toolbar">
       <div class="search-box">
         <div
-          style="display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:var(--radius-xs);padding:0 12px;height:38px;transition:border-color 0.15s,box-shadow 0.15s"
+          style="display:flex;align-items:center;gap:6px;background:var(--surface2);border-radius:var(--radius-xs);padding:0 var(--ds-space-3);height:var(--ds-control-height);transition:border-color 0.15s,box-shadow 0.15s"
           :style="searchFocused ? { border:'1.5px solid var(--primary)', boxShadow:'0 0 0 3px var(--primary-dim)' } : { border:'1.5px solid var(--border)' }"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text3);flex-shrink:0">
@@ -45,19 +45,19 @@
     </div>
 
     <!-- Summary strip -->
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <div :style="{ background:'var(--success-light)', borderRadius:'var(--radius-sm)', padding:'8px 16px', border:'1px solid var(--success)' }">
+    <div style="display:flex;gap:var(--ds-space-3);flex-wrap:wrap">
+      <div :style="{ background:'var(--success-light)', borderRadius:'var(--radius-sm)', padding:'8px var(--ds-space-4)', border:'1px solid var(--success)' }">
         <span style="font-size:11px;color:var(--success);font-weight:600;display:block">RECEITAS</span>
         <span style="font-size:16px;font-weight:800;color:var(--success)">{{ fmt(totals.income) }}</span>
       </div>
-      <div :style="{ background:'var(--danger-light)', borderRadius:'var(--radius-sm)', padding:'8px 16px', border:'1px solid var(--danger)' }">
+      <div :style="{ background:'var(--danger-light)', borderRadius:'var(--radius-sm)', padding:'8px var(--ds-space-4)', border:'1px solid var(--danger)' }">
         <span style="font-size:11px;color:var(--danger);font-weight:600;display:block">DESPESAS</span>
         <span style="font-size:16px;font-weight:800;color:var(--danger)">{{ fmt(totals.expense) }}</span>
       </div>
       <div
         :style="{
           background: totals.net>=0?'var(--success-light)':'var(--danger-light)',
-          borderRadius:'var(--radius-sm)', padding:'8px 16px',
+          borderRadius:'var(--radius-sm)', padding:'8px var(--ds-space-4)',
           border: `1px solid ${totals.net>=0?'var(--success)':'var(--danger)'}`
         }"
       >
@@ -72,14 +72,14 @@
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead>
             <tr style="background:var(--surface2);border-bottom:1px solid var(--border)">
-              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Vencimento</th>
-              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Descrição</th>
-              <th class="col-hide-sm" style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Tipo</th>
-              <th class="col-hide-sm" style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Conta</th>
-              <th class="col-hide-md" style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Categoria</th>
-              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Valor</th>
-              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Status</th>
-              <th style="padding:10px 12px;text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Ações</th>
+              <th style="padding:var(--ds-table-cell-padding);text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Vencimento</th>
+              <th style="padding:var(--ds-table-cell-padding);text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Descrição</th>
+              <th class="col-hide-sm" style="padding:var(--ds-table-cell-padding);text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Tipo</th>
+              <th class="col-hide-sm" style="padding:var(--ds-table-cell-padding);text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Conta</th>
+              <th class="col-hide-md" style="padding:var(--ds-table-cell-padding);text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Categoria</th>
+              <th style="padding:var(--ds-table-cell-padding);text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Valor</th>
+              <th style="padding:var(--ds-table-cell-padding);text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Status</th>
+              <th style="padding:var(--ds-table-cell-padding);text-align:left;color:var(--text3);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -90,8 +90,8 @@
               @mouseenter="($event.currentTarget as HTMLElement).style.filter='brightness(0.97)'"
               @mouseleave="($event.currentTarget as HTMLElement).style.filter=''"
             >
-              <td style="padding:10px 12px;font-weight:600;color:var(--text);white-space:nowrap" @click="openEdit(e)">{{ fmtDate(e.dueDate) }}</td>
-              <td style="padding:10px 12px;color:var(--text)" @click="openEdit(e)">
+              <td style="padding:var(--ds-table-cell-padding);font-weight:600;color:var(--text);white-space:nowrap" @click="openEdit(e)">{{ fmtDate(e.dueDate) }}</td>
+              <td style="padding:var(--ds-table-cell-padding);color:var(--text)" @click="openEdit(e)">
                 <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
                   {{ e.title }}
                   <span
@@ -109,19 +109,19 @@
                   >{{ e.kind==='income'?'Rec':'Desp' }}</span>
                 </span>
               </td>
-              <td class="col-hide-sm" style="padding:10px 12px" @click="openEdit(e)">
+              <td class="col-hide-sm" style="padding:var(--ds-table-cell-padding)" @click="openEdit(e)">
                 <span
                   :style="{
                     background: e.kind==='income'?'var(--success-light)':'var(--danger-light)',
                     color: e.kind==='income'?'var(--success)':'var(--danger)',
-                    borderRadius:'99px', padding:'2px 10px', fontSize:'11px', fontWeight:700
+                    borderRadius:'99px', padding:'2px var(--ds-space-3)', fontSize:'11px', fontWeight:700
                   }"
                 >{{ e.kind==='income'?'Receita':'Despesa' }}</span>
               </td>
-              <td class="col-hide-sm" style="padding:10px 12px;color:var(--text2);white-space:nowrap" @click="openEdit(e)">
+              <td class="col-hide-sm" style="padding:var(--ds-table-cell-padding);color:var(--text2);white-space:nowrap" @click="openEdit(e)">
                 {{ store.accountMap.get(e.accountId ?? '')?.name || '—' }}
               </td>
-              <td class="col-hide-md" style="padding:10px 12px" @click="openEdit(e)">
+              <td class="col-hide-md" style="padding:var(--ds-table-cell-padding)" @click="openEdit(e)">
                 <span v-if="store.categoryMap.get(e.categoryId ?? '')" style="display:inline-flex;align-items:center;gap:5px">
                   <span
                     :style="{
@@ -134,13 +134,13 @@
                 </span>
               </td>
               <td
-                :style="{ padding:'10px 12px', fontWeight:700, color: e.kind==='income'?'var(--success)':'var(--danger)', whiteSpace:'nowrap' }"
+                :style="{ padding:'var(--ds-space-3) var(--ds-space-3)', fontWeight:700, color: e.kind==='income'?'var(--success)':'var(--danger)', whiteSpace:'nowrap' }"
                 @click="openEdit(e)"
               >{{ fmt(e.amount) }}</td>
-              <td style="padding:10px 12px" @click="openEdit(e)">
+              <td style="padding:var(--ds-table-cell-padding)" @click="openEdit(e)">
                 <span :style="badgeStyle(e.status)">{{ badgeLabel(e.status, e.kind) }}</span>
               </td>
-              <td style="padding:10px 12px">
+              <td style="padding:var(--ds-table-cell-padding)">
                 <button
                   v-if="e.status !== 'paid'"
                   class="action-btn"
@@ -154,12 +154,12 @@
               </td>
             </tr>
             <tr v-if="filteredRows.length === 0">
-              <td colspan="8" style="padding:32px;text-align:center;color:var(--text3)">Nenhum lançamento encontrado</td>
+              <td colspan="8" style="padding:var(--ds-space-7);text-align:center;color:var(--text3)">Nenhum lançamento encontrado</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <div style="padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2);display:flex;gap:16px;flex-wrap:wrap">
+      <div style="padding:var(--ds-space-3) var(--ds-space-4);border-top:1px solid var(--border);background:var(--surface2);display:flex;gap:var(--ds-space-4);flex-wrap:wrap">
         <span style="font-size:12px;color:var(--text3)">{{ filteredRows.length }} lançamento(s) exibido(s)</span>
       </div>
     </div>
@@ -236,7 +236,7 @@ const badgeStyle = (status: FinanceEntry['status']) => {
     review: { bg: 'var(--danger-light)', color: 'var(--danger)' }
   }
   const s = map[status]
-  return { background: s.bg, color: s.color, borderRadius: '99px', padding: '2px 10px', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap' }
+  return { background: s.bg, color: s.color, borderRadius: '99px', padding: '2px var(--ds-space-3)', fontSize: '11px', fontWeight: 700, whiteSpace: 'nowrap' }
 }
 
 const badgeLabel = (status: FinanceEntry['status'], kind: FinanceEntry['kind']) => {
@@ -301,7 +301,7 @@ const quickPay = async (id: string) => {
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--ds-space-3);
   align-items: center;
 }
 
@@ -318,7 +318,7 @@ const quickPay = async (id: string) => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 16px;
+  padding: 9px var(--ds-space-4);
   background: var(--primary);
   color: var(--on-primary);
   border: none;
@@ -350,7 +350,7 @@ const quickPay = async (id: string) => {
   color: var(--success);
   border: none;
   border-radius: 6px;
-  padding: 6px 10px;
+  padding: 6px var(--ds-space-3);
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
@@ -358,7 +358,7 @@ const quickPay = async (id: string) => {
   align-items: center;
   gap: 4px;
   font-family: inherit;
-  min-height: 32px;
+  min-height: var(--ds-control-height-sm);
   touch-action: manipulation;
 }
 
@@ -399,8 +399,8 @@ const quickPay = async (id: string) => {
   }
 
   .action-btn {
-    padding: 8px 12px;
-    min-height: 38px;
+    padding: 8px var(--ds-space-3);
+    min-height: var(--ds-control-height);
     font-size: 13px;
   }
 }

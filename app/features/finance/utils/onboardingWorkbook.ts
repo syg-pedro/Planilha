@@ -9,7 +9,7 @@ import type {
   OnboardingImportPayload,
 } from '#shared/types'
 
-const FILE_NAME = 'modelo-financeiro-familiar.xlsx'
+const FILE_NAME = 'modelo-planilha.xlsx'
 const CATEGORY_COLORS = ['#5b5bf7', '#13a86b', '#e84545', '#f59e0b', '#0ea5e9', '#ec4899']
 const REQUIRED_SHEETS = ['Contas e cartões', 'Categorias', 'Fixos mensais', 'Lançamentos'] as const
 
@@ -160,11 +160,11 @@ const addTable = (worksheet: any, headers: string[], widths: number[]) => {
 const createWorkbook = async () => {
   const ExcelJS = await import('exceljs')
   const workbook = new ExcelJS.Workbook()
-  workbook.creator = 'Financeiro Familiar'
+  workbook.creator = 'Planilha'
   workbook.created = new Date()
 
   const guide = workbook.addWorksheet('Leia-me')
-  addWorkbookTitle(guide, 'MODELO INICIAL', 'Preencha as abas abaixo e envie este mesmo arquivo pelo Financeiro Familiar.')
+  addWorkbookTitle(guide, 'MODELO INICIAL', 'Preencha as abas abaixo e envie este mesmo arquivo pela Planilha.')
   guide.getColumn(1).width = 26
   guide.getColumn(2).width = 92
   const guideRows = [
@@ -235,7 +235,7 @@ export const downloadOnboardingWorkbook = async () => {
         directory: Directory.Cache,
       })
       await Share.share({
-        title: 'Modelo Financeiro Familiar',
+        title: 'Modelo da Planilha',
         text: 'Preencha esta planilha e envie pelo aplicativo para começar.',
         files: [saved.uri],
       })
@@ -257,7 +257,7 @@ export const downloadOnboardingWorkbook = async () => {
 export const parseOnboardingWorkbook = async (file: File): Promise<WorkbookParseResult> => {
   const errors: string[] = []
   if (!/\.xlsx$/i.test(file.name)) {
-    return { payload: null, errors: ['Envie o arquivo .xlsx baixado pelo Financeiro Familiar.'] }
+    return { payload: null, errors: ['Envie o arquivo .xlsx baixado pela Planilha.'] }
   }
   if (file.size > 2 * 1024 * 1024) {
     return { payload: null, errors: ['O arquivo ultrapassa o limite de 2 MB.'] }

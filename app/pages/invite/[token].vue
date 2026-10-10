@@ -1,6 +1,6 @@
 <template>
-  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--bg)">
-    <div style="width: 100%; max-width: 420px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 32px; text-align: center">
+  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: var(--ds-space-6); background: var(--bg)">
+    <div style="width: 100%; max-width: 420px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: var(--ds-space-7); text-align: center">
 
       <template v-if="state === 'loading'">
         <p style="color: var(--text3)">Verificando convite...</p>
@@ -8,15 +8,15 @@
 
       <template v-else-if="state === 'needLogin'">
         <h1 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px">Você foi convidado!</h1>
-        <p style="font-size: 14px; color: var(--text2); margin-bottom: 24px">Faça login ou crie uma conta para aceitar o convite e acessar o household compartilhado.</p>
-        <div style="display: flex; flex-direction: column; gap: 10px">
+        <p style="font-size: 14px; color: var(--text2); margin-bottom: var(--ds-space-6)">Faça login ou crie uma conta para aceitar o convite e acessar o household compartilhado.</p>
+        <div style="display: flex; flex-direction: column; gap: var(--ds-space-3)">
           <NuxtLink :to="`/login?redirect=/invite/${token}`">
-            <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer">
+            <button style="width: 100%; padding: var(--ds-space-3); border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer">
               Entrar com conta existente
             </button>
           </NuxtLink>
           <NuxtLink :to="`/signup?redirect=/invite/${token}`">
-            <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer">
+            <button style="width: 100%; padding: var(--ds-space-3); border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer">
               Criar nova conta
             </button>
           </NuxtLink>
@@ -25,19 +25,19 @@
 
       <template v-else-if="state === 'confirming'">
         <h1 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px">Aceitar convite?</h1>
-        <p style="font-size: 14px; color: var(--text2); margin-bottom: 24px">
+        <p style="font-size: 14px; color: var(--text2); margin-bottom: var(--ds-space-6)">
           Ao aceitar, você passará a ver os dados do household compartilhado. Seus dados atuais continuarão existindo mas você precisará de outro convite para voltar.
         </p>
-        <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: var(--ds-space-3)">
           <button
-            style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer"
+            style="width: 100%; padding: var(--ds-space-3); border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer"
             :disabled="accepting"
             @click="accept"
           >
             {{ accepting ? 'Aceitando...' : 'Aceitar convite' }}
           </button>
           <NuxtLink to="/">
-            <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer">
+            <button style="width: 100%; padding: var(--ds-space-3); border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer">
               Cancelar
             </button>
           </NuxtLink>
@@ -49,9 +49,9 @@
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
         </div>
         <h1 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px">Convite aceito!</h1>
-        <p style="font-size: 14px; color: var(--text2); margin-bottom: 24px">Você agora faz parte do household compartilhado.</p>
+        <p style="font-size: 14px; color: var(--text2); margin-bottom: var(--ds-space-6)">Você agora faz parte do household compartilhado.</p>
         <NuxtLink to="/">
-          <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer">
+          <button style="width: 100%; padding: var(--ds-space-3); border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer">
             Ir para o início
           </button>
         </NuxtLink>
@@ -59,9 +59,9 @@
 
       <template v-else-if="state === 'error'">
         <h1 style="font-size: 20px; font-weight: 800; color: var(--danger); margin-bottom: 8px">Convite inválido</h1>
-        <p style="font-size: 14px; color: var(--text2); margin-bottom: 24px">{{ errorMsg }}</p>
+        <p style="font-size: 14px; color: var(--text2); margin-bottom: var(--ds-space-6)">{{ errorMsg }}</p>
         <NuxtLink to="/">
-          <button style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer">
+          <button style="width: 100%; padding: var(--ds-space-3); border-radius: var(--radius-sm); border: none; background: var(--primary); color: var(--on-primary); font-size: 14px; font-weight: 700; cursor: pointer">
             Voltar ao início
           </button>
         </NuxtLink>

@@ -273,7 +273,7 @@ const exportCsv = () => {
 .rep {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--ds-space-4);
 }
 
 /* ── Períodos ──────────────────────────────────────────────── */
@@ -284,7 +284,7 @@ const exportCsv = () => {
 }
 
 .rep__seg {
-  padding: 7px 14px;
+  padding: 7px var(--ds-space-4);
   color: var(--text2);
   font-family: inherit;
   font-size: 12px;
@@ -312,12 +312,12 @@ const exportCsv = () => {
 .rep__kpis {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .rep__kpi {
   min-width: 0;
-  padding: 13px 15px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--ds-radius-md);
@@ -343,19 +343,19 @@ const exportCsv = () => {
 .rep__row {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
+  gap: var(--ds-space-4);
   align-items: start;
 }
 
 .rep__panel-head {
-  padding: 13px 16px;
+  padding: var(--ds-space-3) var(--ds-space-4);
 }
 
 .rep__panel-head--row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .rep__panel-title {
@@ -380,15 +380,15 @@ const exportCsv = () => {
 .rep__cats {
   display: flex;
   flex-direction: column;
-  gap: 13px;
-  padding: 18px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-5);
 }
 
 .rep__cat-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--ds-space-3);
   margin-bottom: 5px;
 }
 
@@ -429,8 +429,8 @@ const exportCsv = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 13px 16px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
   border-bottom: 1px solid var(--border);
 }
 
@@ -451,7 +451,7 @@ const exportCsv = () => {
 
 .rep__export {
   width: 100%;
-  padding: 12px;
+  padding: var(--ds-space-3);
   color: var(--primary);
   font-family: inherit;
   font-size: 12.5px;
@@ -467,7 +467,7 @@ const exportCsv = () => {
 
 /* ── Comparativo mensal ────────────────────────────────────── */
 .rep__chart {
-  padding: 18px;
+  padding: var(--ds-space-5);
 }
 
 /* ── Resumo mensal ─────────────────────────────────────────── */
@@ -482,7 +482,7 @@ const exportCsv = () => {
 }
 
 .rep__th {
-  padding: 10px 16px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   color: var(--text3);
   font-size: 9.5px;
   font-weight: 800;
@@ -506,7 +506,7 @@ const exportCsv = () => {
 }
 
 .rep__td {
-  padding: 10px 16px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   color: var(--text2);
   font-size: 12.5px;
 }
@@ -539,7 +539,7 @@ const exportCsv = () => {
 
 @media (max-width: 640px) {
   .rep {
-    gap: 14px;
+    gap: var(--ds-space-4);
   }
 
   .rep__periods {
@@ -547,7 +547,7 @@ const exportCsv = () => {
   }
 
   .rep__seg {
-    padding: 7px 12px;
+    padding: 7px var(--ds-space-3);
     font-size: 11.5px;
   }
 
@@ -557,7 +557,7 @@ const exportCsv = () => {
   }
 
   .rep__kpi {
-    padding: 11px 13px;
+    padding: var(--ds-space-3) var(--ds-space-3);
     box-shadow: var(--shadow-xs);
   }
 
@@ -572,7 +572,7 @@ const exportCsv = () => {
   }
 
   .rep__panel-head {
-    padding: 12px 14px;
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
   .rep__panel-title {
@@ -580,8 +580,8 @@ const exportCsv = () => {
   }
 
   .rep__cats {
-    gap: 11px;
-    padding: 14px;
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-4);
   }
 
   .rep__cat-head {
@@ -602,7 +602,7 @@ const exportCsv = () => {
   }
 
   .rep__person {
-    padding: 11px 14px;
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
   .rep__person-name {
@@ -610,12 +610,12 @@ const exportCsv = () => {
   }
 
   .rep__chart {
-    padding: 14px;
+    padding: var(--ds-space-4);
   }
 
   .rep__th,
   .rep__td {
-    padding: 9px 12px;
+    padding: 9px var(--ds-space-3);
   }
 }
 </style>

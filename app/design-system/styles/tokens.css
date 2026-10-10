@@ -5,11 +5,24 @@
   --ds-font-family-grid: 'Inter', 'Segoe UI', system-ui, sans-serif;
 
   --ds-space-1: 0.25rem;
-  --ds-space-2: 0.5rem;
-  --ds-space-3: 0.75rem;
-  --ds-space-4: 1rem;
-  --ds-space-5: 1.25rem;
-  --ds-space-6: 1.5rem;
+  --ds-space-2: 0.375rem;
+  --ds-space-3: 0.5rem;
+  --ds-space-4: 0.625rem;
+  --ds-space-5: 0.75rem;
+  --ds-space-6: 1rem;
+  --ds-space-7: 1.25rem;
+  --ds-space-8: 1.5rem;
+  --ds-space-9: 2rem;
+
+  /* Densidade compacta compartilhada por todas as telas e editores. */
+  --ds-control-height: 34px;
+  --ds-control-height-sm: 28px;
+  --ds-control-font-size: 13px;
+  --ds-form-gap: var(--ds-space-3);
+  --ds-field-gap: var(--ds-space-1);
+  --ds-panel-padding: var(--ds-space-5);
+  --ds-layout-gap: var(--ds-space-4);
+  --ds-table-cell-padding: var(--ds-space-2) var(--ds-space-3);
 
   --ds-radius-xs: 0.125rem;
   --ds-radius-sm: 5px;

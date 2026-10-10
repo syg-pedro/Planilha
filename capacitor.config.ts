@@ -5,7 +5,7 @@ const useBundledWebAssets = process.env.CAPACITOR_USE_BUNDLED_WEB === 'true'
 
 const config: CapacitorConfig = {
   appId: 'com.pedro.financeirofamiliar',
-  appName: 'Financeiro Familiar',
+  appName: 'Planilha',
   webDir: process.env.CAPACITOR_WEB_DIR ?? '.output/public',
   server: useBundledWebAssets
     ? {

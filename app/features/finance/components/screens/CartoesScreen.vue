@@ -251,7 +251,7 @@ const onSave = async (account: Partial<Account>) => {
 .cards {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--ds-space-5);
 }
 
 .cards__section {
@@ -263,8 +263,8 @@ const onSave = async (account: Partial<Account>) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 14px 18px;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-4) var(--ds-space-5);
   flex-wrap: wrap;
 }
 
@@ -295,7 +295,7 @@ const onSave = async (account: Partial<Account>) => {
 .cards__summary-side {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--ds-space-4);
   flex-wrap: wrap;
 }
 
@@ -323,7 +323,7 @@ const onSave = async (account: Partial<Account>) => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 9px 18px;
+  padding: 9px var(--ds-space-5);
   background: var(--primary);
   color: var(--on-primary);
   border-radius: var(--radius-sm);
@@ -335,7 +335,7 @@ const onSave = async (account: Partial<Account>) => {
 }
 
 .section-label {
-  margin-bottom: 10px;
+  margin-bottom: var(--ds-space-3);
   color: var(--text3);
   font-size: 10px;
   font-weight: 800;
@@ -347,12 +347,12 @@ const onSave = async (account: Partial<Account>) => {
 .cards__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: var(--ds-space-4);
 }
 
 .credit-card {
   min-width: 0;
-  padding: 22px;
+  padding: var(--ds-space-5);
   border: var(--border-width) solid var(--border);
   border-radius: 14px;
   box-shadow: var(--shadow-md);
@@ -363,7 +363,7 @@ const onSave = async (account: Partial<Account>) => {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--ds-space-3);
 }
 
 .credit-card__name {
@@ -411,7 +411,7 @@ const onSave = async (account: Partial<Account>) => {
 }
 
 .credit-card__number {
-  margin-top: 32px;
+  margin-top: var(--ds-space-7);
   overflow: hidden;
   font-size: 18px;
   letter-spacing: 0.12em;
@@ -423,8 +423,8 @@ const onSave = async (account: Partial<Account>) => {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 10px;
-  margin-top: 18px;
+  gap: var(--ds-space-3);
+  margin-top: var(--ds-space-5);
 }
 
 .credit-card__cell {
@@ -451,7 +451,7 @@ const onSave = async (account: Partial<Account>) => {
 .credit-card__track {
   overflow: hidden;
   height: 6px;
-  margin-top: 10px;
+  margin-top: var(--ds-space-3);
   background: rgb(0 0 0 / 0.35);
   border-radius: var(--radius-pill);
 }
@@ -473,8 +473,8 @@ const onSave = async (account: Partial<Account>) => {
 .cards__row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 13px 18px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-5);
   border-bottom: 1px solid var(--border);
 }
 
@@ -514,7 +514,7 @@ const onSave = async (account: Partial<Account>) => {
 }
 
 .cards__row-tag {
-  padding: 2px 10px;
+  padding: 2px var(--ds-space-3);
   border-radius: var(--radius-pill);
   font-size: 10.5px;
   font-weight: 700;
@@ -526,7 +526,7 @@ const onSave = async (account: Partial<Account>) => {
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  padding: 6px 12px;
+  padding: 6px var(--ds-space-3);
   background: var(--surface2);
   color: var(--text2);
   font-family: inherit;
@@ -550,11 +550,11 @@ const onSave = async (account: Partial<Account>) => {
 
 @media (max-width: 640px) {
   .cards {
-    gap: 14px;
+    gap: var(--ds-space-4);
   }
 
   .cards__summary {
-    padding: 13px 14px;
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
   .cards__summary-value {
@@ -577,23 +577,23 @@ const onSave = async (account: Partial<Account>) => {
   }
 
   .credit-card {
-    padding: 18px;
+    padding: var(--ds-space-5);
     border-radius: 12px;
     box-shadow: var(--shadow-sm);
   }
 
   .credit-card__number {
-    margin-top: 26px;
+    margin-top: var(--ds-space-6);
     font-size: 17px;
   }
 
   .credit-card__footer {
-    margin-top: 16px;
+    margin-top: var(--ds-space-4);
   }
 
   .cards__row {
     flex-wrap: wrap;
-    padding: 12px 14px;
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
   .cards__row-tag {

@@ -3,9 +3,12 @@
     ref="triggerRef"
     class="bd-trigger"
     :class="{ 'bd-trigger--open': open }"
-    :style="{ height: height + 'px' }"
+    :style="{ height: height ? height + 'px' : undefined }"
     role="button"
     tabindex="0"
+    :aria-label="ariaLabel || undefined"
+    :aria-expanded="open"
+    aria-haspopup="listbox"
     @click="toggle"
     @keydown.enter.prevent="onEnter"
     @keydown.space.prevent="toggle"
@@ -69,10 +72,12 @@ const props = withDefaults(defineProps<{
   options?: Option[]
   placeholder?: string
   height?: number
+  ariaLabel?: string
 }>(), {
   options: undefined,
   placeholder: 'Selecionar...',
-  height: 44,
+  height: undefined,
+  ariaLabel: undefined,
 })
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: T): void }>()
@@ -206,15 +211,16 @@ onBeforeUnmount(removeListeners)
   justify-content: space-between;
   gap: 8px;
   width: 100%;
+  height: var(--ds-control-height);
   box-sizing: border-box;
-  padding: 0 12px;
+  padding: 0 var(--ds-space-3);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-xs);
   cursor: pointer;
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--ds-control-font-size);
   color: var(--text);
   outline: none;
   transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
@@ -259,7 +265,7 @@ onBeforeUnmount(removeListeners)
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 9px 11px;
+  padding: var(--ds-space-2) var(--ds-space-3);
   border: 2px solid transparent;
   border-radius: var(--radius-xs);
   font-size: 14px;

@@ -29,8 +29,8 @@ withDefaults(defineProps<{
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 40px 20px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-8) var(--ds-space-5);
   text-align: center;
 }
 

@@ -101,14 +101,14 @@
         <div class="subs__pair">
           <div class="subs__field">
             <label class="subs__label">Categoria</label>
-            <BaseDropdown v-model="form.categoryId" :height="38">
+            <BaseDropdown v-model="form.categoryId">
               <option value="">Sem categoria</option>
               <option v-for="cat in store.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
             </BaseDropdown>
           </div>
           <div class="subs__field">
             <label class="subs__label">Conta</label>
-            <BaseDropdown v-model="form.accountId" :height="38">
+            <BaseDropdown v-model="form.accountId">
               <option value="">Sem conta</option>
               <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
             </BaseDropdown>
@@ -299,19 +299,19 @@ const confirmDelete = async () => {
 .subs {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--ds-space-4);
 }
 
 /* ── Totalizadores ─────────────────────────────────────────── */
 .subs__totals {
   display: flex;
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .subs__total {
   flex: 1;
   min-width: 0;
-  padding: 13px 16px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--ds-radius-md);
@@ -351,7 +351,7 @@ const confirmDelete = async () => {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--ds-space-3);
 }
 
 .subs__meta {
@@ -375,14 +375,14 @@ const confirmDelete = async () => {
 .subs__actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--ds-space-3);
   flex-wrap: wrap;
 }
 
 .subs__search {
   min-width: 200px;
   height: 34px;
-  padding: 0 12px;
+  padding: 0 var(--ds-space-3);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -405,21 +405,21 @@ const confirmDelete = async () => {
 }
 
 .subs__empty-btn {
-  margin-top: 12px;
+  margin-top: var(--ds-space-3);
 }
 
 /* ── Grid de cards ─────────────────────────────────────────── */
 .subs__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .subs__card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-4);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
@@ -524,13 +524,13 @@ const confirmDelete = async () => {
 .subs__form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--ds-space-4);
 }
 
 .subs__pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--ds-space-3);
 }
 
 .subs__field {
@@ -550,8 +550,8 @@ const confirmDelete = async () => {
 .subs__input {
   box-sizing: border-box;
   width: 100%;
-  height: 38px;
-  padding: 0 12px;
+  height: var(--ds-control-height);
+  padding: 0 var(--ds-space-3);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
@@ -574,7 +574,7 @@ const confirmDelete = async () => {
 }
 
 .subs__error {
-  padding: 10px 14px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   background: var(--danger-light);
   border: var(--border-width) solid var(--border);
   border-radius: var(--ds-radius-md);
@@ -592,7 +592,7 @@ const confirmDelete = async () => {
 
 .subs__form-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--ds-space-3);
   justify-content: flex-end;
 }
 
@@ -605,7 +605,7 @@ const confirmDelete = async () => {
 
 @media (max-width: 640px) {
   .subs {
-    gap: 14px;
+    gap: var(--ds-space-4);
   }
 
   .subs__totals {
@@ -613,7 +613,7 @@ const confirmDelete = async () => {
   }
 
   .subs__total {
-    padding: 11px 13px;
+    padding: var(--ds-space-3) var(--ds-space-3);
     box-shadow: var(--shadow-xs);
   }
 
@@ -631,8 +631,8 @@ const confirmDelete = async () => {
   }
 
   .subs__card {
-    gap: 11px;
-    padding: 12px 14px;
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
   .subs__mark {

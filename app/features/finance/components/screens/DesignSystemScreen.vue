@@ -2,7 +2,7 @@
   <div class="ds-screen">
     <header class="ds-hero">
       <div>
-        <p class="ds-hero__eyebrow">Financeiro Familiar · UI v3</p>
+        <p class="ds-hero__eyebrow">Planilha · UI v3</p>
         <h2 class="ds-hero__title">Neo-brutalismo funcional</h2>
         <p class="ds-hero__body">
           Contraste alto, bordas explícitas, sombras sólidas e hierarquia direta.
@@ -185,15 +185,15 @@ const ICONS = [
 .ds-screen {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--ds-space-5);
 }
 
 .ds-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 24px;
+  gap: var(--ds-space-6);
+  padding: var(--ds-space-6);
   background: var(--primary);
   border: 3px solid var(--border);
   border-radius: var(--radius);
@@ -217,14 +217,14 @@ const ICONS = [
 
 .ds-hero__body {
   max-width: 680px;
-  margin-top: 12px;
+  margin-top: var(--ds-space-3);
   font-size: 14px;
   font-weight: 650;
 }
 
 .ds-hero__stamp {
   flex-shrink: 0;
-  padding: 12px;
+  padding: var(--ds-space-3);
   background: var(--accent);
   border: 3px solid var(--border);
   box-shadow: 5px 5px 0 var(--ds-shadow-color);
@@ -249,7 +249,7 @@ const ICONS = [
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   background: var(--surface2);
   border-bottom: 2px solid var(--border);
 }
@@ -265,7 +265,7 @@ const ICONS = [
 }
 
 .ds-showcase__body {
-  padding: 18px;
+  padding: var(--ds-space-5);
 }
 
 .ds-principles {
@@ -275,7 +275,7 @@ const ICONS = [
 
 .ds-principle {
   min-height: 120px;
-  padding: 18px;
+  padding: var(--ds-space-5);
   border-right: 2px solid var(--border);
 }
 
@@ -304,7 +304,7 @@ const ICONS = [
   display: flex;
   flex-direction: column;
   gap: 5px;
-  padding: 14px;
+  padding: var(--ds-space-4);
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
@@ -328,13 +328,13 @@ const ICONS = [
 .ds-stack {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--ds-space-5);
 }
 
 .ds-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .ds-status {
@@ -361,7 +361,7 @@ const ICONS = [
 .ds-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--ds-space-4);
 }
 
 .ds-fields > :last-child {
@@ -371,20 +371,20 @@ const ICONS = [
 .ds-kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 14px;
-  padding: 18px;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-5);
 }
 
 .ds-metrics {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
-  gap: 28px;
+  gap: var(--ds-space-7);
 }
 
 .ds-progress-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--ds-space-4);
 }
 
 .ds-progress-label {
@@ -402,7 +402,7 @@ const ICONS = [
 .ds-donuts {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
+  gap: var(--ds-space-5);
 }
 
 .ds-donut {
@@ -424,7 +424,7 @@ const ICONS = [
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 14px 8px;
+  padding: var(--ds-space-4) 8px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
@@ -438,7 +438,7 @@ const ICONS = [
 @media (max-width: 700px) {
   .ds-hero {
     align-items: flex-start;
-    padding: 20px;
+    padding: var(--ds-space-5);
   }
 
   .ds-hero__stamp {

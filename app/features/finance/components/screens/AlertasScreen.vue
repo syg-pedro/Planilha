@@ -318,7 +318,7 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
 .alerts {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .alerts__head {
@@ -326,7 +326,7 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--ds-space-3);
   margin-bottom: 2px;
 }
 
@@ -361,8 +361,8 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
 /* ── Card de alerta ────────────────────────────────────────── */
 .alert-card {
   display: flex;
-  gap: 12px;
-  padding: 14px 18px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
   background: var(--alert-bg);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
@@ -446,7 +446,7 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
 
 @media (max-width: 640px) {
   .alerts {
-    gap: 10px;
+    gap: var(--ds-space-3);
   }
 
   .alerts__title {
@@ -454,8 +454,8 @@ function useLocalStorage<T>(key: string, defaultValue: T) {
   }
 
   .alert-card {
-    gap: 10px;
-    padding: 12px 14px;
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-3) var(--ds-space-4);
   }
 
   .alert-card__title {

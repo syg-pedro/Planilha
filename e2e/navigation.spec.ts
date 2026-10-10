@@ -18,7 +18,7 @@ const modules = [
   { navigation: 'Configurações', heading: 'Configurações' }
 ]
 
-test.describe('navegação do Financeiro Familiar', () => {
+test.describe('navegação da Planilha', () => {
   test('abre todos os módulos principais no desktop', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'Desktop Chrome', 'A navegação lateral é validada no desktop.')
     await openApp(page)
@@ -32,37 +32,50 @@ test.describe('navegação do Financeiro Familiar', () => {
     }
   })
 
-  test('alterna a planilha entre Matriz e Lista', async ({ page }, testInfo) => {
+  test('alterna a planilha entre Simples, Completa e Lista sem mudar valores', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'Desktop Chrome', 'Cobertura do fluxo de planilha no desktop.')
     await openApp(page)
     await page.getByRole('button', { name: 'Planilha', exact: true }).click()
 
-    await expect(page.locator('.matrix-table').first().getByText('Total', { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Simples', exact: true }).click()
+    const matrix = page.locator('.annual-table')
+    await expect(matrix.locator('tfoot tr')).toHaveCount(3)
+    await expect(matrix.locator('thead .annual-day')).toHaveCount(0)
+    await expect(matrix.locator('.annual-row-trigger')).toHaveCount(0)
+    const values = await matrix.locator('.annual-value').evaluateAll(buttons => buttons.map(button => button.getAttribute('aria-label')))
+    await page.getByRole('button', { name: 'Completa', exact: true }).click()
+    await expect(matrix.locator('tfoot tr')).toHaveCount(6)
+    await expect(matrix.locator('thead .annual-day')).toHaveCount(1)
+    expect(await matrix.locator('.annual-value').evaluateAll(buttons => buttons.map(button => button.getAttribute('aria-label')))).toEqual(values)
     await page.getByRole('button', { name: 'Lista', exact: true }).click()
-    await expect(page.getByRole('button', { name: 'Matriz', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Simples', exact: true })).toBeVisible()
   })
 
-  test('mantém a ordem das colunas ao editar a matriz', async ({ page }, testInfo) => {
+  test('mantém a ordem das linhas ao consultar e abrir a edição de uma célula', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'Desktop Chrome', 'A matriz é validada no desktop.')
     await openApp(page)
     await page.getByRole('button', { name: 'Planilha', exact: true }).click()
+    await page.getByRole('button', { name: 'Completa', exact: true }).click()
 
-    const expenses = page.locator('.matrix-table').first()
-    const titles = expenses.locator('.col-title')
+    const matrix = page.locator('.annual-table')
+    const titles = matrix.locator('.annual-row-title')
     await expect(titles.first()).toBeVisible()
     const before = await titles.allTextContents()
-    await expenses.locator('.col-menu-btn').first().click()
-    await page.getByRole('button', { name: 'Mover para direita', exact: false }).click()
+    const firstRow = matrix.locator('tbody tr').filter({ has: page.locator('.annual-row-title') }).first()
+    await firstRow.getByRole('button', { name: /^Ações de / }).click()
+    await firstRow.getByRole('button', { name: '↓ Mover para baixo', exact: true }).click()
     const ordered = [before[1]!, before[0]!, ...before.slice(2)]
     await expect(titles).toHaveText(ordered)
 
-    await titles.nth(0).dragTo(titles.nth(2))
-    await expect(titles).toHaveText(before)
-
-    const cell = expenses.locator('tbody tr').first().locator('td').nth(1)
+    const cell = firstRow.locator('.annual-value').first()
     await cell.click()
-    await cell.locator('input').fill('1234')
-    await cell.locator('input').press('Enter')
-    await expect(titles).toHaveText(before)
+    const detail = page.getByRole('region', { name: 'Composição da célula' })
+    await expect(detail).toBeVisible()
+    const edit = detail.getByRole('button', { name: 'Editar', exact: true })
+    if (await edit.count()) await edit.first().click()
+    else await detail.getByRole('button', { name: '+ Adicionar lançamento', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Cancelar', exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Cancelar', exact: true }).click()
+    await expect(titles).toHaveText(ordered)
   })
 })

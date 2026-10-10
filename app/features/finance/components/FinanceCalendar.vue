@@ -1,5 +1,5 @@
 <template>
-  <div style="display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;flex-direction:column;gap:var(--ds-space-4)">
     <!-- Header -->
     <div class="cal-nav">
       <div class="cal-nav-controls">
@@ -89,7 +89,7 @@
       >
         <div class="cal-modal">
           <div class="cal-modal-handle" />
-          <div style="padding:20px 24px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+          <div style="padding:var(--ds-space-5) var(--ds-space-6) var(--ds-space-4);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
             <h2 style="font-size:16px;font-weight:700;color:var(--text)">Detalhes do lançamento</h2>
             <button
               style="background:none;border:none;cursor:pointer;color:var(--text3);display:flex;align-items:center;border-radius:8px;padding:8px;min-width:36px;min-height:36px;touch-action:manipulation"
@@ -102,15 +102,15 @@
               </svg>
             </button>
           </div>
-          <div style="padding:20px 24px">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+          <div style="padding:var(--ds-space-5) var(--ds-space-6)">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--ds-space-3);margin-bottom:var(--ds-space-5)">
               <div v-for="[k, v] in modalFields" :key="k">
                 <p style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;margin-bottom:4px">{{ k }}</p>
                 <p style="font-size:14px;font-weight:600;color:var(--text)">{{ v }}</p>
               </div>
             </div>
             <button
-              style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-xs);padding:12px 20px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;width:100%;touch-action:manipulation"
+              style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-xs);padding:var(--ds-space-3) var(--ds-space-5);font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;width:100%;touch-action:manipulation"
               @click="modalEntry = null"
             >Fechar</button>
           </div>
@@ -192,10 +192,10 @@ const modalFields = computed(() => {
   background: var(--surface);
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  padding: 14px 16px;
+  padding: var(--ds-space-4) var(--ds-space-4);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ds-space-3);
   flex-wrap: wrap;
   box-shadow: var(--shadow-sm);
 }
@@ -203,7 +203,7 @@ const modalFields = computed(() => {
 .cal-nav-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--ds-space-3);
   flex: 1;
 }
 
@@ -219,7 +219,7 @@ const modalFields = computed(() => {
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 8px 14px;
+  padding: 8px var(--ds-space-4);
   cursor: pointer;
   color: var(--text);
   font-size: 18px;
@@ -233,7 +233,7 @@ const modalFields = computed(() => {
 
 .cal-nav-summary {
   display: flex;
-  gap: 12px;
+  gap: var(--ds-space-3);
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -313,7 +313,7 @@ const modalFields = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: var(--ds-space-4);
   background: var(--overlay);
   backdrop-filter: blur(4px);
 }
@@ -335,7 +335,7 @@ const modalFields = computed(() => {
 /* ── Mobile ──────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .cal-nav {
-    padding: 10px 12px;
+    padding: var(--ds-space-3) var(--ds-space-3);
     gap: 8px;
   }
 
@@ -344,7 +344,7 @@ const modalFields = computed(() => {
   }
 
   .cal-nav-btn {
-    padding: 6px 10px;
+    padding: 6px var(--ds-space-3);
     min-width: 36px;
     min-height: 36px;
     font-size: 16px;
@@ -352,7 +352,7 @@ const modalFields = computed(() => {
 
   .cal-nav-summary {
     width: 100%;
-    gap: 10px;
+    gap: var(--ds-space-3);
   }
 
   .cal-day-label {
@@ -405,7 +405,7 @@ const modalFields = computed(() => {
     border-radius: 20px 20px 0 0;
     max-height: 85vh;
     overflow-y: auto;
-    padding-bottom: env(safe-area-inset-bottom, 12px);
+    padding-bottom: env(safe-area-inset-bottom, var(--ds-space-3));
   }
 
   .cal-modal-handle {

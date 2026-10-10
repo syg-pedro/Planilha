@@ -52,7 +52,7 @@
           <h3 class="dash__panel-title">Próximos vencimentos</h3>
           <span class="dash__chip" style="background: var(--danger-light); color: var(--danger)">{{ upcomingEntries.length }}</span>
         </header>
-        <BaseEmptyState v-if="upcomingEntries.length === 0" icon="check" title="Sem vencimentos" body="Nenhuma despesa pendente nos próximos dias." style="padding: 18px" />
+        <BaseEmptyState v-if="upcomingEntries.length === 0" icon="check" title="Sem vencimentos" body="Nenhuma despesa pendente nos próximos dias." style="padding: var(--ds-space-5)" />
         <div v-for="item in upcomingEntries.slice(0, 5)" :key="item.id" class="dash__due">
           <div class="dash__due-main">
             <p class="dash__due-title">{{ item.title }}</p>
@@ -183,25 +183,25 @@ const secondPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle 
 .dash {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--ds-space-5);
 }
 
 .dash__kpis {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .dash__payment-cycles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 
 .dash__row {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
+  gap: var(--ds-space-4);
   align-items: start;
 }
 
@@ -209,8 +209,8 @@ const secondPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle 
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 13px 16px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
 }
 
 .dash__panel-title {
@@ -250,14 +250,14 @@ const secondPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle 
 }
 
 .dash__chart {
-  padding: 18px;
+  padding: var(--ds-space-5);
 }
 
 .dash__due {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 16px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
   border-bottom: 1px solid var(--border);
 }
 
@@ -303,8 +303,8 @@ const secondPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle 
 .dash__savings {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 16px 20px;
+  gap: var(--ds-space-6);
+  padding: var(--ds-space-4) var(--ds-space-5);
   background: var(--primary-dim);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
@@ -349,7 +349,7 @@ const secondPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle 
 
 @media (max-width: 640px) {
   .dash {
-    gap: 14px;
+    gap: var(--ds-space-4);
   }
 
   .dash__kpis {
@@ -362,13 +362,13 @@ const secondPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle 
   }
 
   .dash__chart {
-    padding: 14px;
+    padding: var(--ds-space-4);
   }
 
   .dash__savings {
     flex-wrap: wrap;
-    gap: 12px;
-    padding: 14px;
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-4);
   }
 
   .dash__savings-figure,

@@ -8,6 +8,7 @@
         :class="{ 'base-select__trigger--open': open }"
         role="combobox"
         tabindex="0"
+        :aria-label="label || undefined"
         :aria-expanded="open"
         @click="toggle"
         @keydown.enter.prevent="toggle"
@@ -153,14 +154,14 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleClickOutsi
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  height: 42px;
-  padding: 0 12px;
+  height: var(--ds-control-height);
+  padding: 0 var(--ds-space-3);
   color: var(--text);
   background: var(--surface);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-xs);
-  font-size: 14px;
+  font-size: var(--ds-control-font-size);
   font-weight: 650;
   cursor: pointer;
   transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
@@ -208,7 +209,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleClickOutsi
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px 12px;
+  padding: var(--ds-space-2) var(--ds-space-3);
   color: var(--text);
   border-bottom: 1px solid var(--border);
   font-size: 14px;

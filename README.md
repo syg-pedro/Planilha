@@ -1,4 +1,4 @@
-# Financeiro Familiar
+# Planilha
 
 <!-- O deploy de produção é validado pela integração do Vercel. -->
 
@@ -6,7 +6,7 @@ Organize receitas, despesas, contas, cartões e vencimentos em um só lugar.
 
 ## Testar pelo navegador
 
-[**Abrir o Financeiro Familiar na web**](https://planilha-cyan.vercel.app)
+[**Abrir o Planilha na web**](https://planilha-cyan.vercel.app)
 
 Use a conta de demonstração para explorar o aplicativo:
 
@@ -17,7 +17,7 @@ Use a conta de demonstração para explorar o aplicativo:
 
 ## Baixar para Android
 
-[**Baixar o APK do Financeiro Familiar**](https://github.com/syg-pedro/Planilha/releases)
+[**Baixar o APK da Planilha**](https://github.com/syg-pedro/Planilha/releases)
 
 > O aplicativo é instalado diretamente pelo APK; ele não está na Play Store.
 

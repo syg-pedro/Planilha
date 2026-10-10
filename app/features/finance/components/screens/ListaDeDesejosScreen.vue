@@ -1,8 +1,8 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; flex-direction: column; gap: var(--ds-space-4)">
 
     <!-- KPIs -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--ds-space-3)">
       <BaseKpiCard
         icon="wishlist"
         label="Quero comprar"
@@ -27,20 +27,20 @@
     </div>
 
     <!-- Toolbar -->
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--ds-space-3)">
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
         <input
           v-model="search"
           placeholder="Buscar item..."
-          style="background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 10px; height: 34px; font-size: 12px; color: var(--text); font-family: inherit; outline: none; min-width: 180px"
+          style="background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-xs); padding: 0 var(--ds-space-3); height: 34px; font-size: 12px; color: var(--text); font-family: inherit; outline: none; min-width: 180px"
         />
-        <BaseDropdown v-model="filterStatus" :height="34" style="min-width: 150px">
+        <BaseDropdown v-model="filterStatus" style="min-width: 150px">
           <option value="">Todos</option>
           <option value="want">Quero</option>
           <option value="saving">Guardando</option>
           <option value="bought">Comprado</option>
         </BaseDropdown>
-        <BaseDropdown v-model="filterPriority" :height="34" style="min-width: 160px">
+        <BaseDropdown v-model="filterPriority" style="min-width: 160px">
           <option value="">Todas prioridades</option>
           <option value="high">Alta</option>
           <option value="medium">Média</option>
@@ -48,7 +48,7 @@
         </BaseDropdown>
       </div>
       <button
-        style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: var(--on-primary)"
+        style="display: inline-flex; align-items: center; gap: 6px; padding: 9px var(--ds-space-4); font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: var(--on-primary)"
         @click="openEditor(null)"
       >
         <BaseIcon name="plus" :size="14" color="var(--on-primary)" /> Adicionar item
@@ -56,7 +56,7 @@
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" style="display: flex; flex-direction: column; gap: 12px">
+    <div v-if="loading" style="display: flex; flex-direction: column; gap: var(--ds-space-3)">
       <div v-for="n in 3" :key="n" class="skeleton-card" />
     </div>
 
@@ -68,7 +68,7 @@
       body="Adicione itens que você deseja comprar para acompanhar seus desejos e metas."
     >
       <button
-        style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: var(--on-primary); margin-top: 12px"
+        style="display: inline-flex; align-items: center; gap: 6px; padding: var(--ds-space-3) var(--ds-space-5); font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; border: none; background: var(--primary); color: var(--on-primary); margin-top: var(--ds-space-3)"
         @click="openEditor(null)"
       >
         <BaseIcon name="plus" :size="14" color="var(--on-primary)" /> Adicionar
@@ -196,7 +196,7 @@
               <div class="field-row">
                 <div class="field-group">
                   <label class="field-label">Prioridade</label>
-                  <BaseDropdown v-model="draft.priority" :height="48">
+                  <BaseDropdown v-model="draft.priority">
                     <option value="high">Alta</option>
                     <option value="medium">Média</option>
                     <option value="low">Baixa</option>
@@ -204,7 +204,7 @@
                 </div>
                 <div class="field-group">
                   <label class="field-label">Status</label>
-                  <BaseDropdown v-model="draft.status" :height="48">
+                  <BaseDropdown v-model="draft.status">
                     <option value="want">Quero</option>
                     <option value="saving">Guardando</option>
                     <option value="bought">Comprado</option>
@@ -227,13 +227,13 @@
               <!-- Observações -->
               <div class="field-group">
                 <label class="field-label">Observações (opcional)</label>
-                <textarea v-model="draft.notes" class="field-input" rows="3" placeholder="Anotações sobre o item..." style="height: auto; padding: 10px 14px; resize: none" />
+                <textarea v-model="draft.notes" class="field-input" rows="3" placeholder="Anotações sobre o item..." style="height: auto; padding: var(--ds-space-3) var(--ds-space-4); resize: none" />
               </div>
 
               <!-- Erro -->
               <div
                 v-if="errorMsg"
-                style="padding: 10px 14px; border-radius: 8px; background: color-mix(in srgb, var(--danger) 12%, transparent); border: 1px solid var(--danger); font-size: 13px; color: var(--danger); font-weight: 600"
+                style="padding: var(--ds-space-3) var(--ds-space-4); border-radius: 8px; background: color-mix(in srgb, var(--danger) 12%, transparent); border: 1px solid var(--danger); font-size: 13px; color: var(--danger); font-weight: 600"
               >{{ errorMsg }}</div>
 
             </div>
@@ -285,7 +285,7 @@
 .wish-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 14px;
+  gap: var(--ds-space-4);
 }
 
 .wish-card {
@@ -322,7 +322,7 @@
 }
 
 .wish-content {
-  padding: 12px 14px;
+  padding: var(--ds-space-3) var(--ds-space-4);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -431,7 +431,7 @@
 .sheet-handle-area {
   display: flex;
   justify-content: center;
-  padding: 12px 0 4px;
+  padding: var(--ds-space-3) 0 4px;
   cursor: pointer;
 }
 .sheet-handle {
@@ -444,8 +444,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 20px 14px;
+  gap: var(--ds-space-3);
+  padding: 8px var(--ds-space-5) var(--ds-space-4);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -484,21 +484,21 @@
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 20px;
+  padding: var(--ds-space-4) var(--ds-space-5);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--ds-space-4);
 }
 .field-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--ds-field-gap);
   flex: 1;
 }
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--ds-space-3);
 }
 .field-label {
   font-size: 12px;
@@ -512,9 +512,9 @@
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 14px;
-  height: 48px;
-  font-size: 15px;
+  padding: 0 var(--ds-space-4);
+  height: var(--ds-control-height);
+  font-size: var(--ds-control-font-size);
   font-weight: 500;
   color: var(--text);
   font-family: inherit;
@@ -533,9 +533,9 @@
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 14px;
-  height: 48px;
-  font-size: 15px;
+  padding: 0 var(--ds-space-4);
+  height: var(--ds-control-height);
+  font-size: var(--ds-control-font-size);
   font-weight: 500;
   color: var(--text);
   font-family: inherit;
@@ -572,8 +572,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 14px 20px;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
   border-top: 1px solid var(--border);
   background: var(--surface);
   flex-shrink: 0;
@@ -583,8 +583,8 @@
   background: var(--surface2);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 0 18px;
-  height: 46px;
+  padding: 0 var(--ds-space-5);
+  height: var(--ds-control-height);
   font-size: 14px;
   font-weight: 600;
   color: var(--text2);
@@ -601,8 +601,8 @@
   background: var(--primary);
   border: none;
   border-radius: 10px;
-  padding: 0 24px;
-  height: 46px;
+  padding: 0 var(--ds-space-6);
+  height: var(--ds-control-height);
   font-size: 14px;
   font-weight: 700;
   color: var(--on-primary);
@@ -616,8 +616,8 @@
   background: color-mix(in srgb, var(--danger) 12%, transparent);
   border: 1.5px solid var(--danger);
   border-radius: 10px;
-  padding: 0 18px;
-  height: 46px;
+  padding: 0 var(--ds-space-5);
+  height: var(--ds-control-height);
   font-size: 14px;
   font-weight: 700;
   color: var(--danger);
@@ -636,7 +636,7 @@
 .sheet-enter-from .sheet-container,
 .sheet-leave-to .sheet-container { transform: translateY(100%); }
 @media (min-width: 640px) {
-  .sheet-overlay { align-items: center; padding: 16px; }
+  .sheet-overlay { align-items: center; padding: var(--ds-space-4); }
   .sheet-container { border-radius: 20px; border: 1px solid var(--border); max-height: 92dvh; }
   .sheet-handle-area { display: none; }
   .sheet-enter-from .sheet-container,
