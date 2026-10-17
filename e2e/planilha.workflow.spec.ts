@@ -104,6 +104,9 @@ test.describe('fluxos da Planilha após a refatoração', () => {
   test('valida, cria, edita, paga e desfaz preservando a competência', async ({ page }) => {
     const fixture = batches.get(page)!
     await openWorkspace(page, { month: '2026-10', range: 'month', view: 'list' })
+    const pendingSummary = page.getByRole('group', { name: 'Falta pagar', exact: true })
+    const pendingAmount = pendingSummary.getByRole('status', { name: 'Valor que falta pagar', exact: true })
+    await expect(pendingSummary).toBeVisible()
     await createButton(page).click()
     const dialog = entryDialog(page)
     const description = dialog.getByLabel('Descrição', { exact: true })
@@ -130,6 +133,13 @@ test.describe('fluxos da Planilha após a refatoração', () => {
     const created = saved.entries.find(entry => entry.title === fixture.prefix)
     expect(created).toMatchObject({ amount: 12.34, dueDate: '2026-10-21', competenceDate: '2026-09-20', status: 'pending' })
     await expect(dialog).toBeHidden()
+    const search = page.getByRole('searchbox', { name: 'Buscar na planilha', exact: true })
+    if (!await search.isVisible()) await page.getByRole('button', { name: 'Abrir busca', exact: true }).click()
+    await search.fill(fixture.prefix)
+    await expect(pendingAmount).toHaveText('R$ 12,34')
+    await page.getByRole('tab', { name: 'Planilha', exact: true }).click()
+    await expect(pendingAmount).toHaveText('R$ 12,34')
+    await page.getByRole('tab', { name: 'Lista', exact: true }).click()
     await page.getByRole('button', { name: `Editar ${fixture.prefix}`, exact: true }).click()
     await expectDate(dialog, 'Competência', '2026-09-20')
     const editedTitle = `${fixture.prefix} editado`
@@ -141,9 +151,12 @@ test.describe('fluxos da Planilha após a refatoração', () => {
     const paid = await savedBatch(page, () => row.getByRole('button', { name: `Marcar pago: ${editedTitle}`, exact: true }).click())
     expect(paid.entries.find(entry => entry.id === created!.id)).toMatchObject({ status: 'paid', competenceDate: '2026-09-20' })
     await expect(row.locator('.ledger__amount small')).toHaveText('Pago')
+    await expect(pendingAmount).toHaveText('R$ 0,00')
+    await expect(pendingSummary).toContainText('Nenhuma despesa pendente.')
     const restored = await savedBatch(page, () => page.locator('.planilha__feedback').getByRole('button', { name: 'Desfazer', exact: true }).click())
     expect(restored.entries.find(entry => entry.id === created!.id)).toMatchObject({ status: 'pending', competenceDate: '2026-09-20' })
     await expect(row.locator('.ledger__amount small')).toHaveText('Pendente')
+    await expect(pendingAmount).toHaveText('R$ 12,34')
   })
 
   test('mantém os dados no editor quando o servidor recusa o salvamento', async ({ page }) => {
