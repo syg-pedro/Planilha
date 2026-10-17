@@ -1,55 +1,57 @@
 <template>
-  <div :style="{ position: 'relative', width: `${size}px`, height: `${size}px`, flexShrink: 0 }">
-    <svg :width="size" :height="size" style="transform: rotate(-90deg)">
-    <circle :cx="size / 2" :cy="size / 2" :r="r" fill="none" stroke="var(--border)" :stroke-width="stroke + 3" />
-    <circle :cx="size / 2" :cy="size / 2" :r="r" fill="none" stroke="var(--bg2)" :stroke-width="stroke" />
-      <circle
-        :cx="size / 2"
-        :cy="size / 2"
-        :r="r"
-        fill="none"
-        :stroke="ringColor"
-        :stroke-width="stroke"
-        :stroke-dasharray="circ"
-        :stroke-dashoffset="offset"
-      style="transition: stroke-dashoffset 0.45s steps(8, end)"
-      />
-    </svg>
-    <div
-      v-if="label"
-      style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center"
+  <UChart
+    type="donut"
+    :data="slices"
+    index="label"
+    :categories="['value']"
+    :colors="[ringColor, 'var(--ui-bg-accented)']"
+    :width="size"
+    :height="size"
+    :thickness="stroke"
+    :legend="false"
+    :tooltip="false"
+    :ui="{ base: 'transition-none', center: 'transition-none' }"
+    :aria-label="`${label || 'Proporção'}: ${Math.round(progress)}%`"
+  >
+    <template v-if="label" #center
+      ><span
+        class="text-xs leading-none font-semibold"
+        :style="{ color: ringColor }"
+        >{{ label }}</span
+      ><span v-if="sublabel" class="mt-1 text-[10px] text-muted">{{
+        sublabel
+      }}</span></template
     >
-      <span :style="{ fontSize: size > 60 ? '13px' : '11px', fontWeight: 800, color: ringColor, lineHeight: 1 }">{{ label }}</span>
-      <span v-if="sublabel" style="font-size: 9px; color: var(--text3); margin-top: 1px">{{ sublabel }}</span>
-    </div>
-  </div>
+  </UChart>
 </template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
-
-const props = withDefaults(defineProps<{
-  percent: number
-  color?: string
-  size?: number
-  stroke?: number
-  label?: string
-  sublabel?: string
-}>(), {
-  color: 'var(--primary)',
-  size: 80,
-  stroke: 10,
-  label: '',
-  sublabel: '',
-})
-
-const r = computed(() => (props.size - props.stroke) / 2)
-const circ = computed(() => 2 * Math.PI * r.value)
-const offset = computed(() => circ.value * (1 - Math.min(1, props.percent / 100)))
-const ringColor = computed(() => {
-  if (props.percent >= 100) return 'var(--danger)'
-  if (props.percent >= 90) return 'var(--danger)'
-  if (props.percent >= 70) return 'var(--warning)'
-  return props.color
-})
+const props = withDefaults(
+  defineProps<{
+    percent: number
+    color?: string
+    size?: number
+    stroke?: number
+    label?: string
+    sublabel?: string
+  }>(),
+  { color: 'var(--primary)', size: 80, stroke: 10, label: '', sublabel: '' },
+)
+const progress = computed(() =>
+  Math.max(
+    0,
+    Math.min(100, Number.isFinite(props.percent) ? props.percent : 0),
+  ),
+)
+const slices = computed(() => [
+  { label: 'Utilizado', value: progress.value },
+  { label: 'Disponível', value: 100 - progress.value },
+])
+const ringColor = computed(() =>
+  props.percent >= 90
+    ? 'var(--danger)'
+    : props.percent >= 70
+      ? 'var(--warning)'
+      : props.color,
+)
 </script>

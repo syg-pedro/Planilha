@@ -1,340 +1,75 @@
 <template>
-  <div class="cfg">
-
-    <!-- ── Topo: conta + tema ─────────────────────────────────── -->
-    <div class="cfg__top">
-      <section class="cfg__account neo-panel">
-        <div class="cfg__avatar">{{ profileInitials }}</div>
-        <div class="cfg__account-info">
-          <p class="cfg__account-name">{{ profileName }}</p>
-          <p class="cfg__account-sub">{{ profileSub }}</p>
-        </div>
-      </section>
-
-      <section class="cfg__themes">
-        <p class="cfg__section-label">Tema</p>
-        <div class="cfg__chips">
-          <button
-            v-for="theme in THEMES"
-            :key="theme.id"
-            class="cfg__chip"
-            :class="{ 'cfg__chip--active': store.settings.themeMode === theme.id }"
-            :title="theme.desc"
-            @click="onThemeModeChange(theme.id)"
-          >
-            <span aria-hidden="true">{{ theme.icon }}</span>{{ theme.name }}
-          </button>
-        </div>
-        <p class="cfg__theme-desc">{{ activeThemeDesc }}</p>
-      </section>
-    </div>
-
-    <!-- ── Atalhos ───────────────────────────────────────────── -->
-    <section class="neo-panel">
-      <header class="neo-panel-header cfg__panel-head">
-        <h3 class="cfg__panel-title">Atalhos</h3>
-        <p class="cfg__panel-sub">Guias, ajuda e itens de manutenção do app.</p>
-      </header>
-      <div class="cfg__shortcut-grid">
-        <button
-          v-for="item in SETTINGS_SHORTCUTS"
-          :key="item.id"
-          type="button"
-          class="cfg__shortcut"
-          @click="goToShortcut(item.id)"
-        >
-          <span class="cfg__shortcut-icon">
-            <BaseIcon :name="item.icon" :size="18" />
-          </span>
-          <span class="cfg__shortcut-copy">
-            <span class="cfg__shortcut-title">{{ item.label }}</span>
-            <span class="cfg__shortcut-sub">{{ item.description }}</span>
-          </span>
-        </button>
-      </div>
-    </section>
-
-    <!-- ── Instalar app ───────────────────────────────────────── -->
-    <section v-if="!isNativePlatform && !$pwaInstalled" class="neo-panel">
-      <header class="neo-panel-header cfg__panel-head">
-        <h3 class="cfg__panel-title">Instalar aplicativo</h3>
-      </header>
-      <div class="cfg__panel-body">
-        <div class="cfg__install">
-          <img src="/icon-192.png" alt="" class="cfg__install-icon" />
-          <div>
-            <p class="cfg__row-label">Planilha</p>
-            <p class="cfg__row-sub">Acesso rápido, funciona offline</p>
-          </div>
-        </div>
-        <button class="cfg__btn cfg__btn--primary cfg__btn--block" @click="installPwa">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/><path d="M20 20H4"/></svg>
-          {{ $pwaPrompt ? 'Instalar agora' : 'Como instalar' }}
-        </button>
-      </div>
-    </section>
-
-    <!-- ── Preferências ───────────────────────────────────────── -->
-    <section class="neo-panel">
-      <header class="neo-panel-header cfg__panel-head">
-        <h3 class="cfg__panel-title">Preferências</h3>
-      </header>
-
-      <div class="cfg__row">
-        <span class="cfg__row-label">Moeda</span>
-        <span class="cfg__row-value">{{ currencyLabel }}</span>
-      </div>
-
-      <div class="cfg__row">
-        <div class="cfg__row-text">
-          <p class="cfg__row-label">Lembretes de vencimento</p>
-          <p class="cfg__row-sub">No Android, os avisos são agendados no horário escolhido.</p>
-        </div>
-        <div class="cfg__row-control">
-          <input v-model="store.settings.notificationTime" type="time" class="cfg__input cfg__input--time" aria-label="Horário dos lembretes" />
-          <button class="cfg__btn cfg__btn--primary" :disabled="reminderSaving" @click="saveReminderTime">
-            {{ reminderSaving ? 'Salvando...' : 'Salvar' }}
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Dashboard ──────────────────────────────────────────── -->
-    <section class="neo-panel">
-      <header class="neo-panel-header cfg__panel-head">
-        <h3 class="cfg__panel-title">Configurações do dashboard</h3>
-      </header>
-
-      <div class="cfg__row">
-        <span class="cfg__row-label">Regra de período</span>
-        <div class="cfg__row-control cfg__row-control--select">
-          <BaseDropdown v-model="store.filters.periodMode">
-            <option value="due_date">Por vencimento</option>
-            <option value="competence">Por competência</option>
-          </BaseDropdown>
-        </div>
-      </div>
-
-      <div v-for="widget in WIDGETS" :key="widget.id" class="cfg__row">
-        <span class="cfg__row-label">{{ widget.label }}</span>
-        <button
-          class="cfg__toggle"
-          :class="{ 'cfg__toggle--on': isWidgetOn(widget.id) }"
-          type="button"
-          role="switch"
-          :aria-checked="isWidgetOn(widget.id)"
-          :aria-label="widget.label"
-          @click="toggleWidget(widget.id)"
-        >
-          <span class="cfg__toggle-knob" />
-        </button>
-      </div>
-
-      <div class="cfg__panel-foot">
-        <button class="cfg__btn cfg__btn--primary" @click="saveDashboard">Salvar configurações</button>
-      </div>
-    </section>
-
-    <!-- ── Cores personalizadas ───────────────────────────────── -->
-    <section class="neo-panel">
-      <header class="neo-panel-header cfg__panel-head">
-        <h3 class="cfg__panel-title">
-          Cores personalizadas
-          <span v-if="isCustomActive" class="cfg__badge cfg__badge--active">Ativo</span>
-        </h3>
-        <p class="cfg__panel-sub">Escolha as cores de destaque sobre uma base e veja exemplos antes de aplicar</p>
-      </header>
-
-      <div class="cfg__panel-body">
-        <!-- Base -->
-        <p class="cfg__section-label">Base</p>
-        <div class="cfg__base-row">
-          <button
-            v-for="b in BASE_OPTIONS"
-            :key="b.id"
-            class="cfg__btn cfg__btn--seg"
-            :class="{ 'cfg__btn--seg-on': customDraft.base === b.id }"
-            @click="customDraft.base = b.id"
-          >{{ b.label }}</button>
-        </div>
-
-        <!-- Seletores de cor -->
-        <div class="cfg__colors">
-          <div v-for="f in COLOR_FIELDS" :key="f.key" class="cfg__color-row">
-            <span class="cfg__row-label">{{ f.label }}</span>
-            <div class="cfg__color-input">
-              <input v-model="customDraft[f.key]" type="color" class="cfg__swatch" :aria-label="f.label" />
-              <input v-model="customDraft[f.key]" type="text" class="hex-input" spellcheck="false" :aria-label="`${f.label} (hex)`" />
+  <div class="space-y-4">
+    <UAlert v-if="settingsNotice" color="info" variant="soft" :description="settingsNotice" />
+    <UTabs v-model="activeSettingsTab" :items="settingsTabs" :unmount-on-hide="false" size="sm" class="w-full">
+      <template #preferences>
+        <div id="preferencias" class="space-y-4 pt-3">
+          <UCard :title="profileName" :description="profileSub"><UAvatar :text="profileInitials" size="lg" /></UCard>
+          <UCard title="Aparência" description="Os mesmos presets do Nuxt UI, com cores, fontes e ícones oficiais.">
+            <div class="space-y-5">
+              <UAlert v-if="themeError" color="error" variant="subtle" :description="themeError" />
+              <div><p class="mb-2 text-sm font-medium text-highlighted">Modo de exibição</p><div class="flex flex-wrap gap-2"><BaseButton v-for="theme in THEMES" :key="theme.id" :variant="store.settings.themeMode === theme.id ? 'primary' : 'secondary'" :disabled="themeBusy" :aria-pressed="store.settings.themeMode === theme.id" @click="onThemeModeChange(theme.id)">{{ theme.name }}</BaseButton></div><p class="mt-2 text-xs text-muted">{{ activeThemeDesc }}</p></div>
+              <UFormField label="Preset" help="Escolha uma aparência oficial do Nuxt UI."><USelectMenu :model-value="uiTheme.preset" :items="themePresetOptions" value-key="id" :disabled="themeBusy" :search-input="{ placeholder: 'Buscar preset ou fonte...' }" :filter-fields="['label', 'description']" class="w-full sm:max-w-sm" :ui="{ base: 'finance-control' }" @update:model-value="selectPreset"><template #leading><span class="size-4 rounded-full ring-1 ring-inset ring-default" :style="{ background: themePresetOptions.find(item => item.id === uiTheme.preset)?.swatch }" /></template><template #item-leading="{ item }"><span class="size-7 shrink-0 rounded-full ring-1 ring-inset ring-default" :style="{ background: item.swatch }" /></template></USelectMenu></UFormField>
+              <UCollapsible v-model:open="themeOptionsOpen"><BaseButton variant="ghost" class="w-full justify-between">Personalizar cores, fonte e ícones<BaseIcon name="chevron_down" :size="16" /></BaseButton><template #content><div class="space-y-4 pt-4">
+              <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"><BaseDropdown v-for="alias in UI_COLOR_ALIASES" :key="alias" :model-value="resolvedTheme.colors[alias]" :label="COLOR_ALIAS_LABELS[alias]" :disabled="themeBusy" @update:model-value="setThemeColor(alias, String($event))"><option v-for="palette in alias === 'neutral' ? UI_NEUTRAL_PALETTES : UI_THEME_PALETTES" :key="palette" :value="palette">{{ palette }}</option></BaseDropdown></div>
+              <div class="grid gap-3 sm:grid-cols-3"><BaseDropdown :model-value="resolvedTheme.font.sans" label="Fonte" :disabled="themeBusy" @update:model-value="changeUiTheme({ ...uiTheme, font: String($event) })"><option v-for="font in UI_THEME_FONTS" :key="font" :value="font">{{ font }}</option></BaseDropdown><BaseDropdown :model-value="resolvedTheme.icons" label="Ícones" :disabled="themeBusy" @update:model-value="setThemeIcons(String($event))"><option v-for="icons in UI_ICON_SETS" :key="icons" :value="icons">{{ ICON_SET_LABELS[icons] }}</option></BaseDropdown><BaseDropdown :model-value="String(resolvedTheme.radius)" label="Arredondamento" :disabled="themeBusy" @update:model-value="changeUiTheme({ ...uiTheme, radius: Number($event) })"><option v-for="radius in radiusOptions" :key="radius" :value="String(radius)">{{ radius }} rem</option></BaseDropdown></div>
+              <div class="flex flex-wrap items-center justify-between gap-3"><p class="text-xs text-muted">Aplicação imediata. As preferências são salvas nesta conta.</p><BaseButton variant="ghost" :disabled="themeBusy" @click="changeUiTheme({ version: 1, preset: uiTheme.preset })">Restaurar preset</BaseButton></div></div></template></UCollapsible>
             </div>
-          </div>
-        </div>
-
-        <!-- Pré-visualização -->
-        <p class="cfg__section-label cfg__section-label--spaced">Pré-visualização</p>
-        <div class="cc-preview" :style="previewVars">
-          <div class="cc-prow">
-            <button class="cc-btn">Salvar</button>
-            <span class="cc-chip">Destaque</span>
-          </div>
-          <div class="cc-card">
-            <span class="cc-card-label">Saldo do mês</span>
-            <span class="cc-card-value">R$ 3.100,00</span>
-          </div>
-          <div class="cc-dots">
-            <span class="cc-dot"><i style="background:var(--pv-positive)" />Recebido</span>
-            <span class="cc-dot"><i style="background:var(--pv-negative)" />Despesa</span>
-            <span class="cc-dot"><i style="background:var(--pv-accent)" />Pendente</span>
-          </div>
-        </div>
-
-        <!-- Ações -->
-        <div class="cfg__actions">
-          <button class="cfg__btn cfg__btn--ghost" @click="resetCustom">Restaurar</button>
-          <button class="cfg__btn cfg__btn--primary cfg__btn--grow" @click="applyCustom">Aplicar cores</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Importar CSV ───────────────────────────────────────── -->
-    <section class="neo-panel">
-      <header class="neo-panel-header cfg__panel-head">
-        <h3 class="cfg__panel-title">Importar CSV</h3>
-        <p class="cfg__panel-sub">Cabeçalhos aceitos: date, amount, title</p>
-      </header>
-      <div class="cfg__panel-body cfg__stack">
-        <textarea
-          v-model="csvText"
-          class="textarea-field"
-          rows="5"
-          placeholder="date,amount,title&#10;2026-05-25,120.50,Supermercado"
-        />
-        <div class="cfg__field">
-          <label class="cfg__section-label">Conta destino</label>
-          <BaseDropdown v-model="importAccountId">
-            <option value="">Sem conta</option>
-            <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
-          </BaseDropdown>
-        </div>
-        <button class="cfg__btn cfg__btn--primary cfg__btn--block" @click="runImport">Importar CSV</button>
-      </div>
-    </section>
-
-    <!-- ── Dados e recuperação ────────────────────────────────── -->
-    <section class="neo-panel">
-      <header class="neo-panel-header cfg__panel-head">
-        <h3 class="cfg__panel-title">Dados e recuperação</h3>
-        <p class="cfg__panel-sub">Use quando os lançamentos estiverem incorretos ou precisar restaurar o estado inicial</p>
-      </header>
-      <div class="cfg__panel-body">
-        <p class="cfg__row-label">Restaurar dados iniciais</p>
-        <p class="cfg__row-sub cfg__row-sub--block">Apaga todos os lançamentos e recria do zero a partir do dados.txt (incluindo correções recentes).</p>
-        <button class="cfg__btn cfg__btn--danger" :disabled="reseedBusy" @click="doReseed">
-          <svg v-if="reseedBusy" class="cfg__spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-          <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.86"/></svg>
-          {{ reseedBusy ? 'Restaurando...' : 'Restaurar dados iniciais' }}
-        </button>
-      </div>
-    </section>
-
-    <!-- ── Contas cadastradas ─────────────────────────────────── -->
-    <section class="neo-panel">
-      <header class="neo-panel-header cfg__panel-head">
-        <h3 class="cfg__panel-title">Contas cadastradas</h3>
-      </header>
-      <div
-        v-for="account in store.accounts"
-        :key="account.id"
-        class="cfg__row"
-      >
-        <div class="cfg__row-main">
-          <span class="cfg__dot" :style="{ background: accountTypeColor(account.type) }" />
-          <div class="cfg__row-text">
-            <p class="cfg__row-label" :class="{ 'cfg__row-label--muted': account.active === false }">{{ account.name }}</p>
-            <p class="cfg__row-sub">
-              {{ accountTypeLabel(account.type) }}<span v-if="account.limitTotal"> · Limite <span class="ds-money">{{ currency.format(account.limitTotal) }}</span></span>
-            </p>
-          </div>
-        </div>
-        <span v-if="account.active === false" class="cfg__badge cfg__badge--danger">Inativo</span>
-      </div>
-    </section>
-
-    <!-- ── Compartilhamento / Household ───────────────────────── -->
-    <section v-if="isSupabaseConfigured" class="neo-panel">
-      <header class="neo-panel-header cfg__panel-head">
-        <h3 class="cfg__panel-title">Compartilhamento</h3>
-        <p class="cfg__panel-sub">Gerencie quem tem acesso aos seus dados financeiros</p>
-      </header>
-
-      <div v-if="householdLoading" class="cfg__row">
-        <span class="cfg__row-value">Carregando membros...</span>
-      </div>
-
-      <template v-else>
-        <div v-for="m in members" :key="m.userId" class="cfg__row">
-          <div class="cfg__row-main">
-            <span class="cfg__member-avatar">{{ m.email[0]?.toUpperCase() }}</span>
-            <div class="cfg__row-text">
-              <p class="cfg__row-label cfg__row-label--ellipsis">{{ m.email }}</p>
-              <p class="cfg__row-sub">{{ m.role === 'owner' ? 'Proprietário' : 'Membro' }}</p>
-            </div>
-          </div>
+          </UCard>
+          <UCard title="Preferências"><div class="space-y-4"><div class="flex items-center justify-between gap-3 text-sm"><span class="text-muted">Moeda</span><strong class="font-medium text-highlighted">{{ currencyLabel }}</strong></div><div class="flex flex-wrap items-end justify-between gap-3"><div><p class="text-sm font-medium text-highlighted">Lembretes de vencimento</p><p class="mt-1 text-xs text-muted">No Android, os avisos são agendados no horário escolhido.</p></div><div class="flex items-end gap-2"><BaseInput v-model="store.settings.notificationTime" type="time" label="Horário" class="w-32" /><BaseButton :loading="reminderSaving" @click="saveReminderTime">Salvar</BaseButton></div></div></div></UCard>
+          <UCard title="Indicadores do Resumo"><div class="space-y-4"><BaseDropdown v-model="store.settings.periodMode" label="Critério das datas"><option value="due_date">Por vencimento</option><option value="competence">Por competência</option></BaseDropdown><USwitch v-for="widget in WIDGETS" :key="widget.id" :model-value="isWidgetOn(widget.id)" :label="widget.label" @update:model-value="toggleWidget(widget.id)" /></div><template #footer><BaseButton @click="saveDashboard">Salvar configurações</BaseButton></template></UCard>
+          <UCard>
+            <UAccordion :items="colorAccordionItems" :unmount-on-hide="false">
+              <template #colors-body>
+                <div class="space-y-4">
+                  <UAlert v-if="isCustomActive" color="success" variant="subtle" description="As cores personalizadas estão ativas." />
+                  <p class="text-xs text-muted">Escolha as cores de destaque sobre uma base e confira a prévia antes de aplicar.</p>
+                  <div class="flex flex-wrap gap-2"><BaseButton v-for="base in BASE_OPTIONS" :key="base.id" :variant="customDraft.base === base.id ? 'primary' : 'secondary'" :aria-pressed="customDraft.base === base.id" @click="customDraft.base = base.id">{{ base.label }}</BaseButton></div>
+                  <div class="grid gap-3 sm:grid-cols-2"><div v-for="field in COLOR_FIELDS" :key="field.key" class="flex items-end gap-2"><BaseInput v-model="customDraft[field.key]" type="color" :label="field.label" class="w-16" /><BaseInput v-model="customDraft[field.key]" :aria-label="`${field.label} em hexadecimal`" :spellcheck="false" class="min-w-0 flex-1" /></div></div>
+                  <UCard class="theme-preview" :style="previewVars" title="Pré-visualização" description="Exemplo de aparência; os valores são ilustrativos."><div class="flex items-center justify-between gap-3"><span class="text-sm">Sobra prevista</span><strong class="font-semibold tabular-nums" style="color: var(--pv-positive)">R$ 3.100,00</strong></div><div class="mt-3 flex flex-wrap gap-2"><UBadge variant="subtle">Destaque</UBadge><UBadge color="success" variant="subtle">Recebido</UBadge><UBadge color="error" variant="subtle">Despesa</UBadge></div></UCard>
+                  <div class="flex flex-wrap justify-end gap-2"><BaseButton variant="ghost" :disabled="themeBusy" @click="resetCustom">Restaurar</BaseButton><BaseButton :loading="modeSaving" :disabled="themeBusy" @click="applyCustom">Aplicar cores</BaseButton></div>
+                </div>
+              </template>
+            </UAccordion>
+          </UCard>
+          <UCard v-if="!isNativePlatform && !$pwaInstalled" title="Instalar aplicativo" description="Acesso rápido à Planilha e uso offline."><div class="flex items-center gap-3"><img src="/icon-192-v2.png" alt="" class="size-12 rounded-lg" /><BaseButton @click="installPwa">{{ $pwaPrompt ? 'Instalar agora' : 'Como instalar' }}</BaseButton></div></UCard>
         </div>
       </template>
-
-      <div v-for="inv in pendingInvites" :key="inv.id" class="cfg__row">
-        <div class="cfg__row-text">
-          <p class="cfg__row-label cfg__row-label--ellipsis">{{ inv.email }}</p>
-          <p class="cfg__row-sub">Expira {{ fmtDate(inv.expiresAt) }}</p>
+      <template #sharing>
+        <div id="compartilhamento" class="space-y-4 pt-3">
+          <UCard v-if="isSupabaseConfigured" title="Compartilhamento" description="Gerencie quem tem acesso aos seus dados financeiros.">
+            <div v-if="householdLoading" class="space-y-3"><USkeleton class="h-10 w-full" /><USkeleton class="h-10 w-full" /></div>
+            <div v-else class="divide-y divide-default"><div v-for="member in members" :key="member.userId" class="flex items-center gap-3 py-3"><UAvatar :text="member.email[0]?.toUpperCase()" /><div class="min-w-0 flex-1"><p class="truncate text-sm font-medium text-highlighted">{{ member.email }}</p><p class="text-xs text-muted">{{ member.role === 'owner' ? 'Proprietário' : 'Membro' }}</p></div></div></div>
+            <div v-for="invite in pendingInvites" :key="invite.id" class="flex flex-wrap items-center justify-between gap-3 border-t border-default py-3"><div><p class="text-sm text-highlighted">{{ invite.email }}</p><p class="text-xs text-muted">Expira {{ fmtDate(invite.expiresAt) }}</p></div><UBadge color="warning" variant="subtle">Aguardando</UBadge></div>
+            <div class="mt-4 flex flex-wrap items-end gap-2"><BaseInput v-model="inviteEmail" type="email" label="Convidar por e-mail" placeholder="email@exemplo.com" class="min-w-0 flex-1" @keydown.enter="sendInvite" /><BaseButton :loading="inviteSending" :disabled="!inviteEmail" @click="sendInvite">Convidar</BaseButton></div>
+            <UAlert v-if="inviteError" class="mt-3" color="error" variant="soft" :description="inviteError" />
+            <UAlert v-if="inviteLink" class="mt-3" color="success" variant="subtle" title="Convite gerado"><template #description><code class="break-all text-xs">{{ inviteLink }}</code></template><template #actions><BaseButton variant="ghost" @click="copyInviteLink">{{ linkCopied ? 'Copiado!' : 'Copiar link' }}</BaseButton></template></UAlert>
+          </UCard>
+          <UAlert v-else color="info" variant="subtle" title="Compartilhamento indisponível" description="O compartilhamento está disponível quando a sincronização da conta está configurada." />
         </div>
-        <span class="cfg__badge cfg__badge--warning">Aguardando</span>
-      </div>
-
-      <div class="cfg__panel-body">
-        <p class="cfg__section-label">Convidar por e-mail</p>
-        <div class="cfg__invite">
-          <input
-            v-model="inviteEmail"
-            type="email"
-            placeholder="email@exemplo.com"
-            class="cfg__input cfg__input--grow"
-            aria-label="E-mail do convidado"
-            @keydown.enter="sendInvite"
-          />
-          <button class="cfg__btn cfg__btn--primary" :disabled="inviteSending || !inviteEmail" @click="sendInvite">
-            {{ inviteSending ? '...' : 'Convidar' }}
-          </button>
+      </template>
+      <template #data>
+        <div id="dados" class="space-y-4 pt-3">
+          <UCard title="Importar CSV" description="Cabeçalhos aceitos: date, amount, title."><div class="space-y-4"><BaseTextarea v-model="csvText" label="Conteúdo do arquivo CSV" :rows="5" placeholder="date,amount,title&#10;2026-05-25,120.50,Supermercado" /><BaseDropdown v-model="importAccountId" label="Conta destino"><option value="">Sem conta</option><option v-for="account in store.accounts" :key="account.id" :value="account.id">{{ account.name }}</option></BaseDropdown></div><template #footer><BaseButton :disabled="!csvText.trim()" @click="runImport">Importar CSV</BaseButton></template></UCard>
+          <UCard title="Contas cadastradas" :ui="{ body: 'divide-y divide-default py-0 sm:py-0' }"><div v-for="account in store.accounts" :key="account.id" class="flex flex-wrap items-center justify-between gap-3 py-3"><div><p class="text-sm font-medium text-highlighted">{{ account.name }}</p><p class="text-xs text-muted">{{ accountTypeLabel(account.type) }}<template v-if="account.limitTotal != null"> · Limite {{ currency.format(account.limitTotal) }}</template></p></div><UBadge v-if="account.active === false" color="neutral" variant="subtle">Inativo</UBadge></div></UCard>
+          <UCard><UAccordion :items="maintenanceAccordionItems"><template #maintenance-body><div class="space-y-4"><UAlert color="warning" variant="subtle" title="Restaurar dados iniciais" description="Apaga todos os lançamentos e recria a partir do dados.txt. Use apenas quando precisar reiniciar os dados." /><BaseButton variant="danger" :loading="reseedBusy" @click="reseedConfirm = true">Restaurar dados iniciais</BaseButton></div></template></UAccordion></UCard>
         </div>
-
-        <div v-if="inviteLink" class="cfg__invite-link">
-          <p class="cfg__invite-link-title">Convite gerado! Compartilhe o link:</p>
-          <div class="cfg__invite-link-row">
-            <code class="cfg__invite-code">{{ inviteLink }}</code>
-            <button class="cfg__link-btn" @click="copyInviteLink">{{ linkCopied ? 'Copiado!' : 'Copiar' }}</button>
-          </div>
-        </div>
-
-        <p v-if="inviteError" class="cfg__error">{{ inviteError }}</p>
-      </div>
-    </section>
-
-    <!-- ── Sair ───────────────────────────────────────────────── -->
-    <button class="cfg__signout" :disabled="signingOut" @click="doSignOut">
-      <svg v-if="signingOut" class="cfg__spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-      <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      {{ signingOut ? 'Saindo...' : 'Sair' }}
-    </button>
-
+      </template>
+    </UTabs>
+    <UCard title="Ajuda e novidades"><div class="flex flex-wrap gap-2"><BaseButton v-for="item in SETTINGS_SHORTCUTS" :key="item.id" variant="ghost" :title="item.description" @click="goToShortcut(item.id)"><BaseIcon :name="item.icon" :size="16" /> {{ item.label }}</BaseButton></div></UCard>
+    <BaseButton variant="ghost" :loading="signingOut" @click="doSignOut">Sair da conta</BaseButton>
+    <BaseModal :open="reseedConfirm" :busy="reseedBusy" title="Restaurar dados iniciais?" @close="reseedConfirm = false"><UAlert color="error" variant="subtle" title="Todos os lançamentos serão substituídos" description="Os dados atuais serão apagados e recriados a partir do dados.txt. Esta operação não pode ser desfeita." /><template #footer><div class="flex w-full justify-end gap-2"><BaseButton variant="secondary" :disabled="reseedBusy" @click="reseedConfirm = false">Cancelar</BaseButton><BaseButton variant="danger" :loading="reseedBusy" @click="doReseed">Restaurar dados</BaseButton></div></template></BaseModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { Capacitor } from '@capacitor/core'
-import { WIDGET_OPTIONS, DEFAULT_COLORS, DARK_COLORS } from '#shared/constants'
+import { DEFAULT_COLORS, DARK_COLORS } from '#shared/constants'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { SETTINGS_SHORTCUT_ITEMS } from '~/features/finance/constants/ui'
 import type { ThemeMode, Account } from '#shared/types'
+import { normalizeUiTheme, resolveUiTheme, uiThemePaletteShade, UI_THEME_PRESETS, UI_COLOR_ALIASES, UI_ICON_SETS, UI_THEME_FONTS, UI_THEME_PALETTES, UI_NEUTRAL_PALETTES, type UiColorAlias, type UiIconSetId, type UiThemePreferences, type UiThemePresetId } from '#shared/uiTheme'
 
 const emit = defineEmits<{ navigate: [screen: string] }>()
 
@@ -359,7 +94,9 @@ const doSignOut = async () => {
 const csvText = ref('')
 const importAccountId = ref('')
 const reseedBusy = ref(false)
+const reseedConfirm = ref(false)
 const reminderSaving = ref(false)
+const settingsNotice = ref('')
 
 const saveReminderTime = async () => {
   reminderSaving.value = true
@@ -385,13 +122,17 @@ const installPwa = async () => {
 
 const THEMES = [
   { id: 'system', name: 'Sistema', desc: 'Segue automaticamente o tema do dispositivo', icon: '🖥️' },
-  { id: 'light', name: 'Neo Light', desc: 'Papel quente, tinta preta e cores diretas', icon: '☀️' },
-  { id: 'dark', name: 'Neo Dark', desc: 'Superfícies escuras com contornos claros', icon: '🌙' },
+  { id: 'light', name: 'Claro', desc: 'Superfícies claras e destaques discretos', icon: '☀️' },
+  { id: 'dark', name: 'Escuro', desc: 'Superfícies escuras e valores legíveis', icon: '🌙' },
 ] as const
 
 const VALID_THEME_MODES = ['light', 'dark', 'system']
 
-const WIDGETS = WIDGET_OPTIONS
+const activeSettingsTab = ref('preferences')
+const settingsTabs = [{ label: 'Preferências', value: 'preferences', slot: 'preferences' as const }, { label: 'Compartilhamento', value: 'sharing', slot: 'sharing' as const }, { label: 'Dados', value: 'data', slot: 'data' as const }]
+const colorAccordionItems = [{ label: 'Cores personalizadas', value: 'colors', slot: 'colors' as const }]
+const maintenanceAccordionItems = [{ label: 'Manutenção avançada e recuperação', value: 'maintenance', slot: 'maintenance' as const }]
+const WIDGETS = [{ id: 'kpis', label: 'Receitas, despesas e sobra prevista' }, { id: 'cashflow', label: 'Fluxo dos últimos 6 meses' }, { id: 'upcoming', label: 'Despesas pendentes por ciclo' }]
 const SETTINGS_SHORTCUTS = SETTINGS_SHORTCUT_ITEMS.map(item => ({
   ...item,
   description: {
@@ -408,12 +149,43 @@ const goToShortcut = (screen: string) => {
   emit('navigate', screen)
 }
 
+const themeError = ref('')
+const themeOptionsOpen = ref(false)
+const themePresetOptions = UI_THEME_PRESETS.map(preset => { const theme = resolveUiTheme({ preset: preset.id }); return { id: preset.id, label: preset.name, description: theme.font.sans, swatch: theme.blackAsPrimary ? 'var(--ui-text-highlighted)' : uiThemePaletteShade(theme.colors.primary) } })
+const selectPreset = (id: string) => changeUiTheme({ version: 1, preset: id as UiThemePresetId })
+const modeSaving = ref(false)
+const themeBusy = computed(() => modeSaving.value || store.uiThemeSaving)
+const uiTheme = computed(() => normalizeUiTheme(store.settings.dashboardConfig.uiTheme))
+const resolvedTheme = computed(() => resolveUiTheme(uiTheme.value))
+const radiusOptions = computed(() => [...new Set([0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 1, resolvedTheme.value.radius])].sort((a, b) => a - b))
+const COLOR_ALIAS_LABELS: Record<UiColorAlias, string> = { primary: 'Primária', secondary: 'Secundária', success: 'Sucesso', info: 'Informação', warning: 'Aviso', error: 'Erro', neutral: 'Neutra' }
+const ICON_SET_LABELS: Record<UiIconSetId, string> = { lucide: 'Lucide', bootstrap: 'Bootstrap', heroicons: 'Heroicons', iconoir: 'Iconoir', material: 'Material Symbols', phosphor: 'Phosphor', remix: 'Remix', tabler: 'Tabler' }
 const onThemeModeChange = async (value: string) => {
-  if (VALID_THEME_MODES.includes(value)) {
-    store.setThemeMode(value as ThemeMode)
-    await store.saveTheme()
+  if (!VALID_THEME_MODES.includes(value) || themeBusy.value) return
+  themeError.value = ''
+  const previous = { mode: store.settings.themeMode, colors: { ...store.settings.colorTokens } }
+  modeSaving.value = true
+  store.setThemeMode(value as ThemeMode)
+  try { await store.saveTheme() }
+  catch {
+    store.settings.themeMode = previous.mode
+    store.settings.colorTokens = previous.colors
+    store.applyTheme()
+    themeError.value = 'Não foi possível salvar o modo. A aparência anterior foi restaurada.'
+  } finally { modeSaving.value = false }
+}
+const changeUiTheme = async (preferences: UiThemePreferences) => {
+  if (themeBusy.value) return
+  themeError.value = ''
+  try { await store.saveUiTheme(preferences) }
+  catch (cause) {
+    themeError.value = cause instanceof Error && cause.message.includes('restauração no servidor')
+      ? cause.message
+      : 'Não foi possível salvar a aparência. O tema anterior foi restaurado.'
   }
 }
+const setThemeColor = (alias: UiColorAlias, color: string) => changeUiTheme({ ...uiTheme.value, colors: { ...uiTheme.value.colors, [alias]: color } })
+const setThemeIcons = (icons: string) => changeUiTheme({ ...uiTheme.value, icons: icons as UiIconSetId })
 
 const activeThemeDesc = computed(() => {
   if (store.settings.themeMode === 'custom') return 'Cores personalizadas aplicadas'
@@ -463,18 +235,18 @@ const BASE_OPTIONS: { id: 'light' | 'dark'; label: string }[] = [
 
 const customDraft = ref<{ base: 'light' | 'dark'; primary: string; accent: string; positive: string; negative: string }>({
   base: 'dark',
-  primary: '#00ff33',
-  accent: '#bb00ff',
-  positive: '#13a86b',
-  negative: '#e84545',
+  primary: DARK_COLORS.primary,
+  accent: DARK_COLORS.accent,
+  positive: DARK_COLORS.positive,
+  negative: DARK_COLORS.negative,
 })
 
 const isCustomActive = computed(() => store.settings.themeMode === 'custom')
 
 // Paleta estrutural do preview conforme a base escolhida.
 const PREVIEW_BASE = {
-  light: { bg: '#f3efe6', card: '#fffdf6', text: '#171717', muted: '#666666', border: '#171717' },
-  dark:  { bg: '#090b10', card: '#171c25', text: '#f7f2e8', muted: '#969dac', border: '#020306' },
+  light: { bg: 'var(--color-slate-50)', card: 'white', text: 'var(--color-slate-900)', muted: 'var(--color-slate-500)', border: 'var(--color-slate-200)' },
+  dark: { bg: 'var(--color-slate-900)', card: 'var(--color-slate-800)', text: 'white', muted: 'var(--color-slate-400)', border: 'var(--color-slate-700)' },
 }
 
 const previewBase = computed(() => PREVIEW_BASE[customDraft.value.base])
@@ -493,7 +265,6 @@ const previewVars = computed(() => ({
 }))
 
 const initCustomDraft = () => {
-  if (store.settings.themeMode !== 'custom') return
   const c = store.settings.colorTokens
   const h = c.background.replace('#', '')
   const isLight = h.length >= 6 && (0.299 * parseInt(h.slice(0, 2), 16) + 0.587 * parseInt(h.slice(2, 4), 16) + 0.114 * parseInt(h.slice(4, 6), 16)) > 140
@@ -512,19 +283,22 @@ const resetCustom = () => {
 }
 
 const applyCustom = async () => {
+  if (themeBusy.value) return
+  const previous = { mode: store.settings.themeMode, colors: { ...store.settings.colorTokens } }
   const base = customDraft.value.base === 'light' ? DEFAULT_COLORS : DARK_COLORS
+  if (COLOR_FIELDS.some(field => !/^#[0-9a-f]{6}$/i.test(customDraft.value[field.key]))) { themeError.value = 'Use cores hexadecimais válidas com seis dígitos.'; return }
+  themeError.value = ''
+  modeSaving.value = true
   store.settings.themeMode = 'custom'
-  store.settings.colorTokens = {
-    primary: customDraft.value.primary,
-    accent: customDraft.value.accent,
-    positive: customDraft.value.positive,
-    negative: customDraft.value.negative,
-    neutral: base.neutral,
-    background: base.background,
-    card: base.card,
-  }
+  store.settings.colorTokens = { ...base, primary: customDraft.value.primary, accent: customDraft.value.accent, positive: customDraft.value.positive, negative: customDraft.value.negative }
   store.applyTheme()
-  await store.saveTheme()
+  try { await store.saveTheme() }
+  catch {
+    store.settings.themeMode = previous.mode
+    store.settings.colorTokens = previous.colors
+    store.applyTheme()
+    themeError.value = 'Não foi possível salvar as cores. A aparência anterior foi restaurada.'
+  } finally { modeSaving.value = false }
 }
 
 const toggleWidget = (id: string) => {
@@ -535,7 +309,12 @@ const toggleWidget = (id: string) => {
 }
 
 const saveDashboard = async () => {
-  await store.saveDashboard()
+  store.filters.periodMode = store.settings.periodMode
+  settingsNotice.value = ''
+  try {
+    await store.saveDashboard()
+    settingsNotice.value = 'Preferências do Resumo salvas.'
+  } catch { settingsNotice.value = 'Não foi possível salvar as preferências. Tente novamente.' }
 }
 
 const runImport = async () => {
@@ -545,19 +324,13 @@ const runImport = async () => {
 }
 
 const doReseed = async () => {
-  if (!confirm('Isso vai apagar todos os lançamentos e recriar do zero. Continuar?')) return
   reseedBusy.value = true
   try {
     await store.reseedEntries()
+    reseedConfirm.value = false
   } finally {
     reseedBusy.value = false
   }
-}
-
-const accountTypeColor = (type: Account['type']) => {
-  if (type === 'bank') return 'var(--primary)'
-  if (type === 'credit_card') return 'var(--danger)'
-  return 'var(--warning)'
 }
 
 const accountTypeLabel = (type: Account['type']) => {
@@ -624,828 +397,6 @@ const copyInviteLink = async () => {
   setTimeout(() => { linkCopied.value = false }, 2000)
 }
 </script>
-
 <style scoped>
-.cfg {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-}
-
-/* ── Topo: conta + tema ─────────────────────────────────────── */
-.cfg__top {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ds-space-4);
-  align-items: stretch;
-}
-
-.cfg__account {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-4);
-  padding: var(--ds-space-5);
-}
-
-.cfg__avatar {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  background: var(--primary);
-  border: var(--border-width) solid var(--border);
-  border-radius: 50%;
-  color: var(--on-primary);
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.cfg__account-info {
-  min-width: 0;
-}
-
-.cfg__account-name {
-  overflow: hidden;
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cfg__account-sub {
-  margin-top: 2px;
-  color: var(--text3);
-  font-size: 11.5px;
-}
-
-.cfg__themes {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.cfg__section-label {
-  color: var(--text3);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.cfg__section-label--spaced {
-  margin: 16px 0 6px;
-}
-
-.cfg__chips {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.cfg__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px var(--ds-space-3);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-xs);
-  color: var(--text2);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 800;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-
-.cfg__chip:hover {
-  box-shadow: var(--shadow-sm);
-  transform: translate(-1px, -1px);
-}
-
-.cfg__chip:active {
-  box-shadow: 1px 1px 0 var(--ds-shadow-color);
-  transform: translate(1px, 1px);
-}
-
-.cfg__chip--active {
-  background: var(--primary);
-  color: var(--on-primary);
-}
-
-.cfg__theme-desc {
-  color: var(--text3);
-  font-size: 11px;
-}
-
-/* ── Painéis ────────────────────────────────────────────────── */
-.cfg__panel-head {
-  padding: var(--ds-space-4) var(--ds-space-5);
-}
-
-.cfg__panel-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.cfg__panel-sub {
-  margin-top: 2px;
-  color: var(--text3);
-  font-size: 12px;
-}
-
-.cfg__panel-body {
-  padding: var(--ds-space-4) var(--ds-space-5);
-}
-
-.cfg__panel-foot {
-  display: flex;
-  justify-content: flex-end;
-  padding: var(--ds-space-4) var(--ds-space-5);
-}
-
-.cfg__stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-}
-
-.cfg__field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-/* ── Atalhos ───────────────────────────────────────────────── */
-.cfg__shortcut-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-3);
-  padding: 0 var(--ds-space-5) var(--ds-space-4);
-}
-
-.cfg__shortcut {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  min-height: 70px;
-  padding: var(--ds-space-3);
-  background: var(--surface2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  color: var(--text);
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-
-.cfg__shortcut:hover {
-  box-shadow: var(--shadow-md);
-  transform: translate(-1px, -1px);
-}
-
-.cfg__shortcut:active {
-  box-shadow: 1px 1px 0 var(--ds-shadow-color);
-  transform: translate(2px, 2px);
-}
-
-.cfg__shortcut-icon {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: var(--ds-control-height);
-  background: var(--primary);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  color: var(--on-primary);
-}
-
-.cfg__shortcut-copy {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.cfg__shortcut-title {
-  color: var(--text);
-  font-size: 13.5px;
-  font-weight: 800;
-}
-
-.cfg__shortcut-sub {
-  color: var(--text3);
-  font-size: 11.5px;
-  font-weight: 650;
-}
-
-/* ── Linhas ─────────────────────────────────────────────────── */
-.cfg__row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-4) var(--ds-space-5);
-  border-bottom: 1px solid var(--border);
-}
-
-.cfg__row:last-child {
-  border-bottom: none;
-}
-
-.cfg__row-main {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  min-width: 0;
-  flex: 1;
-}
-
-.cfg__row-text {
-  min-width: 0;
-}
-
-.cfg__row-label {
-  color: var(--text);
-  font-size: 13.5px;
-  font-weight: 700;
-}
-
-.cfg__row-label--muted {
-  color: var(--text3);
-}
-
-.cfg__row-label--ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cfg__row-sub {
-  margin-top: 2px;
-  color: var(--text3);
-  font-size: 11.5px;
-}
-
-.cfg__row-sub--block {
-  margin-bottom: var(--ds-space-3);
-}
-
-.cfg__row-value {
-  flex-shrink: 0;
-  color: var(--text3);
-  font-size: 12.5px;
-}
-
-.cfg__row-control {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 8px;
-}
-
-.cfg__row-control--select {
-  width: 190px;
-}
-
-.cfg__dot {
-  flex-shrink: 0;
-  width: 10px;
-  height: 10px;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-}
-
-/* ── Toggle ─────────────────────────────────────────────────── */
-.cfg__toggle {
-  position: relative;
-  flex-shrink: 0;
-  width: 38px;
-  height: 22px;
-  padding: 0;
-  background: var(--surface2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  transition: background var(--ds-motion-fast) linear;
-}
-
-.cfg__toggle-knob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  background: var(--text3);
-  border-radius: 50%;
-  transition: left var(--ds-motion-base) linear, background var(--ds-motion-fast) linear;
-}
-
-.cfg__toggle--on {
-  background: var(--primary);
-}
-
-.cfg__toggle--on .cfg__toggle-knob {
-  left: 18px;
-  background: var(--on-primary);
-}
-
-/* ── Badges ─────────────────────────────────────────────────── */
-.cfg__badge {
-  flex-shrink: 0;
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.cfg__badge--active {
-  background: var(--primary-dim);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-xs);
-  color: var(--on-primary-dim);
-}
-
-.cfg__badge--danger {
-  background: var(--danger-light);
-  color: var(--danger);
-}
-
-.cfg__badge--warning {
-  background: var(--warning-light);
-  color: var(--warning);
-}
-
-/* ── Botões ─────────────────────────────────────────────────── */
-.cfg__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 9px var(--ds-space-4);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 750;
-  line-height: 1.1;
-  cursor: pointer;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-
-.cfg__btn:not(:disabled):hover {
-  box-shadow: var(--shadow-md);
-  transform: translate(-1px, -1px);
-}
-
-.cfg__btn:not(:disabled):active {
-  box-shadow: 1px 1px 0 var(--ds-shadow-color);
-  transform: translate(2px, 2px);
-}
-
-.cfg__btn:disabled {
-  cursor: not-allowed;
-  filter: grayscale(0.45);
-  opacity: 0.58;
-}
-
-.cfg__btn--primary {
-  background: var(--primary);
-  color: var(--on-primary);
-}
-
-.cfg__btn--ghost {
-  background: var(--surface2);
-  color: var(--text2);
-}
-
-.cfg__btn--danger {
-  background: var(--danger-light);
-  color: var(--danger);
-}
-
-.cfg__btn--block {
-  width: 100%;
-}
-
-.cfg__btn--grow {
-  flex: 1;
-}
-
-.cfg__btn--seg {
-  flex: 1;
-  background: var(--surface2);
-  color: var(--text2);
-}
-
-.cfg__btn--seg-on {
-  background: var(--primary-dim);
-  color: var(--on-primary-dim);
-}
-
-.cfg__signout {
-  display: inline-flex;
-  align-self: flex-start;
-  align-items: center;
-  gap: 8px;
-  padding: var(--ds-space-3) var(--ds-space-5);
-  background: var(--danger-light);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--ds-radius-md);
-  box-shadow: var(--shadow-sm);
-  color: var(--danger);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-
-.cfg__signout:not(:disabled):hover {
-  box-shadow: var(--shadow-md);
-  transform: translate(-1px, -1px);
-}
-
-.cfg__signout:not(:disabled):active {
-  box-shadow: 1px 1px 0 var(--ds-shadow-color);
-  transform: translate(2px, 2px);
-}
-
-.cfg__signout:disabled {
-  cursor: not-allowed;
-  opacity: 0.58;
-}
-
-/* ── Campos ─────────────────────────────────────────────────── */
-.cfg__input {
-  box-sizing: border-box;
-  height: var(--ds-control-height);
-  padding: 0 var(--ds-space-3);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 650;
-  outline: none;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-
-.cfg__input::placeholder {
-  color: var(--text3);
-}
-
-.cfg__input:focus {
-  box-shadow: var(--shadow-sm);
-  transform: translate(-1px, -1px);
-}
-
-.cfg__input--time {
-  width: 118px;
-  font-family: var(--ds-font-family-mono);
-}
-
-.cfg__input--grow {
-  flex: 1;
-  min-width: 0;
-}
-
-/* ── Instalar app ───────────────────────────────────────────── */
-.cfg__install {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-4);
-  margin-bottom: var(--ds-space-4);
-}
-
-.cfg__install-icon {
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-}
-
-/* ── Cores personalizadas ───────────────────────────────────── */
-.cfg__base-row {
-  display: flex;
-  gap: 8px;
-  margin: 6px 0 14px;
-}
-
-.cfg__colors {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.cfg__color-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-  padding: 8px var(--ds-space-3);
-  background: var(--surface2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.cfg__color-input {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cfg__swatch {
-  width: 34px;
-  height: 30px;
-  padding: 0;
-  background: transparent;
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--ds-radius-md);
-  cursor: pointer;
-}
-
-.cfg__swatch::-webkit-color-swatch-wrapper { padding: 3px; }
-.cfg__swatch::-webkit-color-swatch { border: none; border-radius: var(--radius-sm); }
-
-.hex-input {
-  width: 88px;
-  height: 30px;
-  padding: 0 var(--ds-space-3);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-family: var(--ds-font-family-mono);
-  font-size: 12px;
-  outline: none;
-  text-transform: lowercase;
-}
-
-.hex-input:focus {
-  box-shadow: var(--shadow-xs);
-}
-
-.cfg__actions {
-  display: flex;
-  gap: 8px;
-  margin-top: var(--ds-space-4);
-}
-
-/* Preview do tema personalizado: cores vindas dos dados (--pv-*). */
-.cc-preview {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-4);
-  border: var(--border-width-strong) solid var(--pv-border);
-  border-radius: var(--radius);
-  box-shadow: 6px 6px 0 var(--pv-border);
-}
-.cc-prow {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-}
-.cc-btn {
-  padding: 8px var(--ds-space-5);
-  background: var(--pv-primary);
-  border: var(--border-width) solid var(--pv-border);
-  border-radius: var(--radius-sm);
-  box-shadow: 3px 3px 0 var(--pv-border);
-  color: #fff;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: default;
-}
-.cc-chip {
-  padding: 5px var(--ds-space-3);
-  background: color-mix(in srgb, var(--pv-accent) 22%, transparent);
-  border: var(--border-width) solid var(--pv-border);
-  border-radius: var(--radius-sm);
-  color: var(--pv-accent);
-  font-size: 12px;
-  font-weight: 700;
-}
-.cc-card {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--ds-space-3) var(--ds-space-4);
-  background: var(--pv-card);
-  border: var(--border-width) solid var(--pv-border);
-  border-radius: var(--radius-sm);
-  box-shadow: 3px 3px 0 var(--pv-border);
-}
-.cc-card-label {
-  color: var(--pv-muted);
-  font-size: 11px;
-  font-weight: 600;
-}
-.cc-card-value {
-  color: var(--pv-primary);
-  font-family: var(--ds-font-family-mono);
-  font-size: 18px;
-  font-weight: 800;
-}
-.cc-dots {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ds-space-4);
-}
-.cc-dot {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--pv-text);
-  font-size: 12px;
-  font-weight: 600;
-}
-.cc-dot i {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border: 1px solid var(--pv-border);
-}
-
-/* ── Importar CSV ───────────────────────────────────────────── */
-.textarea-field {
-  width: 100%;
-  padding: 9px var(--ds-space-3);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  color: var(--text);
-  font-family: var(--ds-font-family-mono);
-  font-size: 12.5px;
-  outline: none;
-  resize: vertical;
-}
-
-.textarea-field:focus {
-  box-shadow: var(--shadow-sm);
-}
-
-/* ── Compartilhamento ───────────────────────────────────────── */
-.cfg__member-avatar {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  background: var(--primary-dim);
-  border: var(--border-width) solid var(--border);
-  border-radius: 50%;
-  color: var(--on-primary-dim);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.cfg__invite {
-  display: flex;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.cfg__invite-link {
-  margin-top: var(--ds-space-3);
-  padding: var(--ds-space-3) var(--ds-space-3);
-  background: var(--success-light);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.cfg__invite-link-title {
-  margin-bottom: 4px;
-  color: var(--success);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.cfg__invite-link-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.cfg__invite-code {
-  flex: 1;
-  overflow: hidden;
-  color: var(--text2);
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cfg__link-btn {
-  flex-shrink: 0;
-  background: transparent;
-  border: none;
-  color: var(--primary);
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.cfg__error {
-  margin-top: 6px;
-  color: var(--danger);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* ── Utilitários ────────────────────────────────────────────── */
-.cfg__spin {
-  animation: cfg-spin 0.8s linear infinite;
-}
-
-@keyframes cfg-spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ── Responsivo ─────────────────────────────────────────────── */
-@media (max-width: 700px) {
-  .cfg__top {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .cfg {
-    gap: var(--ds-space-4);
-  }
-
-  .cfg__account {
-    gap: var(--ds-space-3);
-    padding: var(--ds-space-4);
-  }
-
-  .cfg__avatar {
-    width: 46px;
-    height: 46px;
-    font-size: 15px;
-  }
-
-  .cfg__account-name {
-    font-size: 14px;
-  }
-
-  .cfg__panel-head,
-  .cfg__panel-foot {
-    padding: var(--ds-space-3) var(--ds-space-4);
-  }
-
-  .cfg__panel-body {
-    padding: var(--ds-space-3) var(--ds-space-4);
-  }
-
-  .cfg__shortcut-grid {
-    grid-template-columns: 1fr;
-    padding: 0 var(--ds-space-4) var(--ds-space-4);
-  }
-
-  .cfg__shortcut {
-    min-height: 62px;
-  }
-
-  .cfg__row {
-    padding: var(--ds-space-3) var(--ds-space-4);
-  }
-
-  .cfg__row-control--select {
-    width: 150px;
-  }
-
-  .cfg__signout {
-    width: 100%;
-    justify-content: center;
-  }
-}
+.theme-preview { --ui-primary: var(--pv-primary); --ui-success: var(--pv-positive); --ui-error: var(--pv-negative); --ui-bg: var(--pv-card); --ui-text: var(--pv-text); --ui-text-highlighted: var(--pv-text); --ui-text-muted: var(--pv-muted); --ui-border: var(--pv-border); }
 </style>

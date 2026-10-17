@@ -1,33 +1,16 @@
 <template>
-  <div class="row-actions" @click.stop>
-    <button type="button" class="row-trigger" :popovertarget="menuId" :aria-label="`Opções de ${label}`" title="Opções do mês">⋮</button>
-    <div :id="menuId" popover class="row-actions-menu">
-      <strong>{{ label }}</strong>
-      <button type="button" @click="choose('view', $event)">Ver / editar lançamentos</button>
-      <button type="button" @click="choose('hide', $event)">Ocultar este mês</button>
-      <button type="button" @click="choose('hidePrevious', $event)">Ocultar meses anteriores</button>
-      <button type="button" @click="choose('clear', $event)">Apagar valores do mês…</button>
-    </div>
-  </div>
+  <UDropdownMenu :items="items"><UButton :icon="appConfig.ui.icons.ellipsis" color="neutral" variant="ghost" :aria-label="`Opções de ${label}`" class="min-h-10 min-w-10" @click.stop /></UDropdownMenu>
 </template>
-
 <script setup lang="ts">
-import { useId } from 'vue'
-const menuId = useId()
-defineProps<{ label: string }>()
+import { computed } from 'vue'
+import { resolveFinanceIcon } from '#shared/uiThemeIcons'
+const appConfig = useAppConfig()
+const iconSet = useState<string>('finance-ui-icon-set', () => 'lucide')
+const props = defineProps<{ label: string }>()
 const emit = defineEmits<{ action: [action: 'view' | 'hide' | 'hidePrevious' | 'clear'] }>()
-function choose(action: 'view' | 'hide' | 'hidePrevious' | 'clear', event: MouseEvent) {
-  if (event.currentTarget instanceof HTMLElement) event.currentTarget.closest<HTMLElement>('[popover]')?.hidePopover()
-  emit('action', action)
-}
+const items = computed(() => [[{ label: props.label, type: 'label' as const }], [
+  { label: 'Ver / editar lançamentos', icon: resolveFinanceIcon('planning', iconSet.value), onSelect: () => emit('action', 'view') },
+  { label: 'Ocultar este mês', icon: appConfig.ui.icons.eyeOff, onSelect: () => emit('action', 'hide') },
+  { label: 'Ocultar meses anteriores', icon: appConfig.ui.icons.eyeOff, onSelect: () => emit('action', 'hidePrevious') },
+], [{ label: 'Apagar valores do mês…', icon: resolveFinanceIcon('trash', iconSet.value), color: 'error' as const, onSelect: () => emit('action', 'clear') }]])
 </script>
-
-<style scoped>
-.row-actions { position: relative; }
-.row-trigger { cursor: pointer; padding: 4px var(--ds-space-3); border-radius: 4px; border: 0; color: inherit; background: transparent; font: inherit; }
-.row-actions-menu { position: fixed; inset: 0; margin: auto; width: min(280px, 90vw); padding: var(--ds-space-3); background: var(--ds-color-surface-card); color: var(--text); border: 1px solid var(--ds-color-border-default); border-radius: 8px; box-shadow: var(--shadow-md); }
-.row-actions-menu:popover-open { display: grid; gap: 4px; }
-.row-actions-menu::backdrop { background: var(--overlay); }
-.row-actions-menu button { padding: var(--ds-space-3); background: transparent; border: 0; font: inherit; text-align: left; color: inherit; cursor: pointer; white-space: normal; }
-.row-actions-menu button:hover { background: var(--ds-color-surface-card-soft); }
-</style>

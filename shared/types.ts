@@ -1,3 +1,5 @@
+import type { UiThemePreferences } from './uiThemeTypes'
+
 export type ThemeMode = 'light' | 'dark' | 'custom' | 'system'
 export type DensityMode = 'compact' | 'comfortable'
 export type PeriodMode = 'due_date' | 'competence'
@@ -27,6 +29,7 @@ export interface DashboardConfig {
   visibleWidgets: string[]
   sortMode: 'date_asc' | 'date_desc' | 'amount_desc'
   defaultRange: 'month' | 'quarter' | 'year'
+  uiTheme?: UiThemePreferences
 }
 
 export interface HouseholdSettings {

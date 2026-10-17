@@ -3,8 +3,10 @@ import { computed, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { applyFilters, buildCardBreakdown, buildCashflowSeries, buildCategoryBreakdown, buildExpensePaymentCycles, buildHeatmap, buildProjection, computeKpis, excludeBenefitEntries } from '#shared/finance'
-import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG, THEME_PRESETS } from '#shared/constants'
+import { DARK_COLORS, DEFAULT_DASHBOARD_CONFIG } from '#shared/constants'
 import { createDefaultOnboardingState } from '#shared/onboarding'
+import { normalizeUiTheme, type UiThemePreferences } from '#shared/uiTheme'
+import { useFinanceUiTheme } from '~/features/finance/composables/useFinanceUiTheme'
 import { syncFinanceWidgetSnapshot } from '~/features/finance/utils/financeWidget'
 import type {
   Account,
@@ -19,14 +21,15 @@ import type {
   OnboardingImportPayload,
   OnboardingImportPreview,
   OnboardingState,
-  ThemeMode
+  ThemeMode,
+  WishItem
 } from '#shared/types'
 
 const defaultSettings = (): HouseholdSettings => ({
   id: 'household-main',
   currency: 'BRL',
   timezone: 'America/Sao_Paulo',
-  themeMode: 'dark',
+  themeMode: 'system',
   densityMode: 'compact',
   periodMode: 'due_date',
   horizonMonths: 18,
@@ -48,6 +51,8 @@ const defaultFilters = (): DashboardFilters => ({
 export const useFinanceStore = defineStore('finance', () => {
   const runtime = useRuntimeConfig()
   const route = useRoute()
+  const uiThemeRuntime = useFinanceUiTheme()
+  const uiThemeSaving = ref(false)
 
   const loading = ref(false)
   const initialized = ref(false)
@@ -59,6 +64,7 @@ export const useFinanceStore = defineStore('finance', () => {
   const categories = ref<Category[]>([])
   const rules = ref<FinanceRule[]>([])
   const entries   = ref<FinanceEntry[]>([])
+  const wishItems = ref<WishItem[]>([])
   const warnings  = ref<string[]>([])
   const kpis = ref<FinanceKpis>({
     totalIncome: 0,
@@ -71,6 +77,7 @@ export const useFinanceStore = defineStore('finance', () => {
 
   const filters = ref<DashboardFilters>(defaultFilters())
   const offlineQueue = ref<EntryBatchRequest[]>([])
+  const syncingOfflineQueue = ref(false)
 
   const filteredEntries = computed(() => applyFilters(entries.value, filters.value))
 
@@ -124,18 +131,30 @@ export const useFinanceStore = defineStore('finance', () => {
     return response as T
   }
 
+  const loadWishItems = async (): Promise<WishItem[]> => {
+    const response = await fetchApi<{ items: WishItem[] }>('/api/wishlist')
+    wishItems.value = response.items
+    return wishItems.value
+  }
+  const saveWishItemsBatch = async (batch: { upserts: Partial<WishItem>[]; deletes: string[] }): Promise<WishItem[]> => {
+    const response = await fetchApi<{ items: WishItem[] }>('/api/wishlist/batch', { method: 'POST', body: batch })
+    wishItems.value = response.items
+    return wishItems.value
+  }
+
   const LEGACY_THEME_MODES = new Set(['eva', 'eva_01', 'cyberpunk', 'arasaka'])
   const DARK_THEMES = new Set(['dark'])
 
   const normalizeThemeMode = (mode: string): ThemeMode => {
     if (LEGACY_THEME_MODES.has(mode)) return 'dark'
     if (mode === 'light' || mode === 'dark' || mode === 'custom' || mode === 'system') return mode
-    return 'dark'
+    return 'system'
   }
 
   const normalizeSettings = (nextSettings: HouseholdSettings): HouseholdSettings => ({
     ...nextSettings,
-    themeMode: normalizeThemeMode(nextSettings.themeMode)
+    themeMode: normalizeThemeMode(nextSettings.themeMode),
+    dashboardConfig: { ...DEFAULT_DASHBOARD_CONFIG, ...nextSettings.dashboardConfig, uiTheme: normalizeUiTheme(nextSettings.dashboardConfig?.uiTheme) }
   })
 
   const resolveEffectiveTheme = (): Exclude<ThemeMode, 'system'> => {
@@ -146,7 +165,7 @@ export const useFinanceStore = defineStore('finance', () => {
     if (mode !== 'system') {
       return mode
     }
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const prefersDark = import.meta.client && window.matchMedia('(prefers-color-scheme: dark)').matches
     return prefersDark ? 'dark' : 'light'
   }
 
@@ -155,7 +174,8 @@ export const useFinanceStore = defineStore('finance', () => {
     '--ds-color-brand-primary', '--ds-color-brand-primary-dim', '--ds-color-brand-primary-light',
     '--ds-color-brand-accent', '--ds-color-state-success', '--ds-color-state-success-light',
     '--ds-color-state-danger', '--ds-color-state-danger-light', '--ds-color-state-warning',
-    '--ds-color-state-warning-light', '--accent-light'
+    '--ds-color-state-warning-light', '--accent-light',
+    '--ui-primary', '--ui-secondary', '--ui-success', '--ui-error', '--ui-bg', '--ui-bg-elevated'
   ]
 
   const isLightHex = (hex: string): boolean => {
@@ -184,35 +204,21 @@ export const useFinanceStore = defineStore('finance', () => {
       const light = isLightHex(c.background)
       root.dataset.theme = light ? 'light' : 'dark'
       root.classList.toggle('dark', !light)
-
-      const mix = (hex: string, pct: number, base: string) => `color-mix(in srgb, ${hex} ${pct}%, ${base})`
-      root.style.setProperty('--ds-color-brand-primary', c.primary)
-      root.style.setProperty('--ds-color-brand-primary-dim', mix(c.primary, 16, 'transparent'))
-      root.style.setProperty('--ds-color-brand-primary-light', mix(c.primary, 16, 'var(--ds-color-surface-card)'))
-      root.style.setProperty('--ds-color-brand-accent', c.accent)
-      root.style.setProperty('--ds-color-state-success', c.positive)
-      root.style.setProperty('--ds-color-state-success-light', mix(c.positive, 16, 'var(--ds-color-surface-card)'))
-      root.style.setProperty('--ds-color-state-danger', c.negative)
-      root.style.setProperty('--ds-color-state-danger-light', mix(c.negative, 16, 'var(--ds-color-surface-card)'))
-      root.style.setProperty('--ds-color-state-warning', c.accent)
-      root.style.setProperty('--ds-color-state-warning-light', mix(c.accent, 16, 'var(--ds-color-surface-card)'))
-      root.style.setProperty('--accent-light', mix(c.accent, 16, 'var(--ds-color-surface-card)'))
+      uiThemeRuntime.apply(settings.value.dashboardConfig.uiTheme, light ? 'light' : 'dark')
+      for (const [token, value] of Object.entries({ '--ui-primary': c.primary, '--ui-secondary': c.accent, '--ui-success': c.positive, '--ui-error': c.negative, '--ui-bg': c.background, '--ui-bg-elevated': c.card })) root.style.setProperty(token, value)
       return
     }
 
     const effective = resolveEffectiveTheme()
     root.dataset.theme = effective
     root.classList.toggle('dark', DARK_THEMES.has(effective))
+    uiThemeRuntime.apply(settings.value.dashboardConfig.uiTheme, effective === 'dark' ? 'dark' : 'light')
   }
 
   const setThemeMode = (mode: ThemeMode) => {
     settings.value.themeMode = mode
-    if (mode === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      settings.value.colorTokens = { ...THEME_PRESETS[prefersDark ? 'dark' : 'light'] }
-    } else {
-      settings.value.colorTokens = { ...THEME_PRESETS[mode] }
-    }
+    // Standard modes use the preset palette. Keep arbitrary legacy colors for
+    // the next time Custom is opened instead of replacing the saved draft.
     applyTheme()
   }
 
@@ -244,22 +250,23 @@ export const useFinanceStore = defineStore('finance', () => {
   }
 
   const flushOfflineQueue = async () => {
-    if (!process.client || !navigator.onLine || offlineQueue.value.length === 0) {
+    if (!process.client || !navigator.onLine || offlineQueue.value.length === 0 || syncingOfflineQueue.value) {
       return
     }
 
-    const pending = [...offlineQueue.value]
-    offlineQueue.value = []
-    persistOfflineQueue()
-
-    for (const batch of pending) {
-      await fetchApi<{ entries: FinanceEntry[] }>('/api/entries/batch', {
-        method: 'POST',
-        body: batch
-      })
+    syncingOfflineQueue.value = true
+    try {
+      while (offlineQueue.value.length) {
+        const batch = offlineQueue.value[0]!
+        await fetchApi<{ entries: FinanceEntry[] }>('/api/entries/batch', { method: 'POST', body: batch })
+        // Only remove a batch after the server acknowledges it. Failed batches remain retryable.
+        offlineQueue.value.shift()
+        persistOfflineQueue()
+      }
+      await bootstrap()
+    } finally {
+      syncingOfflineQueue.value = false
     }
-
-    await bootstrap()
   }
 
   const initEditKey = () => {
@@ -339,6 +346,8 @@ export const useFinanceStore = defineStore('finance', () => {
         const index = entries.value.findIndex((item) => item.id === entry.id)
         if (index >= 0) {
           entries.value[index] = { ...entries.value[index], ...entry } as FinanceEntry
+        } else if (entry.title != null && entry.amount != null && entry.dueDate && entry.competenceDate && entry.kind) {
+          entries.value.push(entry as FinanceEntry)
         }
       }
       if (batch.deletes.length > 0) {
@@ -389,7 +398,49 @@ export const useFinanceStore = defineStore('finance', () => {
       }
     })
     settings.value = normalizeSettings(response.settings)
+    applyTheme()
     void syncWidgetSnapshot()
+  }
+
+  const saveUiTheme = async (preferences: UiThemePreferences) => {
+    if (uiThemeSaving.value) return
+    const previous = {
+      preferences: normalizeUiTheme(settings.value.dashboardConfig.uiTheme),
+      mode: settings.value.themeMode,
+      colors: { ...settings.value.colorTokens }
+    }
+    const leavingCustom = previous.mode === 'custom'
+    uiThemeSaving.value = true
+    settings.value.dashboardConfig.uiTheme = normalizeUiTheme(preferences)
+    if (leavingCustom) settings.value.themeMode = 'system'
+    applyTheme()
+    try {
+      // Use the existing theme endpoint first so a reload cannot reactivate
+      // inline Custom overrides over the selected official preset.
+      if (leavingCustom) await fetchApi('/api/settings/theme', {
+        method: 'POST',
+        body: { themeMode: 'system', densityMode: settings.value.densityMode, colorTokens: previous.colors }
+      })
+      await saveDashboard()
+    } catch (cause) {
+      settings.value.dashboardConfig.uiTheme = previous.preferences
+      settings.value.themeMode = previous.mode
+      settings.value.colorTokens = previous.colors
+      applyTheme()
+      if (leavingCustom) {
+        try {
+          await fetchApi('/api/settings/theme', {
+            method: 'POST',
+            body: { themeMode: previous.mode, densityMode: settings.value.densityMode, colorTokens: previous.colors }
+          })
+        } catch (rollbackCause) {
+          throw new Error('Não foi possível salvar o tema nem confirmar a restauração no servidor. A aparência anterior foi restaurada neste aparelho; tente novamente para sincronizar.', { cause: rollbackCause })
+        }
+      }
+      throw cause
+    } finally {
+      uiThemeSaving.value = false
+    }
   }
 
   const saveAccount = async (account: Partial<Account>) => {
@@ -458,7 +509,7 @@ export const useFinanceStore = defineStore('finance', () => {
       const total = upcoming.reduce((sum, entry) => sum + entry.amount, 0)
       new Notification('Vencimentos proximos', {
         body: `${upcoming.length} conta(s) em ate 3 dias. Total R$ ${total.toFixed(2)}`,
-        icon: '/icon-192.png'
+        icon: '/icon-192-v2.png'
       })
     }
   }
@@ -516,12 +567,15 @@ export const useFinanceStore = defineStore('finance', () => {
     categories.value  = []
     rules.value       = []
     entries.value     = []
+    wishItems.value   = []
     warnings.value    = []
     kpis.value        = { totalIncome: 0, totalExpense: 0, net: 0, pendingAmount: 0, upcoming7Days: 0, cardsUsedPercent: 0 }
     filters.value     = defaultFilters()
     offlineQueue.value = []
+    syncingOfflineQueue.value = false
     initialized.value = false
     error.value       = null
+    applyTheme()
   }
 
   const boot = async () => {
@@ -529,8 +583,13 @@ export const useFinanceStore = defineStore('finance', () => {
     loadOfflineQueue()
     await bootstrap()
     if (process.client) {
-      window.addEventListener('online', flushOfflineQueue)
+      window.removeEventListener('online', retryOfflineQueue)
+      window.addEventListener('online', retryOfflineQueue)
     }
+  }
+
+  const retryOfflineQueue = () => {
+    void flushOfflineQueue().catch(() => { error.value = 'Há alterações aguardando sincronização. Elas continuam salvas neste dispositivo.' })
   }
 
   return {
@@ -543,6 +602,9 @@ export const useFinanceStore = defineStore('finance', () => {
     categories,
     rules,
     entries,
+    wishItems,
+    loadWishItems,
+    saveWishItemsBatch,
     warnings,
     kpis,
     filters,
@@ -564,6 +626,8 @@ export const useFinanceStore = defineStore('finance', () => {
     reseedEntries,
     saveTheme,
     saveDashboard,
+    saveUiTheme,
+    uiThemeSaving,
     importCsv,
     previewOnboardingImport,
     importOnboardingWorkbook,

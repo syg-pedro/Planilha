@@ -1,10 +1,65 @@
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: opacity var(--ds-motion-base) linear, transform var(--ds-motion-base) linear;
+  transition:
+    opacity var(--ds-motion-base) var(--ds-motion-ease),
+    transform var(--ds-motion-base) var(--ds-motion-ease);
 }
 
 .fade-slide-enter-from,
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translate(4px, 4px);
+  transform: translateY(4px);
+}
+
+.ds-reveal {
+  animation: ds-reveal var(--ds-motion-slow) var(--ds-motion-ease) both;
+}
+.ds-feedback {
+  animation: ds-feedback var(--ds-motion-base) var(--ds-motion-ease) both;
+}
+.ds-reveal-enter-active,
+.ds-reveal-leave-active {
+  transition: opacity var(--ds-motion-base) var(--ds-motion-ease), transform var(--ds-motion-base) var(--ds-motion-ease);
+}
+.ds-reveal-enter-from,
+.ds-reveal-leave-to {
+  opacity: 0;
+  transform: translateY(4px);
+}
+@keyframes ds-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes ds-feedback {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ds-saved-row {
+  from {
+    background-color: var(--success-light);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

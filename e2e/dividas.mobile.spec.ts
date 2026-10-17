@@ -7,16 +7,16 @@ test.describe('Dívidas e Parcelas no celular', () => {
     await openApp(page)
 
     await page.getByRole('button', { name: 'Mais', exact: true }).click()
-    await page.getByRole('button', { name: 'Dívidas e Parcelas', exact: true }).click()
-    await expect(page.getByRole('heading', { name: 'Dívidas e Parcelas', level: 1 })).toBeVisible()
+    await page.getByRole('dialog', { name: 'Mais', exact: true }).getByRole('link', { name: 'Dívidas e parcelas', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Dívidas e parcelas', level: 1 })).toBeVisible()
 
-    const debtGroup = page.locator('.debt-group').first()
+    const debtGroup = page.getByTestId('debt-group').first()
     await expect(debtGroup).toBeVisible()
-    await debtGroup.getByRole('button').first().click()
+    await debtGroup.getByRole('button', { name: 'Ver parcelas', exact: true }).click()
 
     const actions = debtGroup.getByTestId('debt-installment-actions').first()
     await expect(actions).toBeVisible()
-    await expect(actions).toHaveCSS('display', 'grid')
+    await expect(actions).toHaveCSS('display', 'flex')
     expect(await actions.getByRole('button').count()).toBeGreaterThan(0)
     expect(await debtGroup.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)

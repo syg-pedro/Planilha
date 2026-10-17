@@ -1,149 +1,82 @@
 <template>
-  <section class="onboarding" aria-labelledby="onboarding-title">
-    <header class="onboarding__hero">
-      <div class="onboarding__hero-mark" aria-hidden="true"><BaseIcon name="sparkle" :size="29" /></div>
-      <div>
-        <p class="onboarding__eyebrow">SEU ESPAÇO FINANCEIRO</p>
-        <h2 id="onboarding-title">Comece pelo que importa.</h2>
-        <p>Traga seus dados ou cadastre o essencial. Em poucos minutos, a Planilha, os alertas e o dashboard estarão prontos para ajudar.</p>
+  <section class="mx-auto grid max-w-5xl gap-4" aria-labelledby="onboarding-title">
+    <UCard>
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="max-w-2xl space-y-2">
+          <UBadge label="Seu espaço financeiro" variant="subtle" />
+          <h2 id="onboarding-title" class="text-2xl font-semibold text-highlighted">Seu primeiro lançamento.</h2>
+          <p class="text-sm text-muted">Registre uma receita ou despesa e acompanhe o mês na Planilha. Você pode organizar as contas e trazer outros dados depois.</p>
+        </div>
+        <UButton label="Fazer depois" color="neutral" variant="ghost" @click="dismiss" />
       </div>
-      <button class="onboarding__dismiss" type="button" @click="dismiss">Fazer depois</button>
-    </header>
-
-    <div v-if="importSuccess" class="onboarding__success" role="status">
-      <BaseIcon name="check" :size="22" />
-      <div>
-        <strong>Dados importados com sucesso.</strong>
-        <p>{{ successDescription }}</p>
-      </div>
-      <BaseButton variant="primary" size="sm" @click="finish">Ver meu dashboard</BaseButton>
-    </div>
-
+    </UCard>
+    <UAlert v-if="importSuccess" title="Dados importados com sucesso." :description="successDescription" icon="i-lucide-circle-check" color="success" variant="soft" role="status">
+      <template #actions><UButton label="Abrir minha Planilha" @click="finish" /></template>
+    </UAlert>
     <template v-else>
-      <ol class="onboarding__trail" aria-label="Etapas da introdução">
-        <li :class="{ 'onboarding__trail-item--done': hasAccounts }"><span>1</span>Contas</li>
-        <li :class="{ 'onboarding__trail-item--done': hasEntries }"><span>2</span>Dados</li>
-        <li :class="{ 'onboarding__trail-item--done': tutorialSeen }"><span>3</span>Conhecer</li>
-      </ol>
-
-      <div class="onboarding__choices">
-        <article class="onboarding__choice onboarding__choice--featured">
-          <div class="onboarding__choice-icon"><BaseIcon name="export" :size="22" /></div>
-          <div>
-            <p class="onboarding__choice-kicker">RECOMENDADO</p>
-            <h3>Preencher uma vez no Excel</h3>
-            <p>Baixe o modelo, preencha suas contas, gastos fixos e lançamentos. Depois envie o mesmo arquivo.</p>
-          </div>
-          <div class="onboarding__choice-actions">
-            <BaseButton :loading="downloading" variant="primary" @click="downloadTemplate">
-              <BaseIcon name="export" :size="15" /> Baixar modelo
-            </BaseButton>
-            <BaseButton :disabled="hasFinancialData" variant="secondary" @click="openFilePicker">
-              <BaseIcon name="plus" :size="15" /> Enviar preenchido
-            </BaseButton>
-          </div>
-          <p v-if="hasFinancialData" class="onboarding__choice-note">A importação inicial fica disponível apenas antes de inserir dados, para evitar duplicações.</p>
-          <input ref="fileInput" class="onboarding__file-input" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="readWorkbook" />
-        </article>
-
-        <article class="onboarding__choice">
-          <div class="onboarding__choice-icon onboarding__choice-icon--quiet"><BaseIcon name="edit" :size="21" /></div>
-          <div>
-            <p class="onboarding__choice-kicker">PASSO A PASSO</p>
-            <h3>Começar pelo app</h3>
-            <p>Cadastre primeiro seus cartões e contas. Em seguida, lance as despesas e receitas na Planilha.</p>
-          </div>
-          <div class="onboarding__choice-actions">
-            <BaseButton variant="secondary" @click="startManual">
-              <BaseIcon name="card" :size="15" /> Cadastrar contas
-            </BaseButton>
-            <BaseButton variant="ghost" @click="startTour">
-              <BaseIcon name="help" :size="15" /> Ver tutorial
-            </BaseButton>
-          </div>
-        </article>
+      <UStepper :items="onboardingSteps" :model-value="progressStep" :linear="false" disabled size="sm" aria-label="Etapas da introdução" />
+      <div class="grid gap-4 md:grid-cols-2">
+        <UCard variant="subtle">
+          <template #header><div class="space-y-2"><UBadge label="Recomendado" size="sm" /><h3 class="flex items-center gap-2 font-semibold text-highlighted"><UIcon name="i-lucide-plus" class="size-5 text-primary" />Começar pela Planilha</h3></div></template>
+          <p class="text-sm text-muted">Informe o nome, o valor e o vencimento. O primeiro lançamento já aparece no seu mês.</p>
+          <template #footer>
+            <div class="flex flex-wrap gap-2"><UButton label="Criar primeiro lançamento" icon="i-lucide-plus" @click="startManual" /><UButton label="Cadastrar conta" icon="i-lucide-wallet-cards" color="neutral" variant="outline" @click="createAccount" /></div>
+            <p class="mt-3 text-xs text-muted">Conta e categoria podem ser escolhidas depois. Não é preciso configurar tudo para começar.</p>
+          </template>
+        </UCard>
+        <UCard>
+          <template #header><h3 class="flex items-center gap-2 font-semibold text-highlighted"><UIcon name="i-lucide-file-spreadsheet" class="size-5 text-muted" />Trazer pelo Excel</h3></template>
+          <p class="text-sm text-muted">Baixe o modelo, preencha suas contas e lançamentos e envie o arquivo. Revise tudo antes de confirmar.</p>
+          <input ref="fileInput" class="sr-only" type="file" tabindex="-1" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" @change="readWorkbook" />
+          <template #footer>
+            <div class="flex flex-wrap gap-2"><UButton label="Baixar modelo" icon="i-lucide-download" :loading="downloading" color="neutral" variant="outline" @click="downloadTemplate" /><UButton label="Enviar preenchido" icon="i-lucide-upload" :disabled="hasFinancialData" color="neutral" variant="outline" @click="openFilePicker" /></div>
+            <p v-if="hasFinancialData" class="mt-3 text-xs text-muted">A importação inicial fica disponível apenas antes de inserir dados, para evitar duplicações.</p>
+          </template>
+        </UCard>
       </div>
-
-      <section v-if="parsing || errors.length || preview" class="onboarding__import" aria-live="polite">
-        <div class="onboarding__import-heading">
-          <div class="onboarding__choice-icon"><BaseIcon name="grid" :size="20" /></div>
-          <div>
-            <p class="onboarding__choice-kicker">CONFERÊNCIA</p>
-            <h3>{{ parsing ? 'Lendo sua planilha...' : 'Revise antes de importar' }}</h3>
-          </div>
-        </div>
-
-        <div v-if="parsing" class="onboarding__loading"><span /> Conferindo abas, datas e valores.</div>
-
-        <ul v-else-if="errors.length" class="onboarding__errors">
-          <li v-for="error in errors" :key="error"><BaseIcon name="warning" :size="14" />{{ error }}</li>
-        </ul>
-
+      <UCard v-if="parsing || errors.length || preview" aria-live="polite">
+        <template #header><h3 class="font-semibold text-highlighted">{{ parsing ? 'Lendo sua planilha...' : 'Revise antes de importar' }}</h3></template>
+        <UProgress v-if="parsing" aria-label="Conferindo abas, datas e valores" />
+        <div v-else-if="errors.length" class="space-y-2"><UAlert v-for="error in errors" :key="error" :description="error" color="error" variant="soft" icon="i-lucide-triangle-alert" /></div>
         <template v-else-if="preview">
-          <div class="onboarding__summary">
-            <div><strong>{{ preview.accounts }}</strong><span>contas</span></div>
-            <div><strong>{{ preview.categories }}</strong><span>categorias</span></div>
-            <div><strong>{{ preview.rules }}</strong><span>fixos mensais</span></div>
-            <div><strong>{{ preview.generatedEntries + preview.entries }}</strong><span>lançamentos</span></div>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <UCard v-for="item in [{ value: preview.accounts, label: 'contas' }, { value: preview.categories, label: 'categorias' }, { value: preview.rules, label: 'fixos mensais' }, { value: preview.generatedEntries + preview.entries, label: 'lançamentos' }]" :key="item.label" variant="soft" class="text-center"><strong class="block text-xl text-highlighted">{{ item.value }}</strong><span class="text-xs text-muted">{{ item.label }}</span></UCard>
           </div>
-          <ul v-if="preview.warnings.length" class="onboarding__warnings">
-            <li v-for="warning in preview.warnings" :key="warning"><BaseIcon name="warning" :size="14" />{{ warning }}</li>
-          </ul>
-          <p class="onboarding__import-copy">Os dados só serão gravados quando você confirmar. A importação acontece de uma vez, sem registros parciais.</p>
-          <BaseButton :disabled="!preview.canImport || !importPayload" :loading="importing" variant="primary" @click="confirmImport">
-            <BaseIcon name="check" :size="15" /> Confirmar importação
-          </BaseButton>
+          <div v-if="preview.warnings.length" class="mt-3 space-y-2"><UAlert v-for="warning in preview.warnings" :key="warning" :description="warning" color="warning" variant="soft" icon="i-lucide-triangle-alert" /></div>
+          <p class="my-4 text-sm text-muted">Os dados só serão gravados quando você confirmar. A importação acontece de uma vez, sem registros parciais.</p>
+          <UButton label="Confirmar importação" icon="i-lucide-check" :disabled="!preview.canImport || !importPayload" :loading="importing" @click="confirmImport" />
         </template>
-      </section>
-
-      <section class="onboarding__learn">
-        <div>
-          <p class="onboarding__eyebrow">TUTORIAIS GUIADOS</p>
-          <h3>Entenda o essencial sem se perder no menu.</h3>
-        </div>
-        <div class="onboarding__learn-grid">
-          <button type="button" @click="startTour">
-            <BaseIcon name="dashboard" :size="19" />
-            <span><strong>Conheça o básico</strong><small>Dashboard, Planilha e Alertas</small></span>
-            <BaseIcon name="chevron_right" :size="17" />
-          </button>
-          <button type="button" @click="openHelp">
-            <BaseIcon name="book" :size="19" />
-            <span><strong>Central de Ajuda</strong><small>Guias detalhados por tela</small></span>
-            <BaseIcon name="chevron_right" :size="17" />
-          </button>
-        </div>
-      </section>
+      </UCard>
+      <UCard>
+        <template #header><h3 class="font-semibold text-highlighted">Entenda o essencial sem se perder no menu.</h3></template>
+        <div class="flex flex-wrap gap-2"><UButton label="Conheça o básico" icon="i-lucide-grid-2x2" color="neutral" variant="outline" @click="startTour" /><UButton label="Central de Ajuda" icon="i-lucide-book-open" color="neutral" variant="outline" @click="openHelp" /></div>
+      </UCard>
     </template>
-
     <BaseModal :open="tourOpen" title="Conheça a Planilha" subtitle="Um roteiro rápido pelos pontos que você mais vai usar." @close="closeTour">
-      <div class="onboarding__tour">
-        <p class="onboarding__tour-count">PASSO {{ tourStep + 1 }} DE {{ TOUR_STEPS.length }}</p>
-        <div class="onboarding__tour-icon"><BaseIcon :name="TOUR_STEPS[tourStep]?.icon ?? 'help'" :size="28" /></div>
-        <h3>{{ TOUR_STEPS[tourStep]?.title }}</h3>
-        <p>{{ TOUR_STEPS[tourStep]?.body }}</p>
-        <div class="onboarding__tour-dots" aria-hidden="true"><span v-for="(_, index) in TOUR_STEPS" :key="index" :class="{ active: index === tourStep }" /></div>
-        <div class="onboarding__tour-actions">
-          <BaseButton v-if="tourStep > 0" variant="ghost" @click="tourStep -= 1">Voltar</BaseButton>
-          <BaseButton variant="primary" @click="nextTour">{{ tourStep === TOUR_STEPS.length - 1 ? 'Concluir' : 'Próximo' }}</BaseButton>
-        </div>
+      <div class="space-y-4">
+        <p class="text-xs font-medium text-muted">PASSO {{ tourStep + 1 }} DE {{ TOUR_STEPS.length }}</p>
+        <UProgress :model-value="tourStep + 1" :max="TOUR_STEPS.length" aria-label="Progresso do tutorial" />
+        <UIcon :name="TOUR_STEPS[tourStep]?.icon ?? 'i-lucide-circle-help'" class="size-8 text-primary" />
+        <h3 class="text-lg font-semibold text-highlighted">{{ TOUR_STEPS[tourStep]?.title }}</h3>
+        <p class="text-sm text-muted">{{ TOUR_STEPS[tourStep]?.body }}</p>
       </div>
+      <template #footer><div class="flex justify-end gap-2"><UButton v-if="tourStep > 0" label="Voltar" color="neutral" variant="ghost" @click="tourStep -= 1" /><UButton :label="tourStep === TOUR_STEPS.length - 1 ? 'Concluir' : 'Próximo'" @click="nextTour" /></div></template>
     </BaseModal>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import BaseButton from '~/components/base/BaseButton.vue'
-import BaseIcon from '~/components/base/BaseIcon.vue'
 import BaseModal from '~/components/base/BaseModal.vue'
 import { createDefaultOnboardingState } from '#shared/onboarding'
 import type { OnboardingImportPayload, OnboardingImportPreview } from '#shared/types'
 import { downloadOnboardingWorkbook, parseOnboardingWorkbook } from '~/features/finance/utils/onboardingWorkbook'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
+import { useFinanceNavigation } from '~/features/finance/composables/useFinanceNavigation'
 
 const emit = defineEmits<{ navigate: [screen: string] }>()
 const store = useFinanceStore()
+const { goTo } = useFinanceNavigation()
 const fileInput = ref<HTMLInputElement | null>(null)
 const downloading = ref(false)
 const parsing = ref(false)
@@ -157,13 +90,15 @@ const tourStep = ref(0)
 const tutorialSeen = ref(false)
 
 const TOUR_STEPS = [
-  { icon: 'dashboard', title: 'Dashboard: seu resumo do mês', body: 'Depois de inserir seus dados, comece aqui para ver receitas, despesas, saldo e os próximos vencimentos.' },
-  { icon: 'grid', title: 'Planilha: onde os lançamentos vivem', body: 'Use a Matriz para acompanhar os meses em uma visão ampla ou a Lista para cadastrar e editar cada movimentação.' },
-  { icon: 'alerts', title: 'Alertas: acompanhe o que pede atenção', body: 'O aplicativo avisa quando uma despesa está próxima do vencimento ou quando o limite do cartão merece cuidado.' },
+  { icon: 'i-lucide-grid-2x2', title: 'Planilha: seu ponto de partida', body: 'Crie um lançamento para registrar uma receita ou despesa. Use a busca e os filtros para encontrar o que precisa.' },
+  { icon: 'i-lucide-circle-check', title: 'Confirme seus pagamentos', body: 'Abra um lançamento para editar os detalhes ou marcar como pago. Receitas podem ser marcadas como recebidas.' },
+  { icon: 'i-lucide-layout-dashboard', title: 'Resumo: acompanhe o período', body: 'Veja receitas, despesas e próximos vencimentos. Os alertas ajudam a localizar pendências e abrir os lançamentos.' },
 ]
 
 const hasAccounts = computed(() => store.accounts.length > 0)
 const hasEntries = computed(() => store.entries.length > 0 || store.rules.length > 0)
+const progressStep = computed(() => !hasEntries.value ? 0 : !hasAccounts.value ? 1 : 2)
+const onboardingSteps = [{ title: 'Primeiro lançamento', value: 0, icon: 'i-lucide-plus' }, { title: 'Suas contas', description: 'Opcional', value: 1, icon: 'i-lucide-wallet-cards' }, { title: 'Conhecer', value: 2, icon: 'i-lucide-circle-help' }]
 const hasFinancialData = computed(() => hasAccounts.value || store.categories.length > 0 || hasEntries.value)
 const successDescription = computed(() => {
   if (!importSuccess.value) return ''
@@ -183,17 +118,22 @@ const saveState = async (status: 'active' | 'dismissed' | 'completed', completed
 
 const dismiss = async () => {
   await saveState('dismissed')
-  emit('navigate', 'dashboard')
+  emit('navigate', 'planilha')
 }
 
 const finish = async () => {
   await saveState('completed', ['tutorial'])
-  emit('navigate', 'dashboard')
+  emit('navigate', 'planilha')
 }
 
 const startManual = async () => {
   await saveState('active', ['manual-start'])
-  emit('navigate', 'cartoes')
+  await goTo('planilha', { new: '1' })
+}
+
+const createAccount = async () => {
+  await saveState('active', ['manual-start'])
+  await goTo('cartoes', { new: '1' })
 }
 
 const openHelp = () => emit('navigate', 'help')
@@ -266,61 +206,3 @@ const confirmImport = async () => {
   }
 }
 </script>
-
-<style scoped>
-.onboarding { max-width: 980px; margin: 0 auto; display: grid; gap: var(--ds-space-5); }
-.onboarding__hero { position: relative; overflow: hidden; display: grid; grid-template-columns: auto 1fr auto; gap: var(--ds-space-5); align-items: start; padding: var(--ds-space-6); border: 3px solid var(--border); background: var(--surface); box-shadow: 7px 7px 0 var(--ds-shadow-color); }
-.onboarding__hero::after { content: ''; position: absolute; right: -45px; bottom: -76px; width: 190px; height: 190px; border: 3px solid var(--border); background: var(--primary-dim); transform: rotate(16deg); }
-.onboarding__hero > * { position: relative; z-index: 1; }
-.onboarding__hero-mark, .onboarding__choice-icon, .onboarding__tour-icon { display: grid; place-items: center; flex: 0 0 auto; width: 46px; height: 46px; border: 2px solid var(--border); background: var(--primary); color: var(--bg); box-shadow: var(--shadow-sm); }
-.onboarding__eyebrow, .onboarding__choice-kicker, .onboarding__tour-count { margin: 0 0 5px; color: var(--primary); font-size: 10px; font-weight: 900; letter-spacing: .13em; }
-.onboarding__hero h2 { margin: 0; color: var(--text); font-size: clamp(24px, 4vw, 34px); font-weight: 900; line-height: 1; }
-.onboarding__hero p:not(.onboarding__eyebrow) { max-width: 630px; margin: 9px 0 0; color: var(--text2); font-size: 14px; line-height: 1.5; }
-.onboarding__dismiss { border: 0; background: transparent; color: var(--text3); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; text-decoration: underline; }
-.onboarding__trail { display: flex; gap: var(--ds-space-3); margin: 0; padding: 0; list-style: none; overflow-x: auto; }
-.onboarding__trail-item { display: inline-flex; align-items: center; gap: 7px; min-width: max-content; color: var(--text3); font-size: 12px; font-weight: 800; }
-.onboarding__trail-item span { display: grid; place-items: center; width: 24px; height: 24px; border: 2px solid var(--border); background: var(--surface2); color: var(--text2); font-size: 11px; }
-.onboarding__trail-item--done { color: var(--success); }
-.onboarding__trail-item--done span { background: var(--success); color: var(--bg); }
-.onboarding__choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-4); }
-.onboarding__choice { display: grid; grid-template-columns: auto 1fr; gap: var(--ds-space-4); padding: var(--ds-space-5); border: 2px solid var(--border); background: var(--surface); box-shadow: 4px 4px 0 var(--ds-shadow-color); }
-.onboarding__choice--featured { border-width: 3px; background: var(--primary-dim); }
-.onboarding__choice-icon--quiet { background: var(--surface2); color: var(--primary); }
-.onboarding__choice h3, .onboarding__import h3, .onboarding__learn h3, .onboarding__tour h3 { margin: 0; color: var(--text); font-size: 17px; font-weight: 900; }
-.onboarding__choice p:not(.onboarding__choice-kicker) { margin: 7px 0 0; color: var(--text2); font-size: 13px; line-height: 1.45; }
-.onboarding__choice-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 9px; }
-.onboarding__choice-note { grid-column: 1 / -1; margin: 0 !important; color: var(--text3) !important; font-size: 11px !important; }
-.onboarding__file-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.onboarding__import, .onboarding__learn, .onboarding__success { border: 2px solid var(--border); background: var(--surface); box-shadow: 4px 4px 0 var(--ds-shadow-color); padding: var(--ds-space-5); }
-.onboarding__import-heading, .onboarding__success { display: flex; align-items: center; gap: var(--ds-space-3); }
-.onboarding__loading { display: flex; align-items: center; gap: 9px; padding-top: var(--ds-space-4); color: var(--text2); font-size: 13px; font-weight: 700; }
-.onboarding__loading span { width: 15px; height: 15px; border: 2px solid var(--primary); border-right-color: transparent; border-radius: 50%; animation: onboarding-spin .7s linear infinite; }
-.onboarding__summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 12px; }
-.onboarding__summary div { min-width: 0; padding: var(--ds-space-3) 8px; border: 1px solid var(--border); background: var(--surface2); text-align: center; }
-.onboarding__summary strong { display: block; color: var(--primary); font-size: 21px; font-weight: 900; }
-.onboarding__summary span { display: block; margin-top: 2px; color: var(--text3); font-size: 10px; font-weight: 800; }
-.onboarding__errors, .onboarding__warnings { display: grid; gap: 7px; margin: 16px 0; padding: var(--ds-space-3); list-style: none; border: 1px solid var(--danger); background: var(--danger-light); color: var(--danger); font-size: 12px; font-weight: 700; }
-.onboarding__warnings { border-color: var(--warning); background: var(--warning-light); color: var(--warning); }
-.onboarding__errors li, .onboarding__warnings li { display: flex; align-items: flex-start; gap: 7px; line-height: 1.35; }
-.onboarding__import-copy { margin: 0 0 14px; color: var(--text3); font-size: 12px; line-height: 1.45; }
-.onboarding__learn { display: grid; grid-template-columns: .9fr 1.1fr; gap: var(--ds-space-5); align-items: center; background: var(--surface2); }
-.onboarding__learn-grid { display: grid; gap: 8px; }
-.onboarding__learn-grid button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--ds-space-3); width: 100%; padding: var(--ds-space-3); border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; text-align: left; box-shadow: var(--shadow-xs); cursor: pointer; }
-.onboarding__learn-grid button:hover { transform: translate(-1px, -1px); box-shadow: var(--shadow-sm); }
-.onboarding__learn-grid span { display: grid; gap: 2px; }
-.onboarding__learn-grid strong { font-size: 13px; }
-.onboarding__learn-grid small { color: var(--text3); font-size: 11px; }
-.onboarding__success { justify-content: space-between; border-width: 3px; background: var(--success-light); color: var(--success); }
-.onboarding__success strong { display: block; color: var(--text); font-size: 15px; }
-.onboarding__success p { margin: 3px 0 0; color: var(--text2); font-size: 12px; }
-.onboarding__tour { display: grid; justify-items: start; gap: var(--ds-space-3); }
-.onboarding__tour-icon { width: 56px; height: 56px; }
-.onboarding__tour > p:not(.onboarding__tour-count) { margin: 0; color: var(--text2); font-size: 14px; line-height: 1.5; }
-.onboarding__tour-dots { display: flex; gap: 6px; }
-.onboarding__tour-dots span { width: 9px; height: 9px; border: 1px solid var(--border); background: var(--surface2); }
-.onboarding__tour-dots .active { width: 24px; background: var(--primary); }
-.onboarding__tour-actions { display: flex; justify-content: flex-end; gap: var(--ds-space-3); width: 100%; margin-top: 4px; }
-@keyframes onboarding-spin { to { transform: rotate(360deg); } }
-@media (max-width: 720px) { .onboarding__hero { grid-template-columns: auto 1fr; padding: var(--ds-space-5); } .onboarding__dismiss { grid-column: 1 / -1; justify-self: start; } .onboarding__choices, .onboarding__learn { grid-template-columns: 1fr; } .onboarding__summary { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 420px) { .onboarding__choice { padding: var(--ds-space-4); } .onboarding__choice-actions .base-button { width: 100%; } .onboarding__success { align-items: flex-start; flex-wrap: wrap; } }
-</style>

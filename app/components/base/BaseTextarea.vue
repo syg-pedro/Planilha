@@ -1,30 +1,63 @@
 <template>
-  <label class="flex flex-col gap-1 text-sm">
-    <span v-if="label" class="font-medium ds-text-muted">{{ label }}</span>
-    <textarea
-      :value="modelValue"
+  <UFormField
+    :label="label || undefined"
+    :help="hint || undefined"
+    :error="error || undefined"
+    :name="typeof $attrs.name === 'string' ? $attrs.name : undefined"
+    :required="isRequired"
+    class="base-field w-full"
+  >
+    <UTextarea
+      :id="fieldId"
+      ref="control"
+      v-bind="$attrs"
+      :model-value="modelValue ?? ''"
       :placeholder="placeholder"
       :rows="rows"
-      class="ds-field"
-      @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
+      :disabled="disabled"
+      :readonly="readonly"
+      class="w-full"
+      :ui="{ base: 'finance-control finance-textarea' }"
+      @update:model-value="$emit('update:modelValue', String($event ?? ''))"
     />
-  </label>
+  </UFormField>
 </template>
 
 <script setup lang="ts">
-withDefaults(
+import { computed, ref, useAttrs, useId } from 'vue'
+
+defineOptions({ inheritAttrs: false })
+const props = withDefaults(
   defineProps<{
-    modelValue: string
+    modelValue: string | null
+    id?: string
     label?: string
+    hint?: string
+    error?: string
     placeholder?: string
     rows?: number
+    disabled?: boolean
+    readonly?: boolean
   }>(),
   {
     label: '',
+    hint: '',
+    error: '',
     placeholder: '',
-    rows: 6
-  }
+    rows: 3,
+    disabled: false,
+    readonly: false,
+    id: undefined,
+  },
 )
-
-defineEmits<{ (e: 'update:modelValue', value: string): void }>()
+defineEmits<{ 'update:modelValue': [value: string] }>()
+const attrs = useAttrs()
+const generatedId = useId()
+const fieldId = computed(() => props.id || `field-${generatedId}`)
+const control = ref<{ textareaRef: HTMLTextAreaElement | null } | null>(null)
+const input = computed(() => control.value?.textareaRef ?? null)
+const isRequired = computed(
+  () => attrs.required !== undefined && attrs.required !== false,
+)
+defineExpose({ focus: () => input.value?.focus(), input })
 </script>

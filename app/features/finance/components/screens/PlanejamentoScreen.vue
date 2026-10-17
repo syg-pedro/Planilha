@@ -1,188 +1,55 @@
 <template>
-  <div style="display: flex; flex-direction: column; gap: var(--ds-space-4)">
-
-    <!-- KPIs anuais -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--ds-space-3)">
-      <BaseKpiCard icon="income"   label="Receita anual projetada"  :value="fmt(annualKpis.projectedIncome)"  color="var(--success)" />
-      <BaseKpiCard icon="expense"  label="Despesa anual projetada"  :value="fmt(annualKpis.projectedExpense)" color="var(--warning)" />
-      <BaseKpiCard icon="balance"  label="Saldo anual projetado"    :value="fmt(annualKpis.projectedNet)"     :color="annualKpis.projectedNet >= 0 ? 'var(--success)' : 'var(--danger)'" />
-      <BaseKpiCard icon="warning"  label="Meses de risco"           :value="`${annualKpis.riskMonths} meses`" color="var(--danger)" sub="Despesa > Receita" />
-    </div>
-
-    <!-- Tabela anual -->
-    <div class="neo-panel">
-      <div class="neo-panel-header" style="padding: var(--ds-space-4) var(--ds-space-5); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px">
-        <div>
-          <h3 style="font-size: 14px; font-weight: 700; color: var(--text)">Planejamento {{ year }}</h3>
-          <p style="font-size: 11px; color: var(--text3); margin-top: 2px">Receitas, despesas e saldo por mês</p>
-        </div>
-        <div style="display: flex; gap: 8px; align-items: center">
-          <button
-            style="display: inline-flex; align-items: center; gap: 5px; padding: 6px var(--ds-space-3); font-size: 12px; font-weight: 600; border-radius: var(--radius-xs); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border)"
-            @click="year--"
-          >
-            <BaseIcon name="chevron_down" :size="12" style="transform: rotate(90deg)" />
-          </button>
-          <span style="font-size: 14px; font-weight: 700; color: var(--text); min-width: 40px; text-align: center">{{ year }}</span>
-          <button
-            style="display: inline-flex; align-items: center; gap: 5px; padding: 6px var(--ds-space-3); font-size: 12px; font-weight: 600; border-radius: var(--radius-xs); cursor: pointer; background: transparent; color: var(--text2); border: 1px solid var(--border)"
-            @click="year++"
-          >
-            <BaseIcon name="chevron_down" :size="12" style="transform: rotate(-90deg)" />
-          </button>
-        </div>
-      </div>
-      <div style="overflow-x: auto">
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px">
-          <thead>
-            <tr style="background: var(--surface2)">
-              <th style="text-align: left; padding: var(--ds-space-3) var(--ds-space-5); font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Mês</th>
-              <th style="text-align: right; padding: var(--ds-space-3) var(--ds-space-4); font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Receitas</th>
-              <th style="text-align: right; padding: var(--ds-space-3) var(--ds-space-4); font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Despesas</th>
-              <th style="text-align: right; padding: var(--ds-space-3) var(--ds-space-4); font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Saldo</th>
-              <th style="text-align: right; padding: var(--ds-space-3) var(--ds-space-4); font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Acumulado</th>
-              <th style="text-align: center; padding: var(--ds-space-3) var(--ds-space-4); font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="row in yearRows"
-              :key="row.month"
-              :style="{
-                borderBottom: '1px solid var(--border)',
-                background: row.isCurrentMonth
-                  ? 'color-mix(in srgb, var(--primary) 6%, transparent)'
-                  : row.net < 0
-                    ? 'color-mix(in srgb, var(--danger) 4%, transparent)'
-                    : 'transparent'
-              }"
-            >
-              <td style="padding: var(--ds-space-3) var(--ds-space-5); font-weight: 600; color: var(--text)">
-                {{ row.label }}
-                <span v-if="row.isCurrentMonth" style="font-size: 10px; font-weight: 700; color: var(--primary); margin-left: 6px; background: var(--primary-dim); padding: 1px 6px; border-radius: 99px">Atual</span>
-              </td>
-              <td style="padding: var(--ds-space-3) var(--ds-space-4); text-align: right; color: var(--success); font-weight: 600">
-                {{ row.income > 0 ? fmt(row.income) : '—' }}
-              </td>
-              <td style="padding: var(--ds-space-3) var(--ds-space-4); text-align: right; color: var(--danger); font-weight: 600">
-                {{ row.expense > 0 ? fmt(row.expense) : '—' }}
-              </td>
-              <td style="padding: var(--ds-space-3) var(--ds-space-4); text-align: right; font-weight: 700" :style="{ color: row.net >= 0 ? 'var(--success)' : 'var(--danger)' }">
-                {{ row.income > 0 || row.expense > 0 ? fmt(row.net) : '—' }}
-              </td>
-              <td style="padding: var(--ds-space-3) var(--ds-space-4); text-align: right; font-weight: 700" :style="{ color: row.accumulated >= 0 ? 'var(--text2)' : 'var(--danger)' }">
-                {{ row.income > 0 || row.expense > 0 ? fmt(row.accumulated) : '—' }}
-              </td>
-              <td style="padding: var(--ds-space-3) var(--ds-space-4); text-align: center">
-                <span
-                  v-if="row.income > 0 || row.expense > 0"
-                  :style="{
-                    fontSize: '10px', fontWeight: 700,
-                    padding: '2px 8px', borderRadius: '99px',
-                    background: row.net < 0 ? 'color-mix(in srgb, var(--danger) 14%, transparent)' : 'color-mix(in srgb, var(--success) 14%, transparent)',
-                    color: row.net < 0 ? 'var(--danger)' : 'var(--success)'
-                  }"
-                >
-                  {{ row.net < 0 ? 'Déficit' : 'Superávit' }}
-                </span>
-                <span v-else style="font-size: 11px; color: var(--text3)">—</span>
-              </td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr style="background: var(--surface2); border-top: 2px solid var(--border)">
-              <td style="padding: var(--ds-space-3) var(--ds-space-5); font-weight: 800; color: var(--text)">Total {{ year }}</td>
-              <td style="padding: var(--ds-space-3) var(--ds-space-4); text-align: right; color: var(--success); font-weight: 800">{{ fmt(annualKpis.totalIncome) }}</td>
-              <td style="padding: var(--ds-space-3) var(--ds-space-4); text-align: right; color: var(--danger); font-weight: 800">{{ fmt(annualKpis.totalExpense) }}</td>
-              <td style="padding: var(--ds-space-3) var(--ds-space-4); text-align: right; font-weight: 800" :style="{ color: annualKpis.totalNet >= 0 ? 'var(--success)' : 'var(--danger)' }">{{ fmt(annualKpis.totalNet) }}</td>
-              <td style="padding: var(--ds-space-3) var(--ds-space-4)" />
-              <td style="padding: var(--ds-space-3) var(--ds-space-4)" />
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
-
-    <!-- Projeção de saldo acumulado -->
-    <div class="neo-panel" style="padding: var(--ds-space-4) var(--ds-space-5)">
-      <h3 style="font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: var(--ds-space-3)">Evolução do saldo acumulado</h3>
-      <BaseEmptyState v-if="lineData.length === 0" icon="planning" title="Sem dados" body="Não há lançamentos para o ano selecionado." />
-      <BaseLineChart v-else :data="lineData" :height="100" color="var(--primary)" />
-    </div>
-
+<div class="space-y-4">
+    <div class="grid grid-cols-2 gap-3 xl:grid-cols-4"><BaseKpiCard icon="income" label="Receita anual estimada" :value="fmt(annualKpis.projectedIncome)" color="var(--success)" /><BaseKpiCard icon="expense" label="Despesa anual estimada" :value="fmt(annualKpis.projectedExpense)" color="var(--warning)" /><BaseKpiCard icon="balance" label="Sobra anual estimada" :value="fmt(annualKpis.projectedNet)" :color="annualKpis.projectedNet >= 0 ? 'var(--success)' : 'var(--danger)'" /><BaseKpiCard icon="warning" label="Meses de risco" :value="`${annualKpis.riskMonths} meses`" color="var(--danger)" sub="Despesa maior que a receita" /></div>
+    <UCard :ui="{ body: 'p-0 sm:p-0' }">
+      <template #header><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-sm font-semibold text-highlighted">Planejamento {{ year }}</h3><p class="mt-1 text-xs text-muted">Por {{ store.settings.periodMode === 'competence' ? 'competência' : 'vencimento' }} · benefícios e itens fora do cálculo não entram.</p></div><div class="flex items-center gap-2"><BaseButton variant="ghost" aria-label="Ano anterior" @click="year--">‹</BaseButton><span class="text-sm font-medium tabular-nums">{{ year }}</span><BaseButton variant="ghost" aria-label="Próximo ano" @click="year++">›</BaseButton></div></div></template>
+      <UTable :data="yearRows" :columns="planningColumns" :ui="{ th: 'text-xs px-3 py-2', td: 'text-xs px-3 py-2' }">
+        <template #label-cell="{ row }"><span class="font-medium text-highlighted">{{ row.original.label }}</span><UBadge v-if="row.original.isCurrentMonth" class="ml-2" size="xs" variant="subtle">Atual</UBadge></template>
+        <template #income-cell="{ row }"><span class="text-success tabular-nums">{{ row.original.hasRecords ? fmt(row.original.income) : '—' }}</span></template>
+        <template #expense-cell="{ row }"><span class="text-error tabular-nums">{{ row.original.hasRecords ? fmt(row.original.expense) : '—' }}</span></template>
+        <template #net-cell="{ row }"><span :class="row.original.net < 0 ? 'text-error' : 'text-success'" class="tabular-nums">{{ row.original.hasRecords ? fmt(row.original.net) : '—' }}</span></template>
+        <template #accumulated-cell="{ row }"><span class="tabular-nums" :class="row.original.accumulated < 0 ? 'text-error' : 'text-default'">{{ row.original.hasRecords ? fmt(row.original.accumulated) : '—' }}</span></template>
+        <template #status-cell="{ row }"><UBadge v-if="row.original.hasRecords" :color="row.original.net < 0 ? 'error' : 'success'" variant="subtle" size="xs">{{ row.original.net < 0 ? 'Déficit' : 'Superávit' }}</UBadge><span v-else class="text-muted">Sem registros</span></template>
+      </UTable>
+    </UCard>
+    <UAlert color="info" variant="subtle" title="Como a estimativa é calculada" :description="`A média dos ${annualKpis.recordedMonths} meses com registros é aplicada aos meses sem registros. Não cria lançamentos nem prevê o saldo bancário. A tabela mostra somente valores cadastrados.`" />
+    <UCard title="Sobra cadastrada acumulada"><BaseEmptyState v-if="!lineData.length" icon="planning" title="Sem dados" body="Não há lançamentos para o ano selecionado." /><BaseLineChart v-else :data="lineData" :height="100" color="var(--primary)" /></UCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { buildAnnualPlan, financialToday } from './auxiliaryFinancialViews'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import BaseKpiCard    from '~/components/base/BaseKpiCard.vue'
 import BaseLineChart  from '~/components/base/BaseLineChart.vue'
-import BaseIcon       from '~/components/base/BaseIcon.vue'
 import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
 
 const store    = useFinanceStore()
 const currency = useCurrency()
 const fmt      = (v: number) => currency.format(v)
 
-const MONTH_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
-const now        = new Date()
-const year       = ref(now.getUTCFullYear())
-const currentMonthKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
+const currentMonthKey = financialToday(store.settings.timezone).slice(0, 7)
+const year = ref(Number(currentMonthKey.slice(0, 4)))
 
-const yearRows = computed(() => {
-  const map = new Map<string, { income: number; expense: number }>()
-  for (const entry of store.entries) {
-    const key = entry.dueDate.slice(0, 7)
-    if (!key.startsWith(String(year.value))) continue
-    const cur = map.get(key) ?? { income: 0, expense: 0 }
-    if (entry.kind === 'income') cur.income += entry.amount
-    else cur.expense += entry.amount
-    map.set(key, cur)
-  }
-
-  let accumulated = 0
-  return Array.from({ length: 12 }, (_, i) => {
-    const m     = String(i + 1).padStart(2, '0')
-    const month = `${year.value}-${m}`
-    const data  = map.get(month) ?? { income: 0, expense: 0 }
-    const net   = data.income - data.expense
-    if (data.income > 0 || data.expense > 0) accumulated += net
-    return {
-      month,
-      label:          `${MONTH_FULL[i]} ${year.value}`,
-      income:         data.income,
-      expense:        data.expense,
-      net,
-      accumulated,
-      isCurrentMonth: month === currentMonthKey
-    }
-  })
-})
-
-const annualKpis = computed(() => {
-  const rows           = yearRows.value.filter(r => r.income > 0 || r.expense > 0)
-  const totalIncome    = rows.reduce((s, r) => s + r.income, 0)
-  const totalExpense   = rows.reduce((s, r) => s + r.expense, 0)
-  const totalNet       = totalIncome - totalExpense
-  const riskMonths     = rows.filter(r => r.net < 0).length
-  const avgIncome      = rows.length > 0 ? totalIncome / rows.length : 0
-  const avgExpense     = rows.length > 0 ? totalExpense / rows.length : 0
-  const remainingMonths = 12 - rows.length
-  return {
-    totalIncome,
-    totalExpense,
-    totalNet,
-    projectedIncome:  totalIncome  + avgIncome  * remainingMonths,
-    projectedExpense: totalExpense + avgExpense  * remainingMonths,
-    projectedNet:     totalNet     + (avgIncome - avgExpense) * remainingMonths,
-    riskMonths
-  }
-})
+const annualPlan = computed(() => buildAnnualPlan(store.entries, store.accounts, year.value, store.settings.periodMode, currentMonthKey))
+const yearRows = computed(() => annualPlan.value.rows)
+const annualKpis = computed(() => annualPlan.value.totals)
 
 const lineData = computed(() =>
   yearRows.value
-    .filter(r => r.income > 0 || r.expense > 0)
+    .filter(r => r.hasRecords)
     .map(r => r.accumulated)
 )
+
+type PlanningRow = ReturnType<typeof buildAnnualPlan>['rows'][number]
+const planningColumns = computed<import('@nuxt/ui').TableColumn<PlanningRow>[]>(() => [
+  { accessorKey: 'label', header: 'Mês', footer: `Total ${year.value}` },
+  { accessorKey: 'income', header: 'Receitas', footer: fmt(annualKpis.value.totalIncome), meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { accessorKey: 'expense', header: 'Despesas', footer: fmt(annualKpis.value.totalExpense), meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { accessorKey: 'net', header: 'Sobra prevista', footer: fmt(annualKpis.value.totalNet), meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { accessorKey: 'accumulated', header: 'Acumulado', meta: { class: { th: 'text-right', td: 'text-right' } } },
+  { id: 'status', header: 'Status' },
+])
+
 </script>

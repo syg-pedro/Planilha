@@ -34,7 +34,7 @@ export const HELP_CONTENT: HelpGroup[] = [
     screenId: 'onboarding',
     label: 'Primeiros passos',
     icon: 'sparkle',
-    intro: 'Escolha como deseja começar: importar o modelo Excel ou cadastrar as informações essenciais pelo aplicativo.',
+    intro: 'Comece com um lançamento na Planilha. Você pode cadastrar contas ou importar dados quando precisar.',
     topics: [
       {
         id: 'modelo-excel',
@@ -50,9 +50,9 @@ export const HELP_CONTENT: HelpGroup[] = [
         id: 'começar-manual',
         title: 'Começar pelo aplicativo',
         steps: [
-          { icon: 'card', text: 'Cadastre primeiro os cartões, contas bancárias e benefícios que sua família utiliza.' },
-          { icon: 'subscription', text: 'Inclua receitas e despesas fixas em Assinaturas para que os próximos meses sejam criados automaticamente.' },
-          { icon: 'grid', text: 'Use a Planilha ou a Lista para registrar movimentações avulsas e acompanhar os pagamentos.' },
+          { icon: 'plus', text: 'Abra a Planilha e escolha Novo lançamento. Informe descrição, valor e vencimento.' },
+          { icon: 'card', text: 'Escolha uma conta existente ou cadastre suas contas em Contas e cartões. A conta pode ser preenchida depois.' },
+          { icon: 'grid', text: 'Acompanhe o mês na Planilha e confirme os pagamentos. Use Assinaturas, em Mais ferramentas, para configurar recorrências.' },
         ],
       },
     ],
@@ -61,16 +61,26 @@ export const HELP_CONTENT: HelpGroup[] = [
     screenId: 'planilha',
     label: 'Planilha',
     icon: 'grid',
-    intro: 'A matriz simples reúne os valores de 12 meses e três totais principais. A matriz completa acrescenta limites, vencimentos e ferramentas de organização. Use a Lista para acompanhar os lançamentos de um mês.',
+    intro: 'Registre e acompanhe receitas, despesas e pagamentos. Escolha um mês para trabalhar ou compare o período na Planilha.',
     topics: [
       {
         id: 'alternar-matriz-lista',
         title: 'Escolher a visualização da planilha',
         steps: [
-          { icon: 'grid', text: 'Escolha Simples, Completa ou Lista no topo. No celular, use o seletor de visualização. A última versão da matriz escolhida fica salva neste navegador.' },
-          { icon: 'grid', text: 'Na versão simples, as colunas são meses e as linhas são despesas, faturas e receitas. Clique em um valor para consultar os detalhes. Use Todos os totais para consultar o resumo do mês e do período; no celular, toque no resumo inferior.' },
-          { icon: 'reports', text: 'A Lista mostra os lançamentos de um único mês, em forma de tabela.' },
+          { icon: 'grid', text: 'Escolha Planilha para organizar valores por mês ou Lista para consultar cada lançamento.' },
+          { icon: 'calendar', text: 'No período, escolha Um mês, Comparar 3 meses ou Visão anual. Use o seletor de mês, as setas ou Hoje para navegar.' },
+          { icon: 'reports', text: 'No celular, a Planilha começa com um mês para facilitar a leitura. Toque em um valor para consultar ou editar seus lançamentos.' },
         ],
+      },
+      {
+        id: 'filtrar-lancamentos',
+        title: 'Encontrar e filtrar lançamentos',
+        steps: [
+          { icon: 'search', text: 'Digite uma descrição na busca para localizar os lançamentos.' },
+          { icon: 'settings', text: 'Abra Filtros para escolher a data de referência, o tipo, o status ou uma conta.' },
+          { icon: 'calendar', text: 'Vencimento/recebimento organiza pela data de pagamento esperada. Competência usa o mês ao qual a movimentação pertence.' },
+        ],
+        tip: 'Confira os filtros ativos e o período indicado antes de comparar valores.',
       },
       {
         id: 'editar-valor',
@@ -115,7 +125,7 @@ export const HELP_CONTENT: HelpGroup[] = [
         id: 'renomear-coluna',
         title: 'Renomear e organizar linhas',
         steps: [
-          { icon: 'menu', text: 'Na matriz completa, abra os três pontinhos ao lado da descrição da linha.' },
+          { icon: 'menu', text: 'Na visualização Planilha, abra os três pontinhos ao lado da descrição da linha.' },
           { icon: 'edit', text: 'Use Renomear para alterar a descrição do grupo. Em cartões, use Editar cartão.' },
           { icon: 'grid', text: 'Use Mover para cima ou Mover para baixo para organizar a leitura dentro de cada grupo.' },
         ],
@@ -125,7 +135,7 @@ export const HELP_CONTENT: HelpGroup[] = [
         id: 'excluir-coluna',
         title: 'Excluir lançamentos de uma linha',
         steps: [
-          { icon: 'menu', text: 'Na matriz completa, abra os três pontinhos ao lado da linha.' },
+          { icon: 'menu', text: 'Na visualização Planilha, abra os três pontinhos ao lado da linha.' },
           { icon: 'trash', text: 'Escolha Excluir lançamentos e leia a quantidade de itens abrangidos.' },
           { icon: 'warning', text: 'A confirmação remove os lançamentos do grupo, inclusive os que estão fora do período. Para remover apenas um item, abra sua edição.' },
         ],
@@ -134,7 +144,7 @@ export const HELP_CONTENT: HelpGroup[] = [
         id: 'excluir-mes',
         title: 'Ocultar meses ou zerar seus valores',
         steps: [
-          { icon: 'menu', text: 'Na matriz completa, abra os três pontinhos no cabeçalho do mês para ver suas ações.' },
+          { icon: 'menu', text: 'Na visualização Planilha, abra os três pontinhos no cabeçalho do mês para ver suas ações.' },
           { icon: 'grid', text: 'Ocultar meses muda apenas sua visualização. Use Mostrar meses ocultos para restaurar as colunas.' },
           { icon: 'warning', text: 'Zerar valores exige confirmação e mantém os registros com valor zero, pela data escolhida na matriz.' },
         ],
@@ -143,9 +153,9 @@ export const HELP_CONTENT: HelpGroup[] = [
         id: 'periodo-resumo-matriz',
         title: 'Entender o período e o resumo mensal',
         steps: [
-          { icon: 'calendar', text: 'Em Opções, escolha 12 meses a partir de um mês inicial ou Ano civil. Na matriz completa do desktop, os filtros aparecem diretamente. Use as setas para navegar e Hoje para retornar ao período atual.' },
-          { icon: 'balance', text: 'O rodapé da versão simples no desktop mostra despesas, receitas e sobra prevista. Todos os totais abre o resumo adicional; a versão completa exibe os seis totais na grade. No celular, toque no resumo fixo para consultar o mês e o período.' },
-          { icon: 'grid', text: 'Os totais do período incluem todos os 12 meses, mesmo com busca ou colunas ocultas. Benefícios e itens excluídos ficam no grupo Fora do saldo.' },
+          { icon: 'calendar', text: 'Escolha Um mês, Comparar 3 meses ou Visão anual. Use o seletor de mês e as setas; Hoje retorna ao mês atual.' },
+          { icon: 'balance', text: 'O rodapé da Planilha mostra despesas, receitas e sobra prevista. Confira também o resumo do mês e os detalhes de valores pagos e pendentes.' },
+          { icon: 'grid', text: 'Confira o período indicado junto aos totais. Benefícios e itens excluídos ficam no grupo Fora do saldo.' },
         ],
         tip: 'Sobra prevista não é saldo bancário. Meses sem receitas ou despesas recebem um aviso para ajudar a identificar cadastros incompletos.',
       },
@@ -153,7 +163,7 @@ export const HELP_CONTENT: HelpGroup[] = [
         id: 'limites-matriz',
         title: 'Consultar vencimentos e limites dos cartões',
         steps: [
-          { icon: 'card', text: 'Toque na fatura para consultar limite, fechamento e disponível estimado em qualquer versão. Na matriz completa, o dia aparece abaixo do nome no celular; no desktop, ative Vencimentos e limites.' },
+          { icon: 'card', text: 'Toque na fatura para consultar limite, fechamento e disponível estimado. Em Filtros, ative Mostrar limites e totais por linha quando precisar dessas informações na grade.' },
           { icon: 'grid', text: 'Clique na célula de uma fatura para consultar os itens, fechamento, vencimento, limite e comprometimento registrado.' },
           { icon: 'balance', text: 'O disponível estimado desconta todas as despesas pendentes do cartão, inclusive parcelas futuras fora do período.' },
         ],
@@ -163,11 +173,11 @@ export const HELP_CONTENT: HelpGroup[] = [
         id: 'leitura-selecao-matriz',
         title: 'Ajustar a leitura e somar células',
         steps: [
-          { icon: 'grid', text: 'A matriz usa densidade compacta. Ampliar ocupa a tela; Reduzir ou Esc retorna. Essas ações ficam em Opções na versão simples e no celular.' },
-          { icon: 'search', text: 'A busca filtra descrições e contas, mantendo os totais gerais. Recolha grupos pelo seu título quando quiser concentrar a leitura.' },
-          { icon: 'balance', text: 'Ative Selecionar células e toque nos valores desejados. Na versão simples e no celular, use Opções para ativar. No celular, Concluir encerra a seleção; no desktop, Shift e arrastar também selecionam intervalos.' },
+          { icon: 'grid', text: 'A Planilha usa densidade compacta. Ampliar ocupa a tela; Reduzir ou Esc retorna.' },
+          { icon: 'search', text: 'A busca filtra descrições e contas. Quando houver filtros, os totais indicam os lançamentos filtrados. Recolha grupos pelo título para concentrar a leitura.' },
+          { icon: 'balance', text: 'Ative Selecionar células e toque nos valores desejados para somá-los. Concluir encerra a seleção; no desktop, Shift e arrastar também selecionam intervalos.' },
         ],
-        tip: 'No celular, deslize para comparar dois meses ou use o seletor para saltar a outro mês. As descrições ficam fixas e a seleção é mantida ao navegar entre meses. No desktop, as setas do teclado navegam entre células.',
+        tip: 'No celular, escolha Comparar 3 meses ou Visão anual quando precisar comparar períodos. Na grade, as descrições ficam fixas; no desktop, as setas do teclado navegam entre células.',
       },
       {
         id: 'escolher-mes-lista',
@@ -184,7 +194,7 @@ export const HELP_CONTENT: HelpGroup[] = [
         steps: [
           { icon: 'reports', text: 'Na aba "Lista", clique em "+ Novo lançamento".' },
           { icon: 'edit', text: 'Preencha descrição, valor, tipo (receita/despesa), conta e categoria.' },
-          { icon: 'check', text: 'Salve. Ele aparecerá tanto na Lista quanto na Matriz.' },
+          { icon: 'check', text: 'Salve. Ele aparecerá nas visualizações Lista e Planilha.' },
         ],
       },
     ],
@@ -227,7 +237,7 @@ export const HELP_CONTENT: HelpGroup[] = [
   },
   {
     screenId: 'cartoes',
-    label: 'Cartões e Contas',
+    label: 'Contas e cartões',
     icon: 'card',
     intro: 'Cadastre seus cartões de crédito e contas bancárias para organizar de onde sai cada lançamento.',
     topics: [
@@ -319,7 +329,7 @@ export const HELP_CONTENT: HelpGroup[] = [
   },
   {
     screenId: 'dashboard',
-    label: 'Dashboard',
+    label: 'Resumo',
     icon: 'dashboard',
     intro: 'Visão geral rápida da sua situação financeira no mês atual.',
     topics: [
@@ -337,7 +347,7 @@ export const HELP_CONTENT: HelpGroup[] = [
         title: 'Ir para outras áreas',
         steps: [
           { icon: 'dashboard', text: 'Use os cartões e atalhos para pular direto para a Planilha, Alertas, etc.' },
-          { icon: 'menu', text: 'O menu lateral dá acesso a todas as telas a qualquer momento.' },
+          { icon: 'menu', text: 'No computador, use o menu lateral. No celular, Planilha, Resumo e Contas estão na barra inferior; as demais ferramentas ficam em Mais.' },
         ],
       },
     ],
@@ -416,7 +426,7 @@ export const HELP_CONTENT: HelpGroup[] = [
         id: 'trocar-tema',
         title: 'Trocar o tema (claro/escuro)',
         steps: [
-          { icon: 'settings', text: 'Abra Configurações no menu lateral.' },
+          { icon: 'settings', text: 'Abra Configurações no rodapé do menu lateral ou em Mais, no celular.' },
           { icon: 'sparkle', text: 'Escolha o tema desejado (claro, escuro ou automático).' },
           { icon: 'check', text: 'A mudança é aplicada na hora.' },
         ],

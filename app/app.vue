@@ -1,46 +1,27 @@
 <template>
-  <main v-if="!appReady" class="app-loading" aria-busy="true" aria-live="polite">
-    <div class="app-loading__content">
-      <span class="app-loading__mark" aria-hidden="true">$</span>
-      <p class="app-loading__eyebrow">PLANILHA</p>
-      <div class="app-loading__bar" aria-hidden="true"><span /></div>
-      <p class="app-loading__message">Preparando sua planilha...</p>
-    </div>
-  </main>
-
-  <NuxtLayout v-else :key="layoutName" :name="layoutName">
-    <NuxtPage />
-  </NuxtLayout>
-  <span v-if="appReady" data-testid="app-ready" hidden aria-hidden="true" />
-  <PwaInstallBanner v-if="!isNativePlatform" />
-
-  <Teleport to="body">
-    <Transition name="ota-update">
-      <div v-if="visibleUpdate" class="ota-update-backdrop" role="presentation">
-        <section class="ota-update-dialog" role="dialog" aria-modal="true" aria-labelledby="ota-update-title">
-          <p class="ota-update-dialog__eyebrow">{{ updateEyebrow }}</p>
-          <h2 id="ota-update-title">{{ updateTitle }}</h2>
-          <ul>
-            <li v-for="note in visibleUpdate.notes" :key="note">{{ note }}</li>
-          </ul>
-          <p class="ota-update-dialog__instruction">
-            {{ updateInstruction }}
-          </p>
-          <div class="ota-update-dialog__actions">
-            <button type="button" class="ota-update-dialog__later" @click="dismissAvailableUpdate">Depois</button>
-            <a
-              v-if="releasePageUrl"
-              :href="releasePageUrl"
-              class="ota-update-dialog__apply"
-              target="_blank"
-              rel="noopener noreferrer"
-            >Abrir página no GitHub</a>
-            <button v-else type="button" class="ota-update-dialog__apply" @click="reloadForWebUpdate">Recarregar página</button>
-          </div>
-        </section>
-      </div>
-    </Transition>
-  </Teleport>
+  <UApp :locale="pt_br" :toaster="{ position: 'top-right' }">
+    <NuxtPwaManifest />
+    <main v-if="!appReady" class="app-loading" aria-busy="true" aria-live="polite">
+      <UCard class="w-full max-w-xs text-center" :ui="{ body: 'space-y-4 p-6' }">
+        <UIcon name="i-lucide-table-2" class="size-8 text-primary" />
+        <p class="font-semibold text-highlighted">Planilha</p>
+        <UProgress size="xs" aria-label="Preparando sua planilha" />
+        <p class="text-sm text-muted">Preparando sua planilha…</p>
+      </UCard>
+    </main>
+    <NuxtLayout v-else :key="layoutName" :name="layoutName"><NuxtPage /></NuxtLayout>
+    <span v-if="appReady" data-testid="app-ready" hidden aria-hidden="true" />
+    <PwaInstallBanner v-if="!isNativePlatform" />
+    <BaseModal :open="Boolean(visibleUpdate)" :title="updateTitle" :subtitle="updateEyebrow" @close="dismissAvailableUpdate">
+      <ul class="list-disc space-y-2 pl-5 text-sm text-muted"><li v-for="note in visibleUpdate?.notes" :key="note">{{ note }}</li></ul>
+      <UAlert class="mt-4" color="neutral" variant="subtle" icon="i-lucide-info" :description="updateInstruction" />
+      <template #footer>
+        <UButton color="neutral" variant="ghost" @click="dismissAvailableUpdate">Depois</UButton>
+        <UButton v-if="releasePageUrl" :to="releasePageUrl" target="_blank" rel="noopener noreferrer" icon="i-lucide-external-link">Abrir página no GitHub</UButton>
+        <UButton v-else icon="i-lucide-refresh-cw" @click="reloadForWebUpdate">Recarregar página</UButton>
+      </template>
+    </BaseModal>
+  </UApp>
 </template>
 
 <script setup lang="ts">
@@ -50,6 +31,7 @@ import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { isVersionNewer } from '#shared/version'
+import { pt_br } from '@nuxt/ui/locale'
 
 type ApkUpdate = {
   type: 'apk'
@@ -98,7 +80,6 @@ const updateInstruction = computed(() => isApkUpdate.value
   ? 'Uma nova versão está disponível. Abra a página no GitHub, baixe o APK e instale por cima da versão atual.'
   : 'Uma versão mais recente está disponível. Recarregue para continuar com as melhorias.')
 let webUpdateTimer: number | undefined
-const activeScreen = useState('finance-screen', () => 'dashboard')
 const AUTH_ROUTES = new Set(['/login', '/signup'])
 
 const layoutName = computed(() => {
@@ -140,7 +121,7 @@ const notifyAboutUpdate = async (update: AvailableUpdate | null) => {
     }
 
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { body, icon: '/icon-192.png' })
+      new Notification(title, { body, icon: '/icon-192-v2.png' })
     }
   } catch {
     // A notificacao e complementar; o modal continua sendo o aviso principal.
@@ -238,17 +219,6 @@ watch(user, async (newUser, oldUser) => {
   }
 }, { immediate: false })
 
-watch(
-  () => `${store.initialized}-${store.settings.onboarding.status}-${store.accounts.length}-${store.categories.length}-${store.rules.length}-${store.entries.length}`,
-  () => {
-    const isEmptyFinancialSpace = store.accounts.length === 0 && store.categories.length === 0 && store.rules.length === 0 && store.entries.length === 0
-    if (store.initialized && store.settings.onboarding.status === 'new' && isEmptyFinancialSpace && activeScreen.value === 'dashboard') {
-      activeScreen.value = 'onboarding'
-    }
-  },
-  { immediate: true }
-)
-
 onMounted(async () => {
   // O tema padrão precisa ser aplicado no cliente antes de qualquer chamada remota.
   // Assim, uma sincronização do head durante a hidratação não pode exibir os tokens claros.
@@ -299,199 +269,5 @@ onUnmounted(() => {
 </script>
 
 <style>
-.app-loading {
-  display: grid;
-  min-height: 100dvh;
-  place-items: center;
-  padding: var(--ds-space-6);
-  background: var(--bg);
-  color: var(--text);
-}
-
-.app-loading__content {
-  display: grid;
-  width: min(100%, 320px);
-  justify-items: center;
-  gap: var(--ds-space-4);
-}
-
-.app-loading__mark {
-  display: grid;
-  width: 58px;
-  height: 58px;
-  place-items: center;
-  border: 3px solid var(--border);
-  background: var(--primary);
-  color: var(--on-primary);
-  box-shadow: var(--shadow-md);
-  font-family: var(--ds-font-family-mono);
-  font-size: 30px;
-  font-weight: 900;
-}
-
-.app-loading__eyebrow,
-.app-loading__message {
-  margin: 0;
-  text-align: center;
-}
-
-.app-loading__eyebrow {
-  color: var(--text);
-  font-family: var(--ds-font-family-mono);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-}
-
-.app-loading__message {
-  color: var(--text2);
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.app-loading__bar {
-  width: 100%;
-  height: 10px;
-  overflow: hidden;
-  border: 2px solid var(--border);
-  background: var(--surface2);
-}
-
-.app-loading__bar span {
-  display: block;
-  width: 42%;
-  height: 100%;
-  background: var(--primary);
-  animation: app-loading-progress 1s ease-in-out infinite;
-}
-
-@keyframes app-loading-progress {
-  from { transform: translateX(-105%); }
-  to { transform: translateX(340%); }
-}
-
-.ota-update-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  box-sizing: border-box;
-  padding: var(--ds-space-4);
-  padding-top: max(var(--ds-space-4), env(safe-area-inset-top, 0px));
-  padding-right: max(var(--ds-space-4), env(safe-area-inset-right, 0px));
-  padding-bottom: max(var(--ds-space-4), env(safe-area-inset-bottom, 0px));
-  padding-left: max(var(--ds-space-4), env(safe-area-inset-left, 0px));
-  overflow: hidden;
-  background: var(--overlay);
-  backdrop-filter: blur(3px);
-}
-
-.ota-update-dialog {
-  box-sizing: border-box;
-  width: calc(100vw - 28px);
-  width: min(420px, calc(100dvw - 28px));
-  max-width: calc(100vw - 28px);
-  max-width: calc(100dvw - 28px);
-  max-height: calc(100vh - 28px);
-  max-height: calc(100dvh - 28px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  border: 3px solid var(--border);
-  background: var(--surface);
-  box-shadow: 8px 8px 0 var(--ds-shadow-color);
-  padding: var(--ds-space-5);
-}
-
-.ota-update-dialog__eyebrow {
-  margin: 0 0 6px;
-  color: var(--primary);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-}
-
-.ota-update-dialog h2 {
-  margin: 0;
-  color: var(--text);
-  font-size: 22px;
-  line-height: 1.15;
-}
-
-.ota-update-dialog ul {
-  display: grid;
-  gap: 8px;
-  margin: 18px 0;
-  padding-left: var(--ds-space-5);
-  color: var(--text2);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.ota-update-dialog__instruction {
-  margin: 0;
-  border: 1px solid var(--border);
-  background: var(--primary-dim);
-  color: var(--text);
-  padding: var(--ds-space-3);
-  font-size: 13px;
-  font-weight: 700;
-  overflow-wrap: anywhere;
-}
-
-.ota-update-dialog__actions {
-  display: flex;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: var(--ds-space-3);
-  margin-top: var(--ds-space-5);
-}
-
-.ota-update-dialog button,
-.ota-update-dialog__apply {
-  min-height: var(--ds-control-height);
-  border: 2px solid var(--border);
-  padding: 8px var(--ds-space-3);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.ota-update-dialog__later {
-  background: var(--surface2);
-  color: var(--text2);
-}
-
-.ota-update-dialog__apply {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  background: var(--primary);
-  color: var(--bg);
-  box-shadow: var(--shadow-sm);
-  text-decoration: none;
-  text-align: center;
-}
-
-.ota-update-enter-active,
-.ota-update-leave-active {
-  transition: opacity 0.18s ease;
-}
-
-.ota-update-enter-from,
-.ota-update-leave-to {
-  opacity: 0;
-}
-
-@media (max-width: 480px) {
-  .ota-update-dialog { padding: var(--ds-space-5); }
-  .ota-update-dialog__actions {
-    align-items: stretch;
-    flex-direction: column-reverse;
-  }
-  .ota-update-dialog button,
-  .ota-update-dialog__apply { width: 100%; }
-}
+.app-loading { display: grid; min-height: 100dvh; place-items: center; padding: var(--ds-space-6); background: var(--ui-bg); }
 </style>

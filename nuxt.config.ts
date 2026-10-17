@@ -39,32 +39,16 @@ const webBuildVersion = resolveWebBuildVersion()
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  css: [
-    '~/assets/css/main.css',
-    'ag-grid-community/styles/ag-grid.css',
-    'ag-grid-community/styles/ag-theme-quartz.css'
-  ],
-  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@vite-pwa/nuxt', '@nuxt/eslint'],
+  css: ['~/assets/css/main.css'],
+  modules: ['@pinia/nuxt', '@nuxt/ui', '@vite-pwa/nuxt', '@nuxt/eslint'],
+  ui: { fonts: false, colorMode: false },
+  icon: { serverBundle: { collections: ['lucide', 'bi', 'iconoir', 'ri', 'material-symbols', 'ph', 'tabler', 'heroicons'] } },
   nitro: {
     ...(envNitroOutputDir ? { output: { dir: envNitroOutputDir } } : {}),
     // Encaminha a API no desenvolvimento sem exigir CORS no backend remoto.
     ...(envDevApiProxyTarget
       ? { devProxy: { '/api': { target: `${envDevApiProxyTarget.replace(/\/$/, '')}/api`, changeOrigin: true } } }
       : {})
-  },
-  vite: {
-    optimizeDeps: {
-      include: [
-        'ag-grid-community',
-        'ag-grid-vue3',
-        '@fullcalendar/core',
-        '@fullcalendar/daygrid',
-        '@fullcalendar/interaction',
-        '@fullcalendar/multimonth',
-        '@fullcalendar/vue3',
-        '@fullcalendar/core/locales/pt-br'
-      ]
-    }
   },
   runtimeConfig: {
     editKey: process.env.EDIT_KEY || 'demo-finance-key',
@@ -95,8 +79,8 @@ export default defineNuxtConfig({
       name: 'Planilha',
       short_name: 'Planilha',
       description: 'Organize despesas, receitas e cartões em uma planilha financeira.',
-      theme_color: '#090b10',
-      background_color: '#090b10',
+      theme_color: '#0F172A',
+      background_color: '#0F172A',
       display: 'standalone',
       start_url: '/',
       id: '/',
@@ -106,16 +90,22 @@ export default defineNuxtConfig({
       prefer_related_applications: false,
       icons: [
         {
-          src: '/icon-192.png',
+          src: '/icon-192-v2.png',
           sizes: '192x192',
           type: 'image/png',
           purpose: 'any'
         },
         {
-          src: '/icon-512.png',
+          src: '/icon-512-v2.png',
           sizes: '512x512',
           type: 'image/png',
-          purpose: 'any maskable'
+          purpose: 'any'
+        },
+        {
+          src: '/icon-maskable-512-v2.png',
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'maskable'
         }
       ]
     },
@@ -124,7 +114,7 @@ export default defineNuxtConfig({
       navigateFallback: null,
       skipWaiting: true,
       clientsClaim: true,
-      globPatterns: ['**/*.{js,css,png,svg,ico,webmanifest}'],
+      globPatterns: ['**/*.{js,css,png,svg,ico,webmanifest,woff2}'],
       runtimeCaching: [
         {
           urlPattern: /^https:\/\/planilha-cyan\.vercel\.app\/api\/.*/i,
@@ -145,19 +135,20 @@ export default defineNuxtConfig({
     head: {
       title: 'Planilha',
       htmlAttrs: {
-        class: 'dark',
-        'data-theme': 'dark'
+        'data-theme': 'light'
       },
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap' },
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg?v=1' },
-        { rel: 'apple-touch-icon', href: '/icon-192.png' }
+        { rel: 'icon', type: 'image/x-icon', sizes: '16x16 32x32 48x48', href: '/favicon.ico?v=2' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png?v=2' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg?v=2' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png?v=2' }
       ],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
-        { name: 'theme-color', content: '#090b10' },
+        { name: 'theme-color', content: '#0F172A' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
         { name: 'apple-mobile-web-app-title', content: 'Planilha' },

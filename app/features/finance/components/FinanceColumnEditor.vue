@@ -4,16 +4,21 @@
     :entry="selectedEntry"
     :accounts="store.accounts"
     :categories="store.categories"
+    :busy="busy"
+    :error="error"
     @close="emit('close')"
     @save="save"
     @delete="remove"
   >
     <template #context>
       <div class="column-entry-picker">
-        <label class="column-entry-picker__label">Lançamento de {{ title }}</label>
-        <BaseDropdown v-model="selectedId" :options="entryOptions" />
-        <p class="column-entry-picker__hint">As alterações serão aplicadas somente ao lançamento selecionado.</p>
-        <p v-if="error" class="column-entry-picker__error" role="alert">{{ error }}</p>
+        <BaseDropdown
+          v-model="selectedId"
+          :label="`Lançamento de ${title}`"
+          :options="entryOptions"
+          :disabled="busy"
+          hint="As alterações serão aplicadas somente ao lançamento selecionado."
+        />
       </div>
     </template>
   </FinanceEntryEditorModal>
@@ -30,15 +35,25 @@ const emit = defineEmits<{ close: [] }>()
 const store = useFinanceStore()
 const currency = useCurrency()
 const { formatDate } = useDateFormat()
-const entries = computed(() => store.entries
-  .filter(entry => entry.title === props.title && entry.kind === props.kind)
-  .sort((a, b) => a.dueDate.localeCompare(b.dueDate)))
-const entryOptions = computed(() => entries.value.map(entry => ({
-  value: entry.id,
-  label: `${formatDate(entry.dueDate)} — ${currency.format(entry.amount)}`,
-})))
-const selectedId = ref(entries.value.find(entry => entry.dueDate.startsWith(props.month))?.id ?? entries.value[0]?.id ?? '')
-const selectedEntry = computed(() => entries.value.find(entry => entry.id === selectedId.value) ?? null)
+const entries = computed(() =>
+  store.entries
+    .filter((entry) => entry.title === props.title && entry.kind === props.kind)
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate)),
+)
+const entryOptions = computed(() =>
+  entries.value.map((entry) => ({
+    value: entry.id,
+    label: `${formatDate(entry.dueDate)} — ${currency.format(entry.amount)}`,
+  })),
+)
+const selectedId = ref(
+  entries.value.find((entry) => entry.dueDate.startsWith(props.month))?.id ??
+    entries.value[0]?.id ??
+    '',
+)
+const selectedEntry = computed(
+  () => entries.value.find((entry) => entry.id === selectedId.value) ?? null,
+)
 const busy = ref(false)
 const error = ref('')
 
@@ -60,8 +75,9 @@ const remove = (id: string) => persist([], [id])
 </script>
 
 <style scoped>
-.column-entry-picker { display: flex; flex-direction: column; gap: 6px; }
-.column-entry-picker__label { color: var(--text3); font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
-.column-entry-picker__hint { color: var(--text3); font-size: 12px; line-height: 1.4; }
-.column-entry-picker__error { color: var(--danger); font-size: 12px; font-weight: 600; }
+.column-entry-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 </style>

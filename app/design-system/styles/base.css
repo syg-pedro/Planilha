@@ -10,31 +10,15 @@ html {
 
 body {
   font-family: var(--ds-font-family-sans);
-  font-weight: 500;
-  line-height: 1.45;
+  font-weight: 400;
+  line-height: 1.5;
   color: var(--text);
   background: var(--bg);
-  transition: background var(--ds-motion-base) linear, color var(--ds-motion-base) linear;
+  transition:
+    background var(--ds-motion-base) linear,
+    color var(--ds-motion-base) linear;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--ds-font-family-display);
-  font-weight: 800;
-  letter-spacing: -0.025em;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
 }
 
 button,
@@ -42,35 +26,24 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
-a {
-  color: var(--primary);
-  font-weight: 700;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
-}
-
 :focus-visible {
-  outline: 3px solid var(--accent);
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
 /* Elimina o delay de 300ms em tap no mobile */
 button,
 a,
-[role="button"],
-input[type="submit"],
-input[type="button"],
+[role='button'],
+input[type='submit'],
+input[type='button'],
 label {
   touch-action: manipulation;
 }
 
-* {
-  border-color: var(--ds-color-border-default);
-}
-
 ::selection {
-  color: #111111;
-  background: var(--accent);
+  color: var(--text);
+  background: var(--primary-dim);
 }
 
 ::-webkit-scrollbar {
@@ -100,15 +73,4 @@ samp,
 .ds-money {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
 }

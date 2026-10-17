@@ -1,762 +1,203 @@
 <template>
-  <div class="app-shell" :style="{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--text)', display: 'flex' }">
-
-    <!-- Desktop sidebar -->
-    <aside
-      v-if="!isMobile"
-      class="app-sidebar"
-      :style="{
-        width: collapsed ? '68px' : '230px',
-        minHeight: '100vh',
-        position: 'sticky',
-        top: 0,
-        flexShrink: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'var(--surface)',
-        borderRight: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-sm)',
-        transition: 'width .25s cubic-bezier(.4,0,.2,1)',
-        overflow: 'hidden',
-        zIndex: 100,
-        height: '100vh',
-      }"
-    >
-      <!-- Logo -->
-      <div :style="{ display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)', padding: '0 var(--ds-space-4)', borderBottom: '2px solid var(--border)', height: '48px', flexShrink: 0, overflow: 'hidden' }">
-        <div class="app-brand-mark" style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0">
-          <BaseIcon name="balance" :size="17" color="var(--on-primary)" />
-        </div>
-        <div :style="{ overflow: 'hidden', whiteSpace: 'nowrap', opacity: collapsed ? 0 : 1, transition: 'opacity .15s', pointerEvents: collapsed ? 'none' : 'auto' }">
-          <p style="font-size: 14px; font-weight: 800; color: var(--text)">Planilha <span class="app-version-inline">{{ appVersion }}</span></p>
-        </div>
-      </div>
-
-      <!-- Nav -->
-      <nav style="flex: 1; padding: 6px 6px; overflow-y: auto; overflow-x: hidden">
-        <template v-for="(group, gi) in NAV_GROUPS" :key="group.id">
-          <!-- Divider between groups -->
-          <div v-if="gi > 0 && !collapsed" style="height: 1px; background: var(--border); margin: 4px 8px" />
-          <div style="margin-bottom: 2px">
-            <!-- Group header -->
-            <p
-              v-if="!collapsed && group.label"
-              style="margin: 4px 8px; color: var(--text3); font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase"
-            >{{ group.label }}</p>
-            <!-- Items -->
-            <button
-                v-for="item in group.items"
-                :key="item.id"
-                class="app-nav-item"
-                :class="{ 'app-nav-item--active': isItemActive(item.id) }"
-                :title="collapsed ? item.label : ''"
-                :style="{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: collapsed ? '8px 0' : '7px 10px',
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  borderRadius: 'var(--radius-xs)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  fontWeight: 600,
-                  fontSize: '13px',
-                  background: isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent',
-                  color: isItemActive(item.id) ? 'var(--primary)' : 'var(--text2)',
-                  transition: 'background .12s, color .12s',
-                  width: '100%',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                }"
-                @mouseenter="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'var(--surface2)'"
-                @mouseleave="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent'"
-                @click="goTo(item.id)"
-              >
-                <span v-if="isItemActive(item.id)" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
-                <span style="position: relative; flex-shrink: 0">
-                  <BaseIcon :name="item.icon" :size="15" :color="isItemActive(item.id) ? 'var(--primary)' : 'currentColor'" />
-                  <span
-                    v-if="item.id === 'alerts' && alertCount > 0"
-                    style="position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: var(--on-danger)"
-                  >{{ alertCount }}</span>
-                </span>
-                <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">{{ item.label }}</span>
-            </button>
-          </div>
+  <UDashboardGroup unit="px" :persistent="false" storage-key="planilha-workspace" class="app-shell" :class="{ 'app-shell--mobile': isMobile, 'app-shell--keyboard': keyboardOpen }">
+    <a class="app-skip-link" href="#main-content">Ir para o conteúdo</a>
+    <UDashboardSidebar v-if="!isMobile" id="navigation" v-model:collapsed="collapsed" collapsible :default-size="216" :min-size="216" :max-size="280" :collapsed-size="64" :toggle="false" :ui="sidebarUi" aria-label="Menu principal">
+      <template #header>
+        <UButton :to="linkTo('planilha')" icon="i-lucide-grid-2x2" :label="collapsed ? undefined : 'Planilha'" :square="collapsed" color="primary" variant="link" size="lg" aria-label="Planilha, página principal" class="w-full justify-start" />
+      </template>
+      <UNavigationMenu :items="primaryMenu" :collapsed="collapsed" tooltip orientation="vertical" as="nav" aria-label="Principal" :ui="navigationUi">
+        <template #list-trailing>
+          <UCollapsible v-model:open="secondaryOpen" class="mt-2">
+            <UButton icon="i-lucide-menu" :label="collapsed ? undefined : 'Mais ferramentas'" :trailing-icon="collapsed ? undefined : 'i-lucide-chevron-down'" color="neutral" variant="ghost" :square="collapsed" block :aria-label="collapsed ? 'Mais ferramentas' : undefined" class="min-h-10 justify-start" @click="expandSidebar" />
+            <template #content>
+              <UNavigationMenu v-if="!collapsed" :items="secondaryMenu" orientation="vertical" as="div" aria-label="Mais ferramentas" :ui="{ ...navigationUi, root: 'mt-1 ms-2 border-s border-default ps-2' }" />
+            </template>
+          </UCollapsible>
         </template>
-      </nav>
+      </UNavigationMenu>
+      <template #footer>
+        <UNavigationMenu :items="settingsMenu" :collapsed="collapsed" tooltip orientation="vertical" as="nav" aria-label="Preferências" :ui="navigationUi" />
+        <UButton :icon="collapsed ? 'i-lucide-panel-left-open' : 'i-lucide-panel-left-close'" :label="collapsed ? undefined : 'Recolher menu'" :aria-label="collapsed ? 'Expandir menu' : 'Recolher menu'" :square="collapsed" color="neutral" variant="ghost" class="min-h-10 w-full justify-start" @click="collapsed = !collapsed" />
+      </template>
+    </UDashboardSidebar>
 
-      <!-- Bottom -->
-      <div style="border-top: var(--border-width) solid var(--border); padding: 8px 6px; display: flex; flex-direction: column; gap: 2px">
-        <button
-          v-for="item in BOTTOM_ITEMS"
-          :key="item.id"
-          class="app-nav-item"
-          :class="{ 'app-nav-item--active': isItemActive(item.id) }"
-          :title="collapsed ? item.label : ''"
-          :style="{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '9px',
-            padding: collapsed ? '9px 0' : '8px 10px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            borderRadius: 'var(--radius-xs)',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            fontWeight: 600,
-            fontSize: '13px',
-            background: isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent',
-            color: isItemActive(item.id) ? 'var(--primary)' : 'var(--text2)',
-            transition: 'background .12s, color .12s',
-            width: '100%',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-          }"
-          @mouseenter="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'var(--surface2)'"
-          @mouseleave="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent'"
-          @click="goTo(item.id)"
-        >
-          <BaseIcon :name="item.icon" :size="16" :color="isItemActive(item.id) ? 'var(--primary)' : 'currentColor'" />
-          <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">{{ item.label }}</span>
-        </button>
+    <UDashboardPanel id="workspace" :ui="{ root: 'min-h-0 h-full flex-1', body: 'min-h-0 gap-0 p-0 sm:p-0 overflow-y-auto' }">
+      <template #header>
+        <header ref="headerElement" class="app-header">
+          <UDashboardNavbar :title="currentItemLabel" :toggle="false" :ui="{ root: 'h-12 px-3 sm:px-4 gap-2', title: 'text-base' }">
+            <template #right>
+              <UButton :to="linkTo('alerts')" icon="i-lucide-bell" color="neutral" variant="ghost" :aria-label="alertCount ? `Alertas: ${alertCount} ativo(s)` : 'Alertas'" title="Alertas" class="app-header-action relative">
+                <template v-if="alertCount" #trailing><UBadge :label="alertCount > 99 ? '99+' : alertCount" color="error" size="xs" class="absolute -top-0.5 -end-0.5 min-w-4 justify-center px-1" /></template>
+              </UButton>
+              <UButton icon="i-lucide-circle-help" color="neutral" variant="ghost" title="Ajuda desta tela" aria-label="Ajuda desta tela" class="app-header-action" @click="helpMenuOpen = true" />
+            </template>
+          </UDashboardNavbar>
+        </header>
+      </template>
+      <template #body>
+        <main id="main-content" class="app-content" :class="{ 'app-content--planilha': activeScreen === 'planilha' }" tabindex="-1"><slot /></main>
+      </template>
+    </UDashboardPanel>
 
-        <!-- Sair -->
-        <button
-          title="Sair"
-          :style="{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '9px',
-            padding: collapsed ? '9px 0' : '8px 10px',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            borderRadius: 'var(--radius-xs)',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            fontWeight: 600,
-            fontSize: '13px',
-            background: 'transparent',
-            color: 'var(--danger)',
-            transition: 'background .12s',
-            width: '100%',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-          }"
-          @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--danger-light)'"
-          @mouseleave="($event.currentTarget as HTMLElement).style.background = 'transparent'"
-          @click="logout()"
-        >
-          <BaseIcon name="logout" :size="16" color="currentColor" />
-          <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '160px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">Sair</span>
-        </button>
-
-        <!-- Net worth badge -->
-        <div
-          v-if="!collapsed"
-          style="margin: 8px 4px 0; padding: 9px var(--ds-space-3); border-radius: var(--radius-sm); background: var(--primary-dim); border: 1px solid var(--primary)"
-        >
-          <p style="font-size: 9px; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.07em">{{ currentMonthName }}</p>
-          <p class="ds-money" style="margin-top: 2px; font-size: 14px; font-weight: 800; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</p>
-          <p style="font-size: 9px; color: var(--on-primary-dim); opacity: 0.8">saldo líquido</p>
-        </div>
-
-        <!-- Collapse button -->
-        <button
-          style="display: flex; align-items: center; gap: 8px; padding: 8px var(--ds-space-3); border-radius: var(--radius-xs); border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 12px; font-weight: 600; width: 100%; transition: background .12s; white-space: nowrap; overflow: hidden"
-          :style="{ justifyContent: collapsed ? 'center' : 'flex-start' }"
-          @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
-          @mouseleave="($event.currentTarget as HTMLElement).style.background = 'transparent'"
-          @click="collapsed = !collapsed"
-        >
-          <span :style="{ display: 'flex', flexShrink: 0, transition: 'transform .25s cubic-bezier(.4,0,.2,1)', transform: collapsed ? 'rotate(180deg)' : 'none' }">
-            <BaseIcon name="chevron_left" :size="15" />
-          </span>
-          <span :style="{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? '0' : '120px', transition: 'opacity .15s, max-width .25s cubic-bezier(.4,0,.2,1)', overflow: 'hidden' }">Recolher</span>
-        </button>
-      </div>
-    </aside>
-
-    <!-- Mobile drawer overlay -->
-    <div
-      v-if="isMobile && drawerOpen"
-      style="position: fixed; inset: 0; z-index: 300; display: flex"
-      @click="drawerOpen = false"
-    >
-      <div style="position: absolute; inset: 0; background: var(--overlay)" />
-      <div
-        class="app-drawer"
-        style="position: relative; width: 280px; height: 100%; background: var(--surface); border-right: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 1; display: flex; flex-direction: column; animation: slideInLeft .22s cubic-bezier(.4,0,.2,1); overflow-y: auto"
-        @click.stop
-      >
-        <div style="display: flex; align-items: center; gap: var(--ds-space-3); padding: 0 var(--ds-space-4); border-bottom: 1px solid var(--border); height: 48px; flex-shrink: 0">
-          <div class="app-brand-mark" style="width: 32px; height: 32px; border-radius: 9px; background: var(--primary); display: flex; align-items: center; justify-content: center">
-            <BaseIcon name="balance" :size="17" color="var(--on-primary)" />
-          </div>
-          <div>
-            <p style="font-size: 14px; font-weight: 800; color: var(--text)">Planilha <span class="app-version-inline">{{ appVersion }}</span></p>
-          </div>
-        </div>
-        <nav style="flex: 1; padding: 6px 8px">
-          <template v-for="(group, gi) in NAV_GROUPS" :key="group.id">
-            <div v-if="gi > 0" style="height: 1px; background: var(--border); margin: 4px 4px" />
-            <p v-if="group.label" style="font-size: 9px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; padding: 6px 6px 2px; margin: 0">{{ group.label }}</p>
-            <button
-              v-for="item in group.items"
-              :key="item.id"
-              class="app-nav-item"
-              :class="{ 'app-nav-item--active': isItemActive(item.id) }"
-              :style="{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--ds-space-3)',
-                padding: '8px var(--ds-space-3)',
-                borderRadius: 'var(--radius-sm)',
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                fontWeight: 600,
-                fontSize: '14px',
-                background: isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent',
-                color: isItemActive(item.id) ? 'var(--primary)' : 'var(--text2)',
-                transition: 'background .12s',
-                width: '100%',
-                position: 'relative',
-              }"
-              @mouseenter="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'var(--surface2)'"
-              @mouseleave="($event.currentTarget as HTMLElement).style.background = isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent'"
-              @click="goTo(item.id)"
-            >
-              <span v-if="isItemActive(item.id)" style="position: absolute; left: 0; top: 20%; bottom: 20%; width: 3px; border-radius: 99px; background: var(--primary)" />
-              <BaseIcon :name="item.icon" :size="16" :color="isItemActive(item.id) ? 'var(--primary)' : 'currentColor'" />
-              {{ item.label }}
-              <span v-if="item.id === 'alerts' && alertCount > 0" style="margin-left: auto; display: inline-flex; padding: 2px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; background: var(--danger-light); color: var(--danger)">{{ alertCount }}</span>
-            </button>
-          </template>
-        </nav>
-        <div style="border-top: 1px solid var(--border); padding: 8px 8px">
-          <button
-            v-for="item in BOTTOM_ITEMS"
-            :key="item.id"
-            class="app-nav-item"
-            :class="{ 'app-nav-item--active': isItemActive(item.id) }"
-            :style="{
-              display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)', padding: 'var(--ds-space-3) var(--ds-space-3)',
-              borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-              fontWeight: 600, fontSize: '14px',
-              background: isItemActive(item.id) ? 'var(--primary-dim)' : 'transparent',
-              color: isItemActive(item.id) ? 'var(--primary)' : 'var(--text2)',
-              width: '100%', transition: 'background .12s',
-            }"
-            @click="goTo(item.id)"
-          >
-            <BaseIcon :name="item.icon" :size="18" />{{ item.label }}
-          </button>
-          <button
-            :style="{
-              display: 'flex', alignItems: 'center', gap: 'var(--ds-space-3)', padding: 'var(--ds-space-3) var(--ds-space-3)',
-              borderRadius: 'var(--radius-sm)', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-              fontWeight: 600, fontSize: '14px',
-              background: 'transparent',
-              color: 'var(--danger)',
-              width: '100%', transition: 'background .12s',
-            }"
-            @click="logout()"
-          >
-            <BaseIcon name="logout" :size="18" />Sair
-          </button>
-        </div>
-      </div>
+    <div v-if="isMobile && !keyboardOpen" ref="bottomNavigationElement" class="app-mobile-bar">
+      <UNavigationMenu :items="bottomMenu" orientation="horizontal" as="nav" aria-label="Principal" :ui="bottomNavigationUi" />
     </div>
 
-    <!-- Main area -->
-    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
-
-      <!-- Top bar -->
-      <div class="app-topbar" style="height: 48px; display: flex; align-items: center; gap: var(--ds-space-3); padding: 0 var(--ds-space-5); border-bottom: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 90; flex-shrink: 0">
-        <!-- Mobile: hamburger -->
-        <button
-          v-if="isMobile"
-          class="app-icon-button"
-          style="background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
-          @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
-          @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
-          @click="drawerOpen = !drawerOpen"
-        >
-          <BaseIcon name="menu" :size="20" />
-          <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface)" />
-        </button>
-
-        <!-- Title -->
-        <div style="flex: 1; min-width: 0">
-          <h1 style="font-size: 16px; font-weight: 800; color: var(--text); line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ visibleScreenTitle }}</h1>
-          <p v-if="!isMobile" style="font-size: 11px; color: var(--text3)">{{ currentMonthName }} de {{ currentYear }}</p>
-        </div>
-
-        <!-- Right: income/expense summary + alerts + balance -->
-        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0">
-          <span v-if="!isMobile" style="font-size: 12px; color: var(--text3); font-weight: 600">
-            ↑ <span style="color: var(--success)">{{ currency.format(store.monthlyKpis.totalIncome) }}</span>
-            &nbsp;↓ <span style="color: var(--danger)">{{ currency.format(store.monthlyKpis.totalExpense) }}</span>
-          </span>
-          <button
-            class="app-icon-button"
-            style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
-            :style="{ background: helpMenuOpen ? 'var(--surface2)' : 'none', color: helpMenuOpen ? 'var(--primary)' : 'var(--text2)' }"
-            title="Ajuda desta tela"
-            @mouseenter="!helpMenuOpen && (($event.currentTarget as HTMLElement).style.background = 'var(--surface2)')"
-            @mouseleave="!helpMenuOpen && (($event.currentTarget as HTMLElement).style.background = 'none')"
-            @click="helpMenuOpen = !helpMenuOpen"
-          >
-            <BaseIcon name="help" :size="20" />
-          </button>
-          <button
-            class="app-icon-button"
-            style="background: none; border: none; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; position: relative; touch-action: manipulation; flex-shrink: 0"
-            @mouseenter="($event.currentTarget as HTMLElement).style.background = 'var(--surface2)'"
-            @mouseleave="($event.currentTarget as HTMLElement).style.background = 'none'"
-            @click="goTo('alerts')"
-          >
-            <BaseIcon name="alerts" :size="20" />
-            <span v-if="alertCount > 0" style="position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: var(--on-danger)">{{ alertCount }}</span>
-          </button>
-          <div class="app-balance-chip" style="padding: 5px var(--ds-space-3); background: var(--primary-dim)">
-            <span class="ds-money" style="font-size: 12px; font-weight: 700; color: var(--primary)">{{ currency.format(store.monthlyKpis.net) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Content -->
-      <main
-        :style="{
-          flex: 1,
-          padding: isMobile ? 'var(--ds-space-3) var(--ds-space-3) calc(72px + env(safe-area-inset-bottom, 0px))' : 'var(--ds-panel-padding)',
-          maxWidth: activeScreen === 'planilha' ? 'none' : '1080px',
-          width: '100%',
-          margin: '0 auto',
-          animation: 'fadeIn .18s ease',
-        }"
-      >
-        <slot />
-      </main>
-    </div>
-
-    <!-- Mobile bottom nav -->
-    <nav
-      v-if="isMobile"
-      class="app-mobile-nav"
-      style="position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; background: var(--surface); border-top: 1px solid var(--border); box-shadow: var(--shadow-bar-up); display: flex"
-      :style="{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }"
-    >
-      <button
-        v-for="item in BOTTOM_NAV_ITEMS"
-        :key="item.id"
-        class="app-mobile-nav__item"
-        :class="{ 'app-mobile-nav__item--active': activeScreen === item.id }"
-        :style="{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '3px',
-          padding: 'var(--ds-space-3) 4px 8px',
-          border: 'none',
-          cursor: 'pointer',
-          background: 'transparent',
-          color: activeScreen === item.id ? 'var(--primary)' : 'var(--text3)',
-          fontFamily: 'inherit',
-          fontSize: '10px',
-          fontWeight: 700,
-          transition: 'color .12s',
-          position: 'relative',
-          touchAction: 'manipulation',
-          minHeight: '56px',
-        }"
-        @click="goTo(item.id)"
-      >
-        <BaseIcon :name="item.icon" :size="21" :color="activeScreen === item.id ? 'var(--primary)' : 'currentColor'" />
-        {{ item.label }}
-      </button>
-      <button
-        class="app-mobile-nav__item"
-        style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: var(--ds-space-3) 4px 8px; border: none; cursor: pointer; background: transparent; color: var(--text3); font-family: inherit; font-size: 10px; font-weight: 700; touch-action: manipulation; min-height: 56px"
-        @click="drawerOpen = true"
-      >
-        <BaseIcon name="menu" :size="22" />Mais
-      </button>
-    </nav>
-
-    <!-- Popover de ajuda contextual -->
-    <Teleport to="body">
-      <div v-if="helpMenuOpen" style="position: fixed; inset: 0; z-index: 998" @click="helpMenuOpen = false" />
-      <Transition name="help-pop">
-        <div
-          v-if="helpMenuOpen"
-          class="help-pop"
-          :style="{ right: isMobile ? '10px' : '16px' }"
-        >
-          <div class="help-pop__head">
-            <BaseIcon :name="currentHelpGroup?.icon ?? 'help'" :size="15" color="var(--primary)" />
-            <span>Ajuda · {{ currentItemLabel }}</span>
-          </div>
-
-          <div v-if="currentHelpGroup" class="help-pop__list">
-            <button
-              v-for="topic in currentHelpGroup.topics"
-              :key="topic.id"
-              class="help-pop__item"
-              @click="openHelp(topic.id)"
-            >
-              <BaseIcon name="chevron_right" :size="13" color="var(--text3)" />
-              <span>{{ topic.title }}</span>
-            </button>
-          </div>
-          <p v-else class="help-pop__empty">Não há tutoriais específicos para esta tela.</p>
-
-          <button class="help-pop__all" @click="openHelp()">
-            <BaseIcon name="book" :size="14" color="var(--primary)" />
-            Ver Central de Ajuda
-          </button>
-        </div>
-      </Transition>
-    </Teleport>
-  </div>
+    <BaseModal :open="moreOpen" title="Mais" subtitle="Ferramentas e preferências" @close="moreOpen = false">
+      <UNavigationMenu :items="mobileMoreMenu" orientation="vertical" as="nav" aria-label="Mais ferramentas" :ui="{ ...navigationUi, link: 'min-h-11 px-3 py-2 text-sm' }" />
+      <USeparator class="my-3" />
+      <UButton icon="i-lucide-log-out" label="Sair da conta" color="error" variant="ghost" block class="min-h-11 justify-start" @click="logout()" />
+    </BaseModal>
+    <BaseModal :open="helpMenuOpen" :title="`Ajuda · ${currentItemLabel}`" @close="helpMenuOpen = false">
+      <UNavigationMenu :items="contextHelpMenu" orientation="vertical" as="nav" aria-label="Tópicos de ajuda" :ui="{ ...navigationUi, link: 'min-h-11 px-3 py-2 text-sm', linkLabel: 'whitespace-normal' }" />
+      <USeparator class="my-3" />
+      <UButton icon="i-lucide-book-open" label="Abrir central de ajuda" variant="soft" block class="min-h-11 justify-start" @click="openHelp()" />
+    </BaseModal>
+  </UDashboardGroup>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import type { PluginListenerHandle } from '@capacitor/core'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import type { NavigationMenuItem } from '@nuxt/ui'
 import { App } from '@capacitor/app'
-import { Capacitor } from '@capacitor/core'
-import BaseIcon from '~/components/base/BaseIcon.vue'
+import { Capacitor, type PluginListenerHandle } from '@capacitor/core'
+import BaseModal from '~/components/base/BaseModal.vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import { ALL_NAV_ITEMS, NAV_GROUPS, BOTTOM_NAV_ITEMS, SETTINGS_ITEM, SETTINGS_SECTION_ITEMS } from '~/features/finance/constants/ui'
+import { useFinanceNavigation } from '~/features/finance/composables/useFinanceNavigation'
+import { useFinanceAlerts } from '~/features/finance/composables/useFinanceAlerts'
+import { ALL_NAV_ITEMS, PRIMARY_NAV_ITEMS, SECONDARY_NAV_ITEMS, BOTTOM_NAV_ITEMS, SETTINGS_SECTION_ITEMS, financeScreenForPath } from '~/features/finance/constants/ui'
 import { helpForScreen } from '~/features/finance/constants/helpContent'
 
 const store = useFinanceStore()
-const currency = useCurrency()
+const route = useRoute()
+const router = useRouter()
 const { logout } = useLogout()
-const config = useRuntimeConfig()
-const appVersion = ref(config.public.appVersion as string)
+const { activeScreen, goTo, linkTo } = useFinanceNavigation()
+const { count: alertCount } = useFinanceAlerts()
 const isNativePlatform = Capacitor.isNativePlatform()
-
-const activeScreen = useState('finance-screen', () => 'dashboard')
 const collapsed = ref(false)
-const drawerOpen = ref(false)
-const isMobile = ref(isNativePlatform)
-
-const alertCount = 3
-
-const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
-const now = new Date()
-const currentMonthName = MONTH_NAMES[now.getMonth()]
-const currentYear = now.getFullYear()
-
-const BOTTOM_ITEMS = [SETTINGS_ITEM]
-const SETTINGS_SECTION_IDS: ReadonlySet<string> = new Set(SETTINGS_SECTION_ITEMS.map(item => item.id))
-const ALL_ITEMS = ALL_NAV_ITEMS
-const isItemActive = (id: string) => activeScreen.value === id || (id === SETTINGS_ITEM.id && SETTINGS_SECTION_IDS.has(activeScreen.value))
-const currentItemLabel = computed(() => ALL_ITEMS.find(i => i.id === activeScreen.value)?.label ?? 'Dashboard')
-const visibleScreenTitle = computed(() =>
-  isMobile.value && activeScreen.value === 'dashboard' ? 'Visão geral' : currentItemLabel.value
-)
-
-// ── Ajuda contextual ──────────────────────────────────────────────────────
-interface HelpFocus { screenId: string; topicId?: string }
-const helpFocus = useState<HelpFocus | null>('help-focus', () => null)
+const secondaryOpen = ref(false)
+const moreOpen = ref(false)
 const helpMenuOpen = ref(false)
+const isMobile = ref(isNativePlatform)
+const keyboardOpen = ref(false)
+const headerElement = ref<HTMLElement | null>(null)
+const bottomNavigationElement = ref<HTMLElement | null>(null)
+const currentItemLabel = computed(() => ALL_NAV_ITEMS.find(item => item.id === activeScreen.value)?.label ?? 'Planilha')
+const isSecondaryScreen = computed(() => !BOTTOM_NAV_ITEMS.some(item => item.id === activeScreen.value))
 const currentHelpGroup = computed(() => helpForScreen(activeScreen.value))
+const helpFocus = useState<{ screenId: string; topicId?: string } | null>('help-focus', () => null)
+const legacyScreen = useState<string>('finance-screen', () => activeScreen.value)
+const icons: Record<string, string> = {
+  grid: 'i-lucide-grid-2x2', dashboard: 'i-lucide-layout-dashboard', card: 'i-lucide-wallet-cards', reports: 'i-lucide-chart-no-axes-combined',
+  planning: 'i-lucide-calendar-range', debt: 'i-lucide-landmark', subscription: 'i-lucide-repeat', wishlist: 'i-lucide-heart',
+  alerts: 'i-lucide-bell', settings: 'i-lucide-settings', sparkle: 'i-lucide-sparkles', help: 'i-lucide-circle-help', refresh: 'i-lucide-refresh-cw',
+}
+const navigationUi = { root: 'w-full', link: 'min-h-10 px-3 py-2 text-sm', linkLeadingIcon: 'size-4.5', linkLabel: 'text-sm' }
+const sidebarUi = { root: 'flex min-h-0 h-full bg-default', header: 'h-12 px-2', body: 'gap-2 px-2 py-3', footer: 'flex-col items-stretch border-t border-default px-2 py-2' }
+const bottomNavigationUi = {
+  root: 'h-full w-full gap-0 [&>div]:w-full', list: 'grid grid-cols-4 w-full h-full gap-0', item: 'p-0 min-w-0',
+  link: 'h-14 min-h-14 w-full flex-col justify-center gap-1 px-1 py-1',
+  linkLeadingIcon: 'size-5', linkLabel: 'text-[11px] leading-3', viewportWrapper: 'hidden',
+}
+const navigationItem = (item: { id: string; label: string; icon: string }): NavigationMenuItem => ({
+  value: item.id, label: item.label, icon: icons[item.icon] ?? 'i-lucide-circle', to: linkTo(item.id), active: activeScreen.value === item.id,
+})
+const primaryMenu = computed(() => PRIMARY_NAV_ITEMS.map(navigationItem))
+const secondaryMenu = computed(() => SECONDARY_NAV_ITEMS.map(navigationItem))
+const settingsMenu = computed(() => [navigationItem(SETTINGS_SECTION_ITEMS[0])])
+const bottomMenu = computed<NavigationMenuItem[]>(() => [
+  ...BOTTOM_NAV_ITEMS.map(navigationItem),
+  { value: 'more', label: 'Mais', icon: 'i-lucide-menu', active: moreOpen.value || isSecondaryScreen.value, onSelect: () => { moreOpen.value = true } },
+])
+const mobileMoreMenu = computed(() => [PRIMARY_NAV_ITEMS[3], ...SECONDARY_NAV_ITEMS, ...SETTINGS_SECTION_ITEMS].map(item => ({ ...navigationItem(item), onSelect: () => { moreOpen.value = false } })))
+const contextHelpMenu = computed<NavigationMenuItem[]>(() => (currentHelpGroup.value?.topics ?? []).map(topic => ({ value: topic.id, label: topic.title, icon: 'i-lucide-chevron-right', onSelect: () => openHelp(topic.id) })))
 
+// Keep older consumers working while the URL remains the source of truth.
+watch(activeScreen, (screen) => {
+  legacyScreen.value = screen
+  if (SECONDARY_NAV_ITEMS.some(item => item.id === screen)) secondaryOpen.value = true
+}, { immediate: true, flush: 'sync' })
+watch(legacyScreen, (screen) => {
+  if (screen !== activeScreen.value && financeScreenForPath(route.path)) void goTo(screen)
+})
+watch(() => route.fullPath, () => { moreOpen.value = false; helpMenuOpen.value = false })
+watch(() => store.settings.themeMode, () => store.applyTheme(), { immediate: true })
+watch(collapsed, value => { if (value) secondaryOpen.value = false })
+const expandSidebar = () => { if (collapsed.value) collapsed.value = false }
 const openHelp = (topicId?: string) => {
-  const screenId = activeScreen.value
-  helpFocus.value = currentHelpGroup.value ? { screenId, topicId } : null
+  helpFocus.value = { screenId: activeScreen.value, topicId }
   helpMenuOpen.value = false
-  goTo('help')
+  void goTo('help')
 }
 
-watch(() => store.settings.themeMode, () => {
-  store.applyTheme()
-}, { immediate: true })
-
-const updateMobile = () => {
-  if (isNativePlatform) {
-    isMobile.value = true
-    return
-  }
-
-  const viewportWidth = window.visualViewport?.width ?? window.innerWidth
-  isMobile.value = viewportWidth <= 767 || window.matchMedia('(max-width: 767px)').matches
-}
-
-const syncPublishedVersion = async () => {
-  if (Capacitor.isNativePlatform()) return
-
-  const url = config.public.updateManifestUrl as string
-  if (!url) return
-
-  try {
-    const release = await $fetch<{ version?: string }>(url, { cache: 'no-store' })
-    if (release.version) appVersion.value = release.version
-  } catch {
-    // Mantem a versao local quando a consulta estiver indisponivel.
-  }
-}
-
+let viewportObserver: ResizeObserver | undefined
 let backButtonListener: PluginListenerHandle | undefined
 let mobileMediaQuery: MediaQueryList | undefined
-
-const handleNativeBack = async () => {
-  if (drawerOpen.value) {
-    drawerOpen.value = false
-    return
-  }
-
-  if (helpMenuOpen.value) {
-    helpMenuOpen.value = false
-    return
-  }
-
-  if (activeScreen.value !== 'dashboard') {
-    goTo('dashboard')
-    return
-  }
-
-  await App.minimizeApp()
+let availableViewportHeight = 0
+let previousViewportWidth = 0
+const updateViewport = () => {
+  isMobile.value = isNativePlatform || window.matchMedia('(max-width: 767px)').matches
+  const viewport = window.visualViewport
+  const inputFocused = document.activeElement?.matches('input, textarea, select, [contenteditable="true"]') ?? false
+  const viewportHeight = viewport?.height ?? window.innerHeight
+  if (!inputFocused || Math.abs(window.innerWidth - previousViewportWidth) > 120) availableViewportHeight = viewportHeight
+  previousViewportWidth = window.innerWidth
+  keyboardOpen.value = isMobile.value && inputFocused && Math.max(window.innerHeight - viewportHeight, availableViewportHeight - viewportHeight) > 140
+  const root = document.documentElement
+  const bottomHeight = isMobile.value && !keyboardOpen.value ? bottomNavigationElement.value?.getBoundingClientRect().height ?? 56 : 0
+  root.style.setProperty('--app-bottom-offset', `${Math.ceil(bottomHeight)}px`)
+  root.style.setProperty('--app-header-height', `${headerElement.value?.getBoundingClientRect().height ?? 48}px`)
+  root.style.setProperty('--app-viewport-height', `${viewport?.height ?? window.innerHeight}px`)
 }
-
+watch([isMobile, keyboardOpen], () => void nextTick(updateViewport))
+const handleNativeBack = async () => {
+  const backEvent = new Event('finance:back', { cancelable: true })
+  if (!window.dispatchEvent(backEvent)) return
+  if (helpMenuOpen.value) { helpMenuOpen.value = false; return }
+  if (moreOpen.value) { moreOpen.value = false; return }
+  if (keyboardOpen.value) { (document.activeElement as HTMLElement | null)?.blur(); return }
+  const previous = router.options.history.state.back
+  if (typeof previous === 'string' && financeScreenForPath(previous.split('?')[0] ?? '')) router.back()
+  else if (activeScreen.value !== 'planilha') await router.replace(linkTo('planilha'))
+  else await App.minimizeApp()
+}
 onMounted(() => {
   mobileMediaQuery = window.matchMedia('(max-width: 767px)')
-  updateMobile()
-  window.addEventListener('resize', updateMobile)
-  window.visualViewport?.addEventListener('resize', updateMobile)
-  mobileMediaQuery.addEventListener('change', updateMobile)
-  requestAnimationFrame(updateMobile)
-
-  if (isNativePlatform) {
-    void App.getInfo().then(({ version }) => {
-      appVersion.value = version
-    })
-
-    void App.addListener('backButton', handleNativeBack).then((listener) => {
-      backButtonListener = listener
-    })
-  } else {
-    void syncPublishedVersion()
-  }
+  updateViewport()
+  window.addEventListener('resize', updateViewport)
+  window.addEventListener('focusin', updateViewport)
+  window.addEventListener('focusout', updateViewport)
+  window.visualViewport?.addEventListener('resize', updateViewport)
+  mobileMediaQuery.addEventListener('change', updateViewport)
+  viewportObserver = new ResizeObserver(updateViewport)
+  if (headerElement.value) viewportObserver.observe(headerElement.value)
+  if (isNativePlatform) void App.addListener('backButton', handleNativeBack).then(listener => { backButtonListener = listener })
 })
-
 onUnmounted(() => {
-  window.removeEventListener('resize', updateMobile)
-  window.visualViewport?.removeEventListener('resize', updateMobile)
-  mobileMediaQuery?.removeEventListener('change', updateMobile)
+  window.removeEventListener('resize', updateViewport)
+  window.removeEventListener('focusin', updateViewport)
+  window.removeEventListener('focusout', updateViewport)
+  window.visualViewport?.removeEventListener('resize', updateViewport)
+  mobileMediaQuery?.removeEventListener('change', updateViewport)
+  viewportObserver?.disconnect()
   void backButtonListener?.remove()
+  for (const property of ['--app-bottom-offset', '--app-header-height', '--app-viewport-height']) document.documentElement.style.removeProperty(property)
 })
-
-const goTo = (id: string) => {
-  activeScreen.value = id
-  drawerOpen.value = false
-}
-
 </script>
 
 <style>
-.app-shell {
-  isolation: isolate;
-}
-
-.app-sidebar {
-  border-right: 3px solid var(--border) !important;
-  box-shadow: 4px 0 0 var(--ds-shadow-color) !important;
-}
-
-.app-brand-mark {
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm) !important;
-  box-shadow: var(--shadow-sm);
-}
-
-.app-nav-item {
-  border: 2px solid transparent !important;
-  border-radius: var(--radius-sm) !important;
-  font-weight: 700 !important;
-}
-
-.app-nav-item:hover {
-  border-color: var(--border) !important;
-}
-
-.app-nav-item--active {
-  color: var(--primary) !important;
-  background: var(--primary-dim) !important;
-  border-color: var(--border) !important;
-  box-shadow: var(--shadow-xs);
-}
-
-.app-version-inline {
-  display: inline-block;
-  margin-left: 5px;
-  padding: 1px 4px;
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  color: var(--text3);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
-  vertical-align: 1px;
-}
-
-.app-drawer {
-  border-right: 3px solid var(--border) !important;
-  box-shadow: var(--shadow-lg) !important;
-}
-
-.app-topbar {
-  border-bottom: 3px solid var(--border) !important;
-  box-shadow: var(--shadow-bar-down) !important;
-}
-
-.app-icon-button {
-  color: var(--text) !important;
-  background: var(--surface2) !important;
-  border: 2px solid var(--border) !important;
-  border-radius: var(--radius-sm) !important;
-  box-shadow: var(--shadow-xs);
-}
-
-.app-icon-button:active {
-  box-shadow: none;
-  transform: translate(2px, 2px);
-}
-
-.app-balance-chip {
-  border: 2px solid var(--border) !important;
-  border-radius: var(--radius-pill) !important;
-  box-shadow: var(--shadow-xs);
-}
-
-.app-mobile-nav {
-  border-top: 3px solid var(--border) !important;
-  box-shadow: var(--shadow-bar-up) !important;
-}
-
-.app-mobile-nav__item {
-  border-right: 1px solid var(--border) !important;
-}
-
-.app-mobile-nav__item--active {
-  color: var(--primary) !important;
-  background: var(--primary-dim) !important;
-}
-
-@media (max-width: 767px) {
-  .app-topbar { padding-inline: var(--ds-space-3) !important; gap: 8px !important; }
-  .app-balance-chip { padding-inline: 7px !important; }
-}
-
-@keyframes slideInLeft {
-  from { transform: translateX(-100%); opacity: .5 }
-  to   { transform: translateX(0);    opacity: 1  }
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px) }
-  to   { opacity: 1; transform: none             }
-}
-
-/* ── Popover de ajuda contextual ─────────────────────────── */
-.help-pop {
-  position: fixed;
-  top: 60px;
-  z-index: 999;
-  width: 300px;
-  max-width: calc(100vw - 20px);
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
-  padding: 6px;
-}
-.help-pop__head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px var(--ds-space-3) var(--ds-space-3);
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text3);
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 4px;
-}
-.help-pop__list {
-  display: flex;
-  flex-direction: column;
-}
-.help-pop__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 9px var(--ds-space-3);
-  border: 2px solid transparent;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text2);
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-align: left;
-  transition: background .1s, color .1s;
-}
-.help-pop__item:hover {
-  background: var(--surface2);
-  border-color: var(--border);
-  color: var(--text);
-}
-.help-pop__empty {
-  padding: var(--ds-space-3);
-  font-size: 12.5px;
-  color: var(--text3);
-}
-.help-pop__all {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  margin-top: 4px;
-  padding: var(--ds-space-3);
-  border: 2px solid transparent;
-  border-top: 2px solid var(--border);
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-  background: transparent;
-  color: var(--primary);
-  font-size: 13px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background .1s;
-}
-.help-pop__all:hover {
-  background: var(--primary-dim);
-  border-right-color: var(--border);
-  border-bottom-color: var(--border);
-  border-left-color: var(--border);
-}
-
-.help-pop-enter-active,
-.help-pop-leave-active {
-  transition: opacity var(--ds-motion-base) linear, transform var(--ds-motion-base) linear;
-}
-.help-pop-enter-from,
-.help-pop-leave-to {
-  opacity: 0;
-  transform: translate(4px, 4px);
-}
+.app-shell { --app-content-gap: 16px; min-width: 0; background: var(--ui-bg); color: var(--ui-text); }
+html { scroll-padding-top: calc(var(--app-header-height, 48px) + 12px); }
+.app-skip-link { position: fixed; z-index: 1100; top: 8px; left: 8px; padding: 10px; transform: translateY(-180%); background: var(--ui-bg); color: var(--ui-text); outline: 2px solid var(--ui-primary); border-radius: var(--ui-radius); }
+.app-skip-link:focus { transform: none; }
+.app-header { flex-shrink: 0; padding-top: env(safe-area-inset-top, 0px); background: var(--ui-bg); }
+.app-header-action { width: 40px; height: 40px; justify-content: center; }
+.app-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: var(--app-content-gap); outline: none; }
+.app-content--planilha { max-width: none; }
+.app-mobile-bar { position: fixed; z-index: 40; inset: auto 0 0; height: calc(56px + env(safe-area-inset-bottom, 0px)); padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); background: var(--ui-bg); border-top: 1px solid var(--ui-border); }
+.app-shell--mobile { --app-content-gap: 10px; }
+.app-shell--mobile .app-content { padding-bottom: calc(var(--app-bottom-offset, 56px) + var(--app-content-gap)); padding-left: max(var(--app-content-gap), env(safe-area-inset-left, 0px)); padding-right: max(var(--app-content-gap), env(safe-area-inset-right, 0px)); }
+.app-shell--mobile .app-header { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+.app-shell--mobile .app-header-action { width: 44px; height: 44px; }
 </style>

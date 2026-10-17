@@ -1,728 +1,452 @@
 <template>
-  <Teleport to="body">
-    <Transition name="sheet">
-      <div
-        v-if="open"
-        class="sheet-overlay"
-        @click.self="emit('close')"
-      >
-        <div class="sheet-container">
-          <!-- Handle -->
-          <div class="sheet-handle-area" @click="emit('close')">
-            <div class="sheet-handle" />
-          </div>
-
-          <!-- Header -->
-          <div class="sheet-header">
-            <div>
-              <h2 class="sheet-title">{{ entry && !creating ? 'Editar lançamento' : 'Novo lançamento' }}</h2>
-              <p class="sheet-subtitle">{{ draft.title || 'Preencha os dados abaixo' }}</p>
-            </div>
-            <button class="sheet-close" @click="emit('close')">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Body (scrollable) -->
-          <div class="sheet-body">
-            <slot name="context" />
-
-            <!-- Descrição -->
-            <div class="field-group">
-              <label class="field-label">Descrição</label>
-              <input
-                v-model="draft.title"
-                type="text"
-                class="field-input"
-                placeholder="Ex.: Mercado, Salário..."
+  <BaseModal
+    :open="open"
+    :title="entry && !creating ? 'Editar lançamento' : 'Novo lançamento'"
+    :subtitle="
+      creating
+        ? 'Preencha os dados principais. Os demais são opcionais.'
+        : 'Altere os dados deste lançamento.'
+    "
+    :busy="busy"
+    :max-width="560"
+    @close="emit('close')"
+  >
+    <form
+      :id="formId"
+      ref="form"
+      novalidate
+      class="ds-form-grid entry-editor"
+      @submit.prevent="onSave"
+    >
+      <slot name="context" />
+      <UAlert
+        v-if="error || localError"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        color="error"
+        :description="error || localError"
+      />
+      <fieldset class="ds-form-grid" :disabled="busy">
+        <BaseInput
+          v-model="draft.title"
+          label="Descrição"
+          placeholder="Ex.: Mercado, Salário…"
+          :error="errors.title"
+          required
+          autocomplete="off"
+          autofocus
+        />
+        <div class="ds-form-row">
+          <BaseInput
+            v-model="draft.amount"
+            label="Valor (R$)"
+            type="number"
+            inputmode="decimal"
+            min="0"
+            step="0.01"
+            placeholder="0,00"
+            :error="errors.amount"
+            required
+          />
+          <BaseInput
+            v-model="draft.dueDate"
+            :label="draft.kind === 'income' ? 'Recebimento' : 'Vencimento'"
+            type="date"
+            :disabled="busy"
+            :error="errors.dueDate"
+            required
+          />
+        </div>
+        <div class="ds-form-row">
+          <BaseDropdown v-model="draft.kind" label="Tipo" :disabled="busy"
+            ><option value="expense">Despesa</option>
+            <option value="income">Receita</option></BaseDropdown
+          >
+          <BaseDropdown v-model="draft.status" label="Status" :disabled="busy"
+            ><option value="pending">Pendente</option>
+            <option value="paid">
+              {{ draft.kind === 'income' ? 'Recebido' : 'Pago' }}
+            </option>
+            <option value="review">Revisar</option></BaseDropdown
+          >
+        </div>
+        <div class="ds-form-row">
+          <BaseDropdown v-model="draft.accountId" label="Conta" :disabled="busy"
+            ><option value="">Sem conta</option>
+            <option
+              v-for="account in accounts"
+              :key="account.id"
+              :value="account.id"
+            >
+              {{ account.name }}
+            </option></BaseDropdown
+          >
+          <BaseDropdown
+            v-model="draft.categoryId"
+            label="Categoria"
+            :disabled="busy"
+            ><option value="">Sem categoria</option>
+            <option
+              v-for="category in categories"
+              :key="category.id"
+              :value="category.id"
+            >
+              {{ category.name }}
+            </option></BaseDropdown
+          >
+        </div>
+        <UCollapsible
+          v-model:open="detailsOpen"
+          :disabled="busy"
+          class="entry-editor__details"
+        >
+          <UButton
+            color="neutral"
+            variant="ghost"
+            class="finance-control w-full justify-between"
+            >Mais detalhes<template #trailing
+              ><BaseIcon
+                name="chevron_down"
+                :size="16"
+                :class="{ 'rotate-180': detailsOpen }" /></template
+          ></UButton>
+          <template #content>
+            <div class="ds-form-grid entry-editor__advanced">
+              <BaseInput
+                v-model="draft.competenceDate"
+                label="Competência"
+                type="date"
+                :disabled="busy"
+                hint="Data usada no planejamento por competência."
+                :error="errors.competenceDate"
+                @update:model-value="competenceTouched = true"
               />
-            </div>
-
-            <!-- Valor destacado -->
-            <div class="field-group">
-              <label class="field-label">Valor (R$)</label>
-              <div class="amount-wrapper">
-                <span class="amount-prefix">R$</span>
-                <input
-                  v-model="draft.amount"
-                  type="number"
-                  inputmode="decimal"
-                  class="field-input amount-input"
-                  placeholder="0,00"
-                  step="0.01"
-                  min="0"
-                />
-              </div>
-            </div>
-
-            <!-- Tipo + Status -->
-            <div class="field-row">
-              <div class="field-group">
-                <label class="field-label">Tipo</label>
-                <div class="segmented">
-                  <button
-                    type="button"
-                    class="seg-btn"
-                    :class="{ 'seg-active-expense': draft.kind === 'expense' }"
-                    @click="draft.kind = 'expense'"
-                  >
-                    <span>↓</span> Despesa
-                  </button>
-                  <button
-                    type="button"
-                    class="seg-btn"
-                    :class="{ 'seg-active-income': draft.kind === 'income' }"
-                    @click="draft.kind = 'income'"
-                  >
-                    <span>↑</span> Receita
-                  </button>
-                </div>
-              </div>
-              <div class="field-group">
-                <label class="field-label">Status</label>
-                <BaseDropdown v-model="draft.status">
-                  <option value="pending">Pendente</option>
-                  <option value="paid">{{ draft.kind === 'income' ? 'Recebido' : 'Pago' }}</option>
-                  <option value="review">Revisar</option>
-                </BaseDropdown>
-              </div>
-            </div>
-
-            <!-- Datas -->
-            <div class="field-row">
-              <div class="field-group">
-                <label class="field-label">Vencimento</label>
-                <input v-model="draft.dueDate" type="text" class="field-input" placeholder="dd/mm/aaaa" />
-              </div>
-              <div class="field-group">
-                <label class="field-label">Competência</label>
-                <input v-model="draft.competenceDate" type="text" class="field-input" placeholder="dd/mm/aaaa" />
-              </div>
-            </div>
-
-            <!-- Conta + Categoria -->
-            <div class="field-row">
-              <div class="field-group">
-                <label class="field-label">Conta</label>
-                <BaseDropdown v-model="draft.accountId">
-                  <option value="">Sem conta</option>
-                  <option v-for="acc in accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
-                </BaseDropdown>
-              </div>
-              <div class="field-group">
-                <label class="field-label">Categoria</label>
-                <BaseDropdown v-model="draft.categoryId">
-                  <option value="">Sem categoria</option>
-                  <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                </BaseDropdown>
-              </div>
-            </div>
-
-            <!-- Recorrência (apenas no editor da Lista) -->
-            <div v-if="allowRecurrence" class="field-group">
-              <label class="field-label">Recorrência (meses)</label>
-              <input
+              <BaseInput
+                v-if="allowRecurrence"
                 v-model.number="draft.recurrence"
+                label="Repetir por quantos meses?"
                 type="number"
+                inputmode="numeric"
                 min="1"
                 max="120"
-                class="field-input"
-                placeholder="1"
+                step="1"
+                :hint="
+                  Number(draft.recurrence) > 1
+                    ? `Cria ${draft.recurrence} lançamentos, um por mês. Os seguintes ficam pendentes.`
+                    : '1 = somente este mês.'
+                "
+                :error="errors.recurrence"
               />
-              <span class="toggle-hint">
-                {{ draft.recurrence > 1
-                  ? `Cria ${draft.recurrence} lançamentos, um por mês a partir do vencimento.`
-                  : '1 = apenas este mês. Aumente para repetir nos próximos meses.' }}
-              </span>
-            </div>
-
-            <!-- Parcelas (exibido apenas para lançamentos parcelados) -->
-            <div v-if="isInstallment" class="field-row">
-              <div class="field-group">
-                <label class="field-label">Parcela nº</label>
-                <input
+              <div v-if="isInstallment" class="ds-form-row">
+                <BaseInput
                   v-model.number="draft.installmentIndex"
+                  label="Parcela nº"
                   type="number"
-                  class="field-input"
-                  placeholder="Ex.: 3"
+                  inputmode="numeric"
                   min="1"
+                  step="1"
+                  :error="errors.installmentIndex"
                 />
-              </div>
-              <div class="field-group">
-                <label class="field-label">Total de parcelas</label>
-                <input
+                <BaseInput
                   v-model.number="draft.installmentTotal"
+                  label="Total de parcelas"
                   type="number"
-                  class="field-input"
-                  placeholder="Ex.: 12"
+                  inputmode="numeric"
                   min="1"
+                  step="1"
+                  :error="errors.installmentTotal"
                 />
               </div>
-            </div>
-
-            <!-- Excluir do cálculo -->
-            <label class="toggle-row">
-              <div class="toggle-content">
-                <span class="toggle-label">Excluir do cálculo</span>
-                <span class="toggle-hint">Não soma ao saldo, receitas ou despesas (ex: VR, VA)</span>
-              </div>
-              <button
-                type="button"
-                class="toggle-switch"
-                :class="{ 'toggle-on': draft.excludeFromCalc }"
-                role="switch"
-                :aria-checked="draft.excludeFromCalc"
-                @click="draft.excludeFromCalc = !draft.excludeFromCalc"
-              >
-                <span class="toggle-thumb" />
-              </button>
-            </label>
-
-            <!-- Observações -->
-            <div class="field-group">
-              <label class="field-label">Observações</label>
-              <textarea
+              <UCheckbox
+                v-model="draft.excludeFromCalc"
+                label="Excluir dos totais"
+                description="Para valores informativos, como benefícios."
+                :disabled="busy"
+              />
+              <BaseTextarea
                 v-model="draft.description"
-                class="field-input field-textarea"
-                placeholder="Notas opcionais..."
-                rows="2"
+                label="Observações"
+                :rows="2"
+                placeholder="Informações opcionais…"
               />
             </div>
-          </div>
-
-          <!-- Footer com ações (fixo) -->
-          <div class="sheet-footer">
-            <button v-if="entry && !creating" type="button" class="btn-delete" :disabled="busy" @click="onDelete">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
-              </svg>
-              Excluir
-            </button>
-            <div class="btn-group">
-              <button type="button" class="btn-cancel" @click="emit('close')">Cancelar</button>
-              <button type="button" class="btn-save" :disabled="busy" @click="onSave">{{ busy ? 'Salvando…' : 'Salvar' }}</button>
-            </div>
-          </div>
-        </div>
+          </template>
+        </UCollapsible>
+      </fieldset>
+      <UAlert
+        v-if="Object.keys(errors).length"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        color="error"
+        description="Revise os campos indicados para salvar."
+      />
+    </form>
+    <template #footer>
+      <div class="entry-editor__footer">
+        <BaseButton
+          v-if="entry && !creating"
+          variant="danger"
+          :disabled="busy"
+          @click="onDelete"
+          >Excluir</BaseButton
+        >
+        <span class="entry-editor__spacer" />
+        <BaseButton variant="ghost" :disabled="busy" @click="emit('close')"
+          >Cancelar</BaseButton
+        >
+        <BaseButton
+          type="submit"
+          :form="formId"
+          variant="primary"
+          :loading="busy"
+          >{{ busy ? 'Salvando…' : 'Salvar' }}</BaseButton
+        >
       </div>
-    </Transition>
-  </Teleport>
+    </template>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, nextTick, reactive, ref, useId, watch } from 'vue'
 import type { Account, Category, FinanceEntry } from '#shared/types'
+import BaseButton from '~/components/base/BaseButton.vue'
+import BaseDropdown from '~/components/base/BaseDropdown.vue'
+import BaseInput from '~/components/base/BaseInput.vue'
+import BaseModal from '~/components/base/BaseModal.vue'
+import BaseTextarea from '~/components/base/BaseTextarea.vue'
 
-const props = withDefaults(defineProps<{
-  open: boolean
-  entry: FinanceEntry | null
-  accounts: Account[]
-  categories: Category[]
-  allowRecurrence?: boolean
-  creating?: boolean
-  busy?: boolean
-}>(), {
-  allowRecurrence: false,
-  creating: false,
-  busy: false,
-})
-
+const props = withDefaults(
+  defineProps<{
+    open: boolean
+    entry: FinanceEntry | null
+    accounts: Account[]
+    categories: Category[]
+    allowRecurrence?: boolean
+    creating?: boolean
+    busy?: boolean
+    error?: string
+  }>(),
+  { allowRecurrence: false, creating: false, busy: false, error: '' },
+)
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'save', value: Partial<FinanceEntry>[]): void
-  (e: 'delete', id: string): void
+  (event: 'close'): void
+  (event: 'save', value: Partial<FinanceEntry>[]): void
+  (event: 'delete', id: string): void
 }>()
-
-const { formatDate, toIsoDate } = useDateFormat()
-
+const { toIsoDate } = useDateFormat()
+const formId = `entry-${useId()}`
+const form = ref<HTMLFormElement | null>(null)
+const detailsOpen = ref(false)
+const competenceTouched = ref(false)
+const localError = ref('')
+const errors = reactive<Record<string, string>>({})
 const draft = reactive({
   id: '',
   title: '',
   description: '',
-  amount: '0',
+  amount: '0' as string | number,
   kind: 'expense',
   status: 'pending',
   dueDate: '',
   competenceDate: '',
   accountId: '',
   categoryId: '',
-  installmentIndex: null as number | null,
-  installmentTotal: null as number | null,
+  installmentIndex: null as number | string | null,
+  installmentTotal: null as number | string | null,
   excludeFromCalc: false,
-  recurrence: 1,
+  recurrence: 1 as number | string,
 })
-
-// Avança N meses sobre uma data ISO 'YYYY-MM-DD', preservando o dia (com clamp no fim do mês).
-const shiftIsoMonths = (iso: string, add: number): string => {
-  const [y, m, d] = iso.split('-').map(Number)
-  if (!y || !m || !d) return iso
-  const lastDay = new Date(Date.UTC(y, m - 1 + add + 1, 0)).getUTCDate()
-  const dt = new Date(Date.UTC(y, m - 1 + add, Math.min(d, lastDay)))
-  return dt.toISOString().slice(0, 10)
+const isInstallment = computed(
+  () => draft.installmentIndex != null || draft.installmentTotal != null,
+)
+function clearErrors() {
+  for (const key of Object.keys(errors)) Reflect.deleteProperty(errors, key)
+  localError.value = ''
 }
-
-const isInstallment = computed(() =>
-  draft.installmentIndex != null || draft.installmentTotal != null
-)
-
 watch(
-  () => props.entry,
-  (entry) => {
-    if (!entry) return
-    draft.id = entry.id
-    draft.title = entry.title
-    draft.description = entry.description
-    draft.amount = String(entry.amount)
-    draft.kind = entry.kind
-    draft.status = entry.status
-    draft.dueDate = formatDate(entry.dueDate)
-    draft.competenceDate = formatDate(entry.competenceDate)
-    draft.accountId = entry.accountId ?? ''
-    draft.categoryId = entry.categoryId ?? ''
-    draft.installmentIndex = entry.installmentIndex ?? null
-    draft.installmentTotal = entry.installmentTotal ?? null
-    draft.excludeFromCalc = entry.excludeFromCalc ?? false
-    draft.recurrence = 1
+  [() => props.entry, () => props.open],
+  ([entry, open]) => {
+    if (!open) return
+    clearErrors()
+    const today = new Date()
+    const todayDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+    Object.assign(draft, {
+      id: entry?.id ?? (props.creating ? crypto.randomUUID() : ''),
+      title: entry?.title ?? '',
+      description: entry?.description ?? '',
+      amount: String(entry?.amount ?? ''),
+      kind: entry?.kind ?? 'expense',
+      status: entry?.status ?? 'pending',
+      dueDate: entry?.dueDate ?? todayDate,
+      competenceDate: entry?.competenceDate ?? entry?.dueDate ?? todayDate,
+      accountId: entry?.accountId ?? '',
+      categoryId: entry?.categoryId ?? '',
+      installmentIndex: entry?.installmentIndex ?? null,
+      installmentTotal: entry?.installmentTotal ?? null,
+      excludeFromCalc: entry?.excludeFromCalc ?? false,
+      recurrence: 1,
+    })
+    competenceTouched.value = Boolean(
+      entry && entry.competenceDate !== entry.dueDate,
+    )
+    detailsOpen.value = Boolean(
+      draft.description ||
+      draft.excludeFromCalc ||
+      isInstallment.value ||
+      draft.competenceDate !== draft.dueDate,
+    )
   },
-  { immediate: true }
+  { immediate: true },
 )
-
-const onSave = () => {
-  const amount = Number.parseFloat(draft.amount)
+watch(
+  () => draft.dueDate,
+  (date) => {
+    if (props.creating && !competenceTouched.value) draft.competenceDate = date
+  },
+)
+// Clamp only the day when copying into shorter months, preserving the original date and values.
+function shiftIsoMonths(iso: string, add: number): string {
+  const [year, month, day] = iso.split('-').map(Number)
+  if (!year || !month || !day) return iso
+  const lastDay = new Date(Date.UTC(year, month + add, 0)).getUTCDate()
+  return new Date(Date.UTC(year, month - 1 + add, Math.min(day, lastDay)))
+    .toISOString()
+    .slice(0, 10)
+}
+async function showValidation() {
+  if (
+    errors.competenceDate ||
+    errors.recurrence ||
+    errors.installmentIndex ||
+    errors.installmentTotal
+  )
+    detailsOpen.value = true
+  await nextTick()
+  const invalid = form.value?.querySelector<HTMLElement>(
+    '[aria-invalid="true"]',
+  )
+  ;(invalid?.querySelector<HTMLElement>('[role="spinbutton"][contenteditable="true"]') ?? invalid)?.focus()
+  invalid?.scrollIntoView({ block: 'nearest' })
+}
+function onSave() {
+  if (props.busy) return
+  clearErrors()
+  const amount = String(draft.amount).trim() === '' ? NaN : Number(draft.amount)
   const dueDate = toIsoDate(draft.dueDate)
   const competenceDate = toIsoDate(draft.competenceDate)
-
-  if (!draft.id || Number.isNaN(amount) || !dueDate || !competenceDate) return
-
-  const kind = draft.kind === 'income' ? 'income' : 'expense'
-  const status = draft.status === 'paid' || draft.status === 'review' ? draft.status : 'pending'
+  const recurrence = props.allowRecurrence ? Number(draft.recurrence) : 1
+  if (!draft.title.trim()) errors.title = 'Informe uma descrição.'
+  if (!Number.isFinite(amount) || amount < 0)
+    errors.amount = 'Informe um valor igual ou maior que zero.'
+  if (!dueDate) errors.dueDate = 'Informe uma data válida.'
+  if (!competenceDate) errors.competenceDate = 'Informe uma competência válida.'
+  if (!Number.isInteger(recurrence) || recurrence < 1 || recurrence > 120)
+    errors.recurrence = 'Use um número inteiro entre 1 e 120.'
+  const installmentIndex =
+    draft.installmentIndex == null || draft.installmentIndex === ''
+      ? null
+      : Number(draft.installmentIndex)
+  const installmentTotal =
+    draft.installmentTotal == null || draft.installmentTotal === ''
+      ? null
+      : Number(draft.installmentTotal)
+  if (isInstallment.value) {
+    if (
+      installmentIndex == null ||
+      !Number.isInteger(installmentIndex) ||
+      installmentIndex < 1
+    )
+      errors.installmentIndex = 'Informe o número da parcela.'
+    if (
+      installmentTotal == null ||
+      !Number.isInteger(installmentTotal) ||
+      installmentTotal < 1
+    )
+      errors.installmentTotal = 'Informe o total de parcelas.'
+    if (
+      installmentIndex != null &&
+      installmentTotal != null &&
+      installmentIndex > installmentTotal
+    )
+      errors.installmentIndex = 'A parcela não pode superar o total.'
+  }
+  if (!draft.id)
+    localError.value =
+      'Nenhum lançamento selecionado. Feche e abra o editor novamente.'
+  if (
+    Object.keys(errors).length ||
+    localError.value ||
+    !dueDate ||
+    !competenceDate
+  ) {
+    void showValidation()
+    return
+  }
   const shared = {
-    title: draft.title.trim() || 'Lançamento',
+    title: draft.title.trim(),
     description: draft.description,
     amount,
-    kind: kind as FinanceEntry['kind'],
+    kind: draft.kind === 'income' ? ('income' as const) : ('expense' as const),
     accountId: draft.accountId || null,
     categoryId: draft.categoryId || null,
-    installmentIndex: draft.installmentIndex,
-    installmentTotal: draft.installmentTotal,
+    installmentIndex,
+    installmentTotal,
     excludeFromCalc: draft.excludeFromCalc,
   }
-
-  const months = props.allowRecurrence ? Math.min(120, Math.max(1, draft.recurrence || 1)) : 1
-  const entries: Partial<FinanceEntry>[] = [{
-    ...shared,
-    id: draft.id,
-    status: status as FinanceEntry['status'],
-    dueDate,
-    competenceDate,
-  }]
-
-  // Cópias dos meses seguintes (somente quando há recorrência)
-  for (let i = 1; i < months; i += 1) {
+  const status: FinanceEntry['status'] =
+    draft.status === 'paid' || draft.status === 'review'
+      ? draft.status
+      : 'pending'
+  const entries: Partial<FinanceEntry>[] = [
+    { ...shared, id: draft.id, status, dueDate, competenceDate },
+  ]
+  for (let index = 1; index < recurrence; index++)
     entries.push({
       ...shared,
       id: crypto.randomUUID(),
       status: 'pending',
-      dueDate: shiftIsoMonths(dueDate, i),
-      competenceDate: shiftIsoMonths(competenceDate, i),
+      dueDate: shiftIsoMonths(dueDate, index),
+      competenceDate: shiftIsoMonths(competenceDate, index),
     })
-  }
-
   emit('save', entries)
 }
-
-const onDelete = () => {
-  if (!draft.id) return
+function onDelete() {
+  if (props.busy) return
+  if (!draft.id) {
+    localError.value = 'Nenhum lançamento selecionado para excluir.'
+    return
+  }
   emit('delete', draft.id)
 }
 </script>
 
 <style scoped>
-/* ── Overlay ─────────────────────────────────────────────── */
-.sheet-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 400;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  background: var(--overlay);
-  backdrop-filter: blur(4px);
-}
-
-/* ── Container (bottom sheet) ────────────────────────────── */
-.sheet-container {
-  width: 100%;
-  max-width: 640px;
-  max-height: 95dvh;
-  background: var(--surface);
-  border-radius: 24px 24px 0 0;
-  border: 1px solid var(--border);
-  border-bottom: none;
-  box-shadow: 0 -8px 40px oklch(0% 0 0 / 0.25);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* ── Handle ──────────────────────────────────────────────── */
-.sheet-handle-area {
-  display: flex;
-  justify-content: center;
-  padding: var(--ds-space-3) 0 4px;
-  cursor: pointer;
-}
-.sheet-handle {
-  width: 40px;
-  height: 4px;
-  border-radius: 99px;
-  background: var(--border);
-}
-
-/* ── Header ──────────────────────────────────────────────── */
-.sheet-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-  padding: 8px var(--ds-space-5) var(--ds-space-4);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.sheet-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text);
-  line-height: 1.2;
-}
-.sheet-subtitle {
-  font-size: 13px;
-  color: var(--text3);
-  margin-top: 3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 260px;
-}
-.sheet-close {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text2);
-  flex-shrink: 0;
-  touch-action: manipulation;
-  transition: background 0.12s;
-}
-.sheet-close:hover { background: var(--surface2); filter: brightness(0.9); }
-
-/* ── Body ────────────────────────────────────────────────── */
-.sheet-body {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: var(--ds-space-4) var(--ds-space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-}
-
-/* ── Field primitives ────────────────────────────────────── */
-.field-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-field-gap);
-  flex: 1;
-}
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ds-space-3);
-}
-.field-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.field-input {
-  width: 100%;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 0 var(--ds-space-4);
-  height: var(--ds-control-height);
-  font-size: var(--ds-control-font-size);
-  font-weight: 500;
-  color: var(--text);
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  box-sizing: border-box;
-  -webkit-appearance: none;
-}
-.field-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-dim);
-}
-.field-input::placeholder { color: var(--text3); }
-
-.field-select {
-  width: 100%;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 0 var(--ds-space-4);
-  height: var(--ds-control-height);
-  font-size: var(--ds-control-font-size);
-  font-weight: 500;
-  color: var(--text);
-  font-family: inherit;
-  outline: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 18px;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  box-sizing: border-box;
-  cursor: pointer;
-  -webkit-appearance: none;
-}
-.field-select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-dim);
-}
-
-.field-textarea {
-  height: auto;
-  padding: var(--ds-space-3) var(--ds-space-4);
-  resize: none;
-  line-height: 1.5;
-}
-
-/* ── Valor com prefixo ───────────────────────────────────── */
-.amount-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.amount-prefix {
-  position: absolute;
-  left: 14px;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text3);
-  pointer-events: none;
-}
-.amount-input {
-  padding-left: 42px;
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--text);
-}
-
-/* ── Segmented control Tipo ──────────────────────────────── */
-.segmented {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  height: var(--ds-control-height);
-}
-.seg-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text3);
-  transition: background 0.15s, color 0.15s;
-  touch-action: manipulation;
-}
-.seg-btn:first-child { border-right: 1px solid var(--border); }
-.seg-active-expense {
-  background: color-mix(in srgb, var(--danger) 14%, transparent);
-  color: var(--danger);
-}
-.seg-active-income {
-  background: color-mix(in srgb, var(--success) 14%, transparent);
-  color: var(--success);
-}
-
-/* ── Toggle excluir do cálculo ───────────────────────────── */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: var(--ds-space-3) var(--ds-space-4);
-  cursor: pointer;
-}
-.toggle-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.toggle-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-.toggle-hint {
-  font-size: 12px;
-  color: var(--text3);
-}
-.toggle-switch {
-  flex-shrink: 0;
-  width: 44px;
-  height: 24px;
-  border-radius: 99px;
-  background: var(--border);
-  border: none;
-  cursor: pointer;
-  position: relative;
-  transition: background 0.2s;
+.entry-editor fieldset {
+  min-width: 0;
+  margin: 0;
   padding: 0;
+  border: 0;
 }
-.toggle-switch.toggle-on {
-  background: var(--primary);
+.entry-editor__details {
+  padding-top: var(--ds-space-3);
+  border-top: var(--border-width) solid var(--border);
 }
-.toggle-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.2s;
-  display: block;
-  box-shadow: 0 1px 3px oklch(0% 0 0 / 0.2);
+.entry-editor__advanced {
+  margin-top: var(--ds-space-3);
 }
-.toggle-switch.toggle-on .toggle-thumb {
-  background: var(--on-primary);
-  transform: translateX(20px);
-}
-
-/* ── Footer ──────────────────────────────────────────────── */
-.sheet-footer {
+.entry-editor__footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--ds-space-3);
-  padding: var(--ds-space-4) var(--ds-space-5);
-  border-top: 1px solid var(--border);
-  background: var(--surface);
-  flex-shrink: 0;
 }
-.btn-group {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
+.entry-editor__spacer {
+  flex: 1;
 }
-.btn-cancel {
-  background: var(--surface2);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 0 var(--ds-space-5);
-  height: var(--ds-control-height);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text2);
-  cursor: pointer;
-  font-family: inherit;
-  touch-action: manipulation;
-  transition: filter 0.12s;
-}
-.btn-cancel:hover { filter: brightness(0.95); }
-.btn-save {
-  background: var(--primary);
-  border: none;
-  border-radius: 10px;
-  padding: 0 var(--ds-space-6);
-  height: var(--ds-control-height);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--on-primary);
-  cursor: pointer;
-  font-family: inherit;
-  touch-action: manipulation;
-  transition: filter 0.12s;
-}
-.btn-save:hover { filter: brightness(1.1); }
-.btn-delete {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 0 var(--ds-space-4);
-  height: var(--ds-control-height);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--danger);
-  cursor: pointer;
-  font-family: inherit;
-  touch-action: manipulation;
-  transition: background 0.12s;
-  white-space: nowrap;
-}
-.btn-delete:hover { background: var(--danger-light); }
-
-/* ── Animação de entrada ─────────────────────────────────── */
-.sheet-enter-active,
-.sheet-leave-active {
-  transition: opacity 0.22s ease;
-}
-.sheet-enter-active .sheet-container,
-.sheet-leave-active .sheet-container {
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.sheet-enter-from,
-.sheet-leave-to {
-  opacity: 0;
-}
-.sheet-enter-from .sheet-container,
-.sheet-leave-to .sheet-container {
-  transform: translateY(100%);
-}
-
-/* ── Desktop: dialog centralizado ───────────────────────── */
-@media (min-width: 640px) {
-  .sheet-overlay {
-    align-items: center;
-    padding: var(--ds-space-4);
-  }
-  .sheet-container {
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    max-height: 92dvh;
-  }
-  .sheet-handle-area { display: none; }
-  .sheet-enter-from .sheet-container,
-  .sheet-leave-to .sheet-container {
-    transform: scale(0.95) translateY(8px);
+@media (max-width: 360px) {
+  .entry-editor :deep(.ds-form-row) {
+    grid-template-columns: 1fr;
   }
 }
 </style>

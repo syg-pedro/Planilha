@@ -1,295 +1,172 @@
 <template>
-  <div
-    ref="triggerRef"
-    class="bd-trigger"
-    :class="{ 'bd-trigger--open': open }"
-    :style="{ height: height ? height + 'px' : undefined }"
-    role="button"
-    tabindex="0"
-    :aria-label="ariaLabel || undefined"
-    :aria-expanded="open"
-    aria-haspopup="listbox"
-    @click="toggle"
-    @keydown.enter.prevent="onEnter"
-    @keydown.space.prevent="toggle"
-    @keydown.down.prevent="open ? move(1) : openMenu()"
-    @keydown.up.prevent="open && move(-1)"
-    @keydown.esc="open = false"
+  <UFormField
+    :label="label || undefined"
+    :help="hint || undefined"
+    :error="error || undefined"
+    :name="typeof $attrs.name === 'string' ? $attrs.name : undefined"
+    class="base-field base-dropdown"
+    :class="$attrs.class"
+    :style="$attrs.style as any"
   >
-    <span class="bd-value" :class="{ 'bd-value--placeholder': !selectedLabel }">
-      {{ selectedLabel || placeholder }}
-    </span>
-    <svg
-      class="bd-caret"
-      :style="{ transform: open ? 'rotate(180deg)' : 'none' }"
-      width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-    >
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  </div>
-
-  <Teleport to="body">
-    <Transition name="bd-pop">
-      <ul
-        v-if="open"
-        ref="listRef"
-        class="bd-list"
-        :style="listStyle"
-        role="listbox"
-      >
-        <li
-          v-for="(opt, i) in normalizedOptions"
-          :key="opt.value"
-          class="bd-opt"
-          :class="{ 'bd-opt--active': String(opt.value) === String(modelValue), 'bd-opt--cursor': i === cursor }"
-          role="option"
-          :aria-selected="String(opt.value) === String(modelValue)"
-          @click="select(opt.value)"
-          @mouseenter="cursor = i"
-        >
-          <span class="bd-opt-label">{{ opt.label }}</span>
-          <svg
-            v-if="String(opt.value) === String(modelValue)"
-            width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </li>
-      </ul>
-    </Transition>
-  </Teleport>
+    <USelect
+      :id="fieldId"
+      ref="control"
+      v-bind="controlAttrs"
+      :model-value="selectedValue"
+      :open="open"
+      :items="items"
+      value-key="value"
+      label-key="label"
+      :placeholder="placeholder"
+      :disabled="disabled"
+      :aria-readonly="readonly || undefined"
+      :aria-label="ariaLabel || undefined"
+      :style="height ? { height: `${height}px` } : undefined"
+      class="bd-trigger base-select__trigger w-full"
+      :ui="{
+        base: 'finance-control',
+        content: 'base-select-menu',
+        item: 'base-select-option',
+      }"
+      :content="{ position: 'popper', sideOffset: 4, collisionPadding: 8 }"
+      @update:model-value="updateValue"
+      @update:open="updateOpen"
+    />
+  </UFormField>
 </template>
 
 <script setup lang="ts" generic="T extends string = string">
-import { ref, computed, useSlots, nextTick, onBeforeUnmount, watchEffect } from 'vue'
+import {
+  computed,
+  onBeforeUnmount,
+  onDeactivated,
+  ref,
+  useAttrs,
+  useId,
+  useSlots,
+  watch,
+} from 'vue'
 
-interface Option { value: T; label: string }
-
-const props = withDefaults(defineProps<{
-  modelValue: T
-  options?: Option[]
-  placeholder?: string
-  height?: number
-  ariaLabel?: string
-}>(), {
-  options: undefined,
-  placeholder: 'Selecionar...',
-  height: undefined,
-  ariaLabel: undefined,
-})
-
-const emit = defineEmits<{ (e: 'update:modelValue', value: T): void }>()
-
+defineOptions({ inheritAttrs: false })
+interface Option {
+  value: T
+  label: string
+  disabled?: boolean
+}
+const props = withDefaults(
+  defineProps<{
+    modelValue: T
+    options?: Option[]
+    id?: string
+    label?: string
+    hint?: string
+    error?: string
+    placeholder?: string
+    height?: number
+    ariaLabel?: string
+    disabled?: boolean
+    readonly?: boolean
+  }>(),
+  {
+    options: undefined,
+    id: undefined,
+    label: '',
+    hint: '',
+    error: '',
+    placeholder: 'Selecionar…',
+    height: undefined,
+    ariaLabel: undefined,
+    disabled: false,
+    readonly: false,
+  },
+)
+const emit = defineEmits<{ 'update:modelValue': [value: T] }>()
+const attrs = useAttrs()
 const slots = useSlots()
-const triggerRef = ref<HTMLElement | null>(null)
-const listRef = ref<HTMLElement | null>(null)
+const generatedId = useId()
+const fieldId = computed(() => props.id || `select-${generatedId}`)
+// Reka Select reserves an empty string for clearing. Keep the legacy empty option contract at this boundary.
+const emptyValue = `base-empty-${generatedId}`
+const control = ref<{ triggerRef: HTMLButtonElement | null } | null>(null)
 const open = ref(false)
-const cursor = ref(-1)
-const pos = ref({ left: 0, top: 0, width: 0, maxH: 280 })
-
-// ── Opções: via prop `options` ou parseando <option> do slot ──────────────────
-const getText = (children: unknown): string => {
+const controlAttrs = computed(() =>
+  Object.fromEntries(
+    Object.entries(attrs).filter(([key]) => key !== 'class' && key !== 'style'),
+  ),
+)
+function text(children: unknown): string {
   if (typeof children === 'string') return children
-  if (Array.isArray(children)) return children.map(getText).join('')
-  if (children && typeof children === 'object' && 'children' in (children as object)) {
-    return getText((children as { children: unknown }).children)
-  }
+  if (Array.isArray(children)) return children.map(text).join('')
+  if (children && typeof children === 'object' && 'children' in children)
+    return text(children.children)
   return ''
 }
-const flatten = (nodes: unknown[]): unknown[] => {
-  const out: unknown[] = []
-  for (const node of nodes) {
-    if (!node) continue
-    if (Array.isArray(node)) { out.push(...flatten(node)); continue }
-    if (typeof node === 'object') {
-      const vn = node as { type?: unknown; children?: unknown }
-      if (vn.type === 'option') out.push(vn)
-      else if (Array.isArray(vn.children)) out.push(...flatten(vn.children))
+function optionsFromSlot(nodes: unknown[]): Option[] {
+  return nodes.flatMap((node) => {
+    if (!node || typeof node !== 'object') return []
+    if (Array.isArray(node)) return optionsFromSlot(node)
+    const vnode = node as {
+      type?: unknown
+      children?: unknown
+      props?: Record<string, unknown>
     }
-  }
-  return out
+    if (vnode.type === 'option')
+      return [
+        {
+          value: String(vnode.props?.value ?? '') as T,
+          label: text(vnode.children) || String(vnode.props?.value ?? ''),
+          disabled:
+            vnode.props?.disabled === '' || vnode.props?.disabled === true,
+        },
+      ]
+    return Array.isArray(vnode.children) ? optionsFromSlot(vnode.children) : []
+  })
 }
-const slotOptions = computed<Option[]>(() => {
-  const content = slots.default?.()
-  if (!content) return []
-  return flatten(content)
-    .map((v) => {
-      const vn = v as { props?: Record<string, unknown>; children?: unknown }
-      return {
-        value: String(vn.props?.value ?? '') as T,
-        label: getText(vn.children) || String(vn.props?.value ?? ''),
-      }
-    })
-})
-const normalizedOptions = computed<Option[]>(() => props.options ?? slotOptions.value)
-
-const selectedLabel = computed(() =>
-  normalizedOptions.value.find((o) => String(o.value) === String(props.modelValue))?.label ?? ''
+const items = computed(() =>
+  (props.options ?? optionsFromSlot(slots.default?.() ?? [])).map((option) => ({
+    ...option,
+    value: option.value === '' ? emptyValue : option.value,
+  })),
 )
-
-const listStyle = computed(() => ({
-  position: 'fixed' as const,
-  left: pos.value.left + 'px',
-  top: pos.value.top + 'px',
-  width: pos.value.width + 'px',
-  maxHeight: pos.value.maxH + 'px',
-}))
-
-const place = () => {
-  const el = triggerRef.value
-  if (!el) return
-  const r = el.getBoundingClientRect()
-  const desired = Math.min(280, normalizedOptions.value.length * 42 + 8)
-  const spaceBelow = window.innerHeight - r.bottom
-  const openUp = spaceBelow < desired + 12 && r.top > spaceBelow
-  pos.value = {
-    left: r.left,
-    width: r.width,
-    top: openUp ? Math.max(8, r.top - Math.min(desired, r.top - 12) - 6) : r.bottom + 6,
-    maxH: openUp ? Math.min(desired, r.top - 14) : Math.min(desired, spaceBelow - 14),
+const selectedValue = computed(() =>
+  props.modelValue === '' ? emptyValue : props.modelValue,
+)
+function updateValue(value: string | undefined) {
+  if (!props.readonly && !props.disabled)
+    emit('update:modelValue', (value === emptyValue ? '' : (value ?? '')) as T)
+}
+function updateOpen(value: boolean) {
+  open.value = !props.readonly && !props.disabled && value
+}
+function close() {
+  open.value = false
+  removeBackListeners()
+}
+function onBack(event: Event) {
+  if (!open.value || event.defaultPrevented) return
+  event.preventDefault()
+  event.stopImmediatePropagation()
+  close()
+}
+function removeBackListeners() {
+  if (!import.meta.client) return
+  window.removeEventListener('finance:back', onBack, true)
+  window.removeEventListener('finance:close-popup', onBack, true)
+}
+watch(open, (value) => {
+  removeBackListeners()
+  if (value && import.meta.client) {
+    window.addEventListener('finance:back', onBack, true)
+    window.addEventListener('finance:close-popup', onBack, true)
   }
-}
-
-const onScroll = () => place()
-const onDocPointer = (e: MouseEvent) => {
-  const t = e.target as Node
-  if (triggerRef.value?.contains(t) || listRef.value?.contains(t)) return
-  open.value = false
-}
-
-const addListeners = () => {
-  document.addEventListener('mousedown', onDocPointer)
-  window.addEventListener('scroll', onScroll, true)
-  window.addEventListener('resize', onScroll)
-}
-const removeListeners = () => {
-  document.removeEventListener('mousedown', onDocPointer)
-  window.removeEventListener('scroll', onScroll, true)
-  window.removeEventListener('resize', onScroll)
-}
-
-const openMenu = () => {
-  if (open.value) return
-  place()
-  open.value = true
-  cursor.value = normalizedOptions.value.findIndex((o) => String(o.value) === String(props.modelValue))
-  nextTick(() => { place(); addListeners() })
-}
-const toggle = () => {
-  if (open.value) open.value = false
-  else openMenu()
-}
-
-const select = (value: T) => {
-  emit('update:modelValue', value)
-  open.value = false
-}
-
-const move = (delta: number) => {
-  const n = normalizedOptions.value.length
-  if (!n) return
-  cursor.value = (cursor.value + delta + n) % n
-}
-
-const onEnter = () => {
-  if (!open.value) { openMenu(); return }
-  const opt = normalizedOptions.value[cursor.value]
-  if (opt) select(opt.value)
-  else open.value = false
-}
-
-watchEffect(() => { if (!open.value) removeListeners() })
-onBeforeUnmount(removeListeners)
+})
+watch(
+  () => props.disabled || props.readonly,
+  (value) => {
+    if (value) close()
+  },
+)
+onDeactivated(close)
+onBeforeUnmount(removeBackListeners)
+defineExpose({ focus: () => control.value?.triggerRef?.focus(), close })
 </script>
-
-<style scoped>
-.bd-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  height: var(--ds-control-height);
-  box-sizing: border-box;
-  padding: 0 var(--ds-space-3);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: var(--ds-control-font-size);
-  color: var(--text);
-  outline: none;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-  user-select: none;
-}
-.bd-trigger:focus-visible,
-.bd-trigger--open {
-  border-color: var(--border);
-  box-shadow: 3px 3px 0 var(--primary);
-  transform: translate(-1px, -1px);
-}
-.bd-value {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 650;
-}
-.bd-value--placeholder { color: var(--text3); }
-.bd-caret {
-  flex-shrink: 0;
-  color: var(--text3);
-  transition: transform 0.2s;
-}
-</style>
-
-<style>
-/* Lista teleportada para o body (não-scoped) */
-.bd-list {
-  z-index: 1000;
-  margin: 0;
-  padding: 4px;
-  list-style: none;
-  overflow-y: auto;
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
-}
-.bd-opt {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: var(--ds-space-2) var(--ds-space-3);
-  border: 2px solid transparent;
-  border-radius: var(--radius-xs);
-  font-size: 14px;
-  font-weight: 650;
-  color: var(--text);
-  cursor: pointer;
-}
-.bd-opt-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.bd-opt--cursor {
-  background: var(--surface2);
-  border-color: var(--border);
-}
-.bd-opt--active {
-  color: var(--text);
-  background: var(--primary-dim);
-  border-color: var(--border);
-  font-weight: 700;
-}
-.bd-pop-enter-active,
-.bd-pop-leave-active { transition: opacity var(--ds-motion-base) linear, transform var(--ds-motion-base) linear; }
-.bd-pop-enter-from,
-.bd-pop-leave-to { opacity: 0; transform: translate(4px, 4px); }
-</style>

@@ -1,155 +1,17 @@
 <template>
-  <div class="subs">
-
-    <!-- Totalizadores -->
-    <div class="subs__totals">
-      <div class="subs__total subs__total--primary">
-        <p class="subs__total-label">Total mensal</p>
-        <p class="subs__total-value ds-money">{{ fmt(summary.monthly) }}</p>
-      </div>
-      <div class="subs__total">
-        <p class="subs__total-label subs__total-label--muted">Projeção anual</p>
-        <p class="subs__total-value subs__total-value--plain ds-money">{{ fmt(summary.annual) }}</p>
-      </div>
-    </div>
-
-    <!-- Barra de ações -->
-    <div class="subs__toolbar">
-      <p class="subs__meta">
-        <span>{{ summary.count }} ativa(s)</span>
-        <span class="subs__meta-sep">·</span>
-        <span>Próx. 7 dias <strong class="subs__meta-strong ds-money">{{ fmt(summary.next7) }}</strong></span>
-      </p>
-      <div class="subs__actions">
-        <input
-          v-model="search"
-          class="subs__search"
-          placeholder="Buscar assinatura..."
-          aria-label="Buscar assinatura"
-        />
-        <BaseButton variant="primary" size="sm" @click="openModal(null)">
-          <BaseIcon name="plus" :size="14" color="var(--on-primary)" /> Nova assinatura
-        </BaseButton>
-      </div>
-    </div>
-
-    <!-- Empty state -->
-    <BaseEmptyState
-      v-if="subscriptionRows.length === 0"
-      icon="subscription"
-      title="Nenhuma assinatura"
-      body="Adicione assinaturas e serviços recorrentes para acompanhar seus gastos mensais."
-    >
-      <BaseButton variant="primary" class="subs__empty-btn" @click="openModal(null)">
-        <BaseIcon name="plus" :size="14" color="var(--on-primary)" /> Adicionar
-      </BaseButton>
-    </BaseEmptyState>
-
-    <!-- Grid de assinaturas -->
-    <div v-else class="subs__grid">
-      <article v-for="row in visibleRows" :key="row.rule.id" class="subs__card">
-        <span class="subs__mark" :style="{ background: row.color }" />
-        <div class="subs__info">
-          <p class="subs__name">{{ row.rule.title }}</p>
-          <p class="subs__next">Próx. cobrança {{ row.nextCharge }}</p>
-          <p v-if="row.metaLine" class="subs__tags">{{ row.metaLine }}</p>
-        </div>
-        <div class="subs__values">
-          <span class="subs__amount ds-money">{{ fmt(row.rule.amount) }}</span>
-          <span class="subs__annual ds-money">{{ fmt(row.rule.amount * 12) }} / ano</span>
-        </div>
-        <div class="subs__card-actions">
-          <button class="subs__icon-btn" title="Editar" @click="openModal(row.rule)">
-            <BaseIcon name="settings" :size="14" />
-          </button>
-          <button class="subs__icon-btn subs__icon-btn--danger" title="Excluir" @click="deleteRule(row.rule)">
-            <BaseIcon name="close" :size="14" />
-          </button>
-        </div>
-      </article>
-    </div>
-
-    <!-- Modal: criar/editar assinatura -->
-    <BaseModal :open="showModal" :title="editingRule ? 'Editar assinatura' : 'Nova assinatura'" @close="closeModal">
-      <div class="subs__form">
-
-        <!-- Nome -->
-        <div class="subs__field">
-          <label class="subs__label">Nome do serviço</label>
-          <input v-model="form.title" class="subs__input" placeholder="Ex: Netflix, Spotify…" />
-        </div>
-
-        <!-- Descrição -->
-        <div class="subs__field">
-          <label class="subs__label">Descrição (opcional)</label>
-          <input v-model="form.description" class="subs__input" placeholder="Ex: Parcela fixa mensal" />
-        </div>
-
-        <!-- Valor + Vencimento -->
-        <div class="subs__pair">
-          <div class="subs__field">
-            <label class="subs__label">Valor (R$)</label>
-            <input v-model.number="form.amount" class="subs__input ds-money" type="number" min="0" step="0.01" />
-          </div>
-          <div class="subs__field">
-            <label class="subs__label">Dia de vencimento</label>
-            <input v-model.number="form.dueDay" class="subs__input ds-money" type="number" min="1" max="31" placeholder="Ex: 5" />
-          </div>
-        </div>
-
-        <!-- Categoria + Conta -->
-        <div class="subs__pair">
-          <div class="subs__field">
-            <label class="subs__label">Categoria</label>
-            <BaseDropdown v-model="form.categoryId">
-              <option value="">Sem categoria</option>
-              <option v-for="cat in store.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-            </BaseDropdown>
-          </div>
-          <div class="subs__field">
-            <label class="subs__label">Conta</label>
-            <BaseDropdown v-model="form.accountId">
-              <option value="">Sem conta</option>
-              <option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option>
-            </BaseDropdown>
-          </div>
-        </div>
-
-        <!-- Erro -->
-        <p v-if="errorMsg" class="subs__error">{{ errorMsg }}</p>
-
-        <div class="subs__form-actions">
-          <BaseButton variant="ghost" @click="closeModal">Cancelar</BaseButton>
-          <BaseButton
-            variant="primary"
-            :loading="saving"
-            :disabled="!form.title.trim() || form.amount <= 0"
-            @click="saveSubscription"
-          >{{ saving ? 'Salvando...' : (editingRule ? 'Salvar' : 'Criar') }}</BaseButton>
-        </div>
-      </div>
-    </BaseModal>
-
-    <!-- Modal: confirmar exclusão -->
-    <BaseModal :open="deleteConfirm.open" title="Excluir assinatura" @close="deleteConfirm.open = false">
-      <div class="subs__form">
-        <p class="subs__confirm">
-          Excluir <strong>{{ deleteConfirm.title }}</strong>? Esta ação remove a regra e todos os lançamentos automáticos futuros associados.
-        </p>
-        <div class="subs__form-actions">
-          <BaseButton variant="ghost" @click="deleteConfirm.open = false">Cancelar</BaseButton>
-          <BaseButton variant="danger" :loading="deleting" @click="confirmDelete">
-            {{ deleting ? 'Excluindo...' : 'Excluir' }}
-          </BaseButton>
-        </div>
-      </div>
-    </BaseModal>
-
+  <div class="space-y-4">
+    <div class="grid gap-3 sm:grid-cols-2"><UCard title="Total mensal"><p class="text-xl font-semibold tabular-nums text-primary">{{ fmt(summary.monthly) }}</p></UCard><UCard title="Projeção anual"><p class="text-xl font-semibold tabular-nums text-highlighted">{{ fmt(summary.annual) }}</p></UCard></div>
+    <div class="flex flex-wrap items-center justify-between gap-3"><p class="text-sm text-muted">{{ summary.count }} ativa(s) · Próximos 7 dias: <strong class="text-highlighted">{{ fmt(summary.next7) }}</strong></p><div class="flex flex-wrap gap-2"><BaseInput v-model="search" placeholder="Buscar assinatura..." aria-label="Buscar assinatura" /><BaseButton @click="openModal(null)"><BaseIcon name="plus" :size="16" /> Nova assinatura</BaseButton></div></div>
+    <BaseEmptyState v-if="subscriptionRows.length === 0" icon="subscription" title="Nenhuma assinatura" body="Adicione assinaturas e serviços recorrentes para acompanhar seus gastos mensais."><BaseButton @click="openModal(null)">Adicionar assinatura</BaseButton></BaseEmptyState>
+    <div v-else class="grid gap-3 md:grid-cols-2"><UCard v-for="row in visibleRows" :key="row.rule.id" :title="row.rule.title" :description="`Próxima cobrança ${row.nextCharge}`"><p class="text-xl font-semibold tabular-nums text-highlighted">{{ fmt(row.rule.amount) }}<span class="ml-2 text-xs font-normal text-muted">{{ fmt(row.rule.amount * 12) }} / ano</span></p><p v-if="row.metaLine" class="mt-2 text-sm text-muted">{{ row.metaLine }}</p><template #footer><div class="flex justify-end gap-2"><BaseButton variant="ghost" :aria-label="`Editar ${row.rule.title}`" @click="openModal(row.rule)"><BaseIcon name="edit" :size="16" /> Editar</BaseButton><BaseButton variant="danger" :aria-label="`Excluir ${row.rule.title}`" @click="deleteRule(row.rule)">Excluir</BaseButton></div></template></UCard></div>
+    <BaseModal :open="showModal" :busy="saving" :title="editingRule ? 'Editar assinatura' : 'Nova assinatura'" @close="closeModal"><div class="space-y-4"><BaseInput v-model="form.title" label="Nome do serviço" placeholder="Ex.: Netflix, Spotify…" required /><BaseInput v-model="form.description" label="Descrição (opcional)" /><div class="grid gap-3 sm:grid-cols-2"><BaseInput v-model.number="form.amount" label="Valor (R$)" type="number" inputmode="decimal" min="0" step="0.01" required /><BaseInput v-model.number="form.dueDay" label="Dia de vencimento" type="number" inputmode="numeric" min="1" max="31" placeholder="Ex.: 5" /><BaseDropdown v-model="form.categoryId" label="Categoria"><option value="">Sem categoria</option><option v-for="cat in store.categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option></BaseDropdown><BaseDropdown v-model="form.accountId" label="Conta"><option value="">Sem conta</option><option v-for="acc in store.accounts" :key="acc.id" :value="acc.id">{{ acc.name }}</option></BaseDropdown></div><UAlert v-if="errorMsg" color="error" variant="subtle" :description="errorMsg" /></div><template #footer><div class="flex w-full justify-end gap-2"><BaseButton variant="ghost" :disabled="saving" @click="closeModal">Cancelar</BaseButton><BaseButton :loading="saving" :disabled="!form.title.trim() || form.amount <= 0" @click="saveSubscription">{{ editingRule ? 'Salvar' : 'Criar' }}</BaseButton></div></template></BaseModal>
+    <BaseModal :open="deleteConfirm.open" :busy="deleting" title="Excluir assinatura" @close="deleteConfirm.open = false"><UAlert color="warning" variant="subtle" :title="deleteConfirm.title" description="Esta ação remove a regra e todos os lançamentos automáticos futuros associados." /><template #footer><div class="flex w-full justify-end gap-2"><BaseButton variant="ghost" :disabled="deleting" @click="deleteConfirm.open = false">Cancelar</BaseButton><BaseButton variant="danger" :loading="deleting" @click="confirmDelete">Excluir</BaseButton></div></template></BaseModal>
   </div>
 </template>
-
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { sumMoney } from '#shared/matrix'
+import { financialToday, nextMonthlyDueDate } from './auxiliaryFinancialViews'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 import { makeId } from '#shared/id'
 import type { FinanceRule } from '#shared/types'
@@ -164,15 +26,10 @@ const fmt      = (v: number) => currency.format(v)
 
 const search = ref('')
 
-// Próxima cobrança a partir do dia de vencimento da regra.
+const today = financialToday(store.settings.timezone)
 const nextChargeLabel = (dueDay: number | null) => {
-  if (!dueDay) return 'não definida'
-  const today  = new Date()
-  const offset = dueDay >= today.getUTCDate() ? 0 : 1
-  const first  = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + offset, 1))
-  const lastDay = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate()
-  const target  = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth(), Math.min(dueDay, lastDay)))
-  return target.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' })
+  const date = nextMonthlyDueDate(dueDay, today)
+  return date ? new Date(`${date}T12:00:00Z`).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'UTC' }) : 'não definida'
 }
 
 const subscriptionRows = computed(() =>
@@ -202,14 +59,13 @@ const visibleRows = computed(() => {
 
 const summary = computed(() => {
   const rows    = subscriptionRows.value
-  const monthly = rows.reduce((s, r) => s + r.rule.amount, 0)
-  const today    = new Date()
-  const todayDay = today.getUTCDate()
-  const in7      = todayDay + 7
-  const next7    = rows
-    .filter(r => r.rule.dueDay != null && r.rule.dueDay >= todayDay && r.rule.dueDay <= in7)
-    .reduce((s, r) => s + r.rule.amount, 0)
-  return { count: rows.length, monthly, annual: monthly * 12, next7 }
+  const monthly = sumMoney(rows.map(row => row.rule.amount))
+  const end = new Date(`${today}T12:00:00Z`); end.setUTCDate(end.getUTCDate() + 7)
+  const next7 = sumMoney(rows.filter(row => {
+    const due = nextMonthlyDueDate(row.rule.dueDay, today)
+    return due !== null && due <= end.toISOString().slice(0, 10)
+  }).map(row => row.rule.amount))
+  return { count: rows.length, monthly, annual: sumMoney([monthly * 12]), next7 }
 })
 
 // Modal
@@ -250,7 +106,10 @@ const closeModal = () => {
 }
 
 const saveSubscription = async () => {
-  if (!form.value.title.trim() || form.value.amount <= 0) return
+  if (!form.value.title.trim() || !Number.isFinite(Number(form.value.amount)) || form.value.amount <= 0) { errorMsg.value = 'Informe o nome e um valor maior que zero.'; return }
+  const rawDueDay = form.value.dueDay as number | string | null
+  const dueDay = rawDueDay === null || rawDueDay === '' ? null : Number(rawDueDay)
+  if (dueDay !== null && (!Number.isInteger(dueDay) || dueDay < 1 || dueDay > 31)) { errorMsg.value = 'O vencimento deve ser um dia entre 1 e 31.'; return }
   saving.value   = true
   errorMsg.value = ''
   try {
@@ -263,7 +122,7 @@ const saveSubscription = async () => {
       kind:         'expense',
       frequency:    'monthly',
       autoGenerate: true,
-      dueDay:       form.value.dueDay ?? null,
+      dueDay,
       categoryId:   form.value.categoryId || null,
       accountId:    form.value.accountId  || null,
       startsAt:     editingRule.value?.startsAt ?? now,
@@ -294,354 +153,3 @@ const confirmDelete = async () => {
   }
 }
 </script>
-
-<style scoped>
-.subs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-}
-
-/* ── Totalizadores ─────────────────────────────────────────── */
-.subs__totals {
-  display: flex;
-  gap: var(--ds-space-3);
-}
-
-.subs__total {
-  flex: 1;
-  min-width: 0;
-  padding: var(--ds-space-3) var(--ds-space-4);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--ds-radius-md);
-  box-shadow: var(--shadow-sm);
-}
-
-.subs__total--primary {
-  background: var(--primary-dim);
-}
-
-.subs__total-label {
-  margin-bottom: 3px;
-  color: var(--on-primary-dim);
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.subs__total-label--muted {
-  color: var(--text3);
-}
-
-.subs__total-value {
-  color: var(--primary);
-  font-size: 17px;
-  font-weight: 700;
-}
-
-.subs__total-value--plain {
-  color: var(--text);
-}
-
-/* ── Barra de ações ────────────────────────────────────────── */
-.subs__toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--ds-space-3);
-}
-
-.subs__meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text3);
-  font-size: 11.5px;
-  font-weight: 700;
-}
-
-.subs__meta-sep {
-  color: var(--border);
-}
-
-.subs__meta-strong {
-  color: var(--text2);
-  font-weight: 700;
-}
-
-.subs__actions {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  flex-wrap: wrap;
-}
-
-.subs__search {
-  min-width: 200px;
-  height: 34px;
-  padding: 0 var(--ds-space-3);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 12.5px;
-  font-weight: 650;
-  outline: none;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-
-.subs__search::placeholder {
-  color: var(--text3);
-}
-
-.subs__search:focus {
-  box-shadow: var(--shadow-sm);
-  transform: translate(-1px, -1px);
-}
-
-.subs__empty-btn {
-  margin-top: var(--ds-space-3);
-}
-
-/* ── Grid de cards ─────────────────────────────────────────── */
-.subs__grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--ds-space-3);
-}
-
-.subs__card {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-4) var(--ds-space-4);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-
-.subs__card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-md);
-}
-
-.subs__mark {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-}
-
-.subs__info {
-  flex: 1;
-  min-width: 0;
-}
-
-.subs__name {
-  overflow: hidden;
-  color: var(--text);
-  font-size: 13.5px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.subs__next {
-  margin-top: 2px;
-  color: var(--text3);
-  font-size: 11px;
-}
-
-.subs__tags {
-  overflow: hidden;
-  margin-top: 2px;
-  color: var(--text3);
-  font-size: 10px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.subs__values {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  flex-shrink: 0;
-}
-
-.subs__amount {
-  color: var(--text);
-  font-size: 13.5px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.subs__annual {
-  margin-top: 2px;
-  color: var(--text3);
-  font-size: 10px;
-  white-space: nowrap;
-}
-
-.subs__card-actions {
-  display: flex;
-  flex-shrink: 0;
-  gap: 4px;
-}
-
-.subs__icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  background: var(--surface2);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text3);
-  cursor: pointer;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-
-.subs__icon-btn:hover {
-  box-shadow: var(--shadow-xs);
-  transform: translate(-1px, -1px);
-}
-
-.subs__icon-btn--danger {
-  color: var(--danger);
-}
-
-/* ── Formulários / modais ──────────────────────────────────── */
-.subs__form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-}
-
-.subs__pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--ds-space-3);
-}
-
-.subs__field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.subs__label {
-  color: var(--text3);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.subs__input {
-  box-sizing: border-box;
-  width: 100%;
-  height: var(--ds-control-height);
-  padding: 0 var(--ds-space-3);
-  background: var(--surface);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 650;
-  outline: none;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
-}
-
-.subs__input::placeholder {
-  color: var(--text3);
-}
-
-.subs__input:focus {
-  box-shadow: var(--shadow-sm);
-  transform: translate(-1px, -1px);
-}
-
-.subs__error {
-  padding: var(--ds-space-3) var(--ds-space-4);
-  background: var(--danger-light);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--ds-radius-md);
-  box-shadow: var(--shadow-xs);
-  color: var(--danger);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.subs__confirm {
-  color: var(--text2);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.subs__form-actions {
-  display: flex;
-  gap: var(--ds-space-3);
-  justify-content: flex-end;
-}
-
-/* ── Responsivo ────────────────────────────────────────────── */
-@media (max-width: 700px) {
-  .subs__grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .subs {
-    gap: var(--ds-space-4);
-  }
-
-  .subs__totals {
-    gap: 8px;
-  }
-
-  .subs__total {
-    padding: var(--ds-space-3) var(--ds-space-3);
-    box-shadow: var(--shadow-xs);
-  }
-
-  .subs__total-value {
-    font-size: 16px;
-  }
-
-  .subs__actions {
-    width: 100%;
-  }
-
-  .subs__search {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .subs__card {
-    gap: var(--ds-space-3);
-    padding: var(--ds-space-3) var(--ds-space-4);
-  }
-
-  .subs__mark {
-    width: 34px;
-    height: 34px;
-  }
-
-  .subs__pair {
-    grid-template-columns: 1fr;
-  }
-}
-</style>

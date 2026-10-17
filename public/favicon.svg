@@ -1,5 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="4" y="3" width="56" height="58" rx="12" fill="#0f766e"/>
-  <rect x="11" y="11" width="42" height="10" rx="3" fill="#99f6e4"/>
-  <path d="M12 28h40M12 38h40M12 48h40M25 27v23M39 27v23" fill="none" stroke="#ecfdf5" stroke-linecap="round" stroke-width="5"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="14.08" fill="#0F172A"/><g transform="translate(7.039999999999999 7.039999999999999) scale(0.52)"><path fill="#00DC82" d="M6 10H23Q29 10 29 16V28Q29 34 23 34H6Q0 34 0 28V16Q0 10 6 10Z"/><path fill="#00DC82" d="M38.5 9L56.5 6Q62.5 5 62.5 11V29Q62.5 34 57.5 34H38.5Q33.5 34 33.5 29V15Q33.5 10 38.5 9Z"/><path fill="#A7F3D0" d="M72 5L89 0.5Q96 -1 96 7V29Q96 34 91 34H72Q67 34 67 29V11Q67 6 72 5Z"/><path fill="#00DC82" d="M6 38.5H23Q29 38.5 29 44.5V58.5Q29 64.5 23 64.5H6Q0 64.5 0 58.5V44.5Q0 38.5 6 38.5Z"/><path fill="#00DC82" d="M39.5 38.5H56.5Q62.5 38.5 62.5 44.5V58.5Q62.5 64.5 56.5 64.5H39.5Q33.5 64.5 33.5 58.5V44.5Q33.5 38.5 39.5 38.5Z"/><path fill="#00DC82" d="M73 38.5H90Q96 38.5 96 44.5V58.5Q96 64.5 90 64.5H73Q67 64.5 67 58.5V44.5Q67 38.5 73 38.5Z"/><path fill="#00DC82" d="M6 69H23Q29 69 29 75V90Q29 96 23 96H6Q0 96 0 90V75Q0 69 6 69Z"/></g></svg>

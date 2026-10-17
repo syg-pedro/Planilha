@@ -1,38 +1,10 @@
 <template>
-  <section class="changelog">
-    <header class="changelog__hero">
-      <span class="changelog__mark">↻</span>
-      <div class="changelog__hero-copy">
-        <p class="changelog__eyebrow">VERSÃO INSTALADA</p>
-        <h2>v{{ installedVersion }}</h2>
-        <p>Histórico de melhorias da Planilha.</p>
-      </div>
-      <button
-        type="button"
-        class="changelog__check"
-        :disabled="checking"
-        @click="checkForUpdates"
-      >
-        <span aria-hidden="true">{{ checking ? '…' : '↻' }}</span>
-        {{ checking ? 'Verificando...' : 'Verificar atualizações' }}
-      </button>
-    </header>
-
-    <div v-if="update" class="changelog__update" role="status">
-      <strong>Nova versão do aplicativo: v{{ update.version }}</strong>
-      <span>{{ update.notes || updateFallbackMessage }}</span>
-      <a :href="update.releaseUrl" target="_blank" rel="noopener">Abrir página no GitHub</a>
-    </div>
-    <div v-else-if="checkError" class="changelog__status changelog__status--error" role="status">{{ checkError }}</div>
-    <div v-else-if="checked" class="changelog__status" role="status">Você já está na versão mais recente.</div>
-
-    <article v-for="release in releases" :key="release.version" class="changelog__release">
-      <div class="changelog__version"><strong>v{{ release.version }}</strong><span>{{ release.date }}</span></div>
-      <ul><li v-for="item in release.items" :key="item">{{ item }}</li></ul>
-    </article>
-  </section>
+  <div class="space-y-4">
+    <UCard :title="`v${installedVersion}`" description="Versão instalada da Planilha"><BaseButton variant="secondary" :loading="checking" @click="checkForUpdates">Verificar atualizações</BaseButton></UCard>
+    <UAlert v-if="update" color="info" variant="subtle" :title="`Nova versão do aplicativo: v${update.version}`" :description="update.notes || updateFallbackMessage"><template #actions><UButton :to="update.releaseUrl" target="_blank" rel="noopener" color="neutral" variant="outline">Abrir página no GitHub</UButton></template></UAlert><UAlert v-else-if="checkError" color="error" variant="subtle" :description="checkError" /><UAlert v-else-if="checked" color="success" variant="subtle" description="Você já está na versão mais recente." />
+    <UCard v-for="release in releases" :key="release.version" :title="`v${release.version}`" :description="release.date"><ul class="list-disc space-y-2 pl-5 text-sm text-muted"><li v-for="item in release.items" :key="item">{{ item }}</li></ul></UCard>
+  </div>
 </template>
-
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { App } from '@capacitor/app'
@@ -110,8 +82,3 @@ onMounted(async () => {
   await checkForUpdates()
 })
 </script>
-
-<style scoped>
-.changelog{max-width:720px;margin:auto;display:grid;gap:var(--ds-space-4)}.changelog__hero,.changelog__release,.changelog__update,.changelog__status{border:2px solid var(--border);background:var(--surface);box-shadow:var(--shadow-sm)}.changelog__hero{display:flex;align-items:center;gap:var(--ds-space-4);padding:var(--ds-space-5)}.changelog__mark{width:44px;height:44px;display:grid;place-items:center;flex:0 0 auto;background:var(--primary);color:var(--bg);font-size:28px;font-weight:900;border:2px solid var(--border)}.changelog__hero-copy{min-width:0;flex:1}.changelog__eyebrow{font-size:10px;font-weight:900;letter-spacing:.12em;color:var(--text3)}h2{font-size:24px;font-weight:900}.changelog__hero p:last-child{font-size:13px;color:var(--text3)}.changelog__check{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:0 0 auto;min-height:38px;border:2px solid var(--border);background:var(--primary);box-shadow:var(--shadow-sm);color:var(--bg);padding:8px var(--ds-space-3);font:inherit;font-size:12px;font-weight:900;cursor:pointer}.changelog__check:disabled{cursor:wait;opacity:.72}.changelog__release{padding:var(--ds-space-4)}.changelog__version{display:flex;justify-content:space-between;gap:var(--ds-space-3)}.changelog__version strong{font-size:16px}.changelog__version span{font-size:12px;color:var(--text3)}ul{margin:10px 0 0;padding-left:var(--ds-space-5);display:grid;gap:6px;font-size:13px}.changelog__update{padding:var(--ds-space-3);background:var(--primary-dim);display:grid;gap:8px}.changelog__update span,.changelog__status{font-size:13px;color:var(--text2);white-space:pre-line}.changelog__update a{justify-self:start;border:2px solid var(--border);background:var(--surface);box-shadow:var(--shadow-xs);padding:7px var(--ds-space-3);color:var(--text);font-size:12px;font-weight:900;text-decoration:none}.changelog__status{padding:var(--ds-space-3)}.changelog__status--error{color:var(--danger);border-color:var(--danger)}
-@media (max-width: 600px){.changelog__hero{align-items:flex-start;flex-wrap:wrap}.changelog__check{width:100%}}
-</style>

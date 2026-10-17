@@ -1,49 +1,14 @@
 <template>
-  <Teleport to="body">
-    <Transition name="pwa-slide">
-      <!-- Banner automático quando beforeinstallprompt dispara -->
-      <div v-if="showAutoPrompt" class="pwa-banner" role="banner" aria-label="Instalar aplicativo">
-        <img src="/icon-192.png" alt="" class="pwa-banner-icon" />
-        <div class="pwa-banner-text">
-          <p class="pwa-banner-title">Planilha</p>
-          <p class="pwa-banner-desc">Instale o app para acesso rápido e offline</p>
-        </div>
-        <button class="pwa-banner-btn pwa-banner-install" @click="install">Instalar</button>
-        <button class="pwa-banner-btn pwa-banner-dismiss" aria-label="Fechar" @click="dismiss">✕</button>
-      </div>
-
-      <!-- Modal de instruções manuais (iOS ou quando beforeinstallprompt não disparar) -->
-      <div v-else-if="showManual" class="pwa-manual-overlay" @click.self="closeManual">
-        <div class="pwa-manual">
-          <div class="pwa-manual-header">
-            <img src="/icon-192.png" alt="" class="pwa-manual-icon" />
-            <div>
-              <p class="pwa-manual-title">Instalar Planilha</p>
-              <p class="pwa-manual-sub">Adicione à tela inicial do seu celular</p>
-            </div>
-            <button class="pwa-manual-close" @click="closeManual">✕</button>
-          </div>
-          <div class="pwa-manual-steps">
-            <div class="pwa-manual-step">
-              <span class="pwa-step-num">1</span>
-              <p>Abra o menu do seu navegador <strong>(⋮ ou ⋯)</strong> no topo ou na barra de endereço</p>
-            </div>
-            <div class="pwa-manual-step">
-              <span class="pwa-step-num">2</span>
-              <p>Toque em <strong>"Adicionar à tela inicial"</strong> ou <strong>"Instalar app"</strong></p>
-            </div>
-            <div class="pwa-manual-step">
-              <span class="pwa-step-num">3</span>
-              <p>Confirme tocando em <strong>"Adicionar"</strong> ou <strong>"Instalar"</strong></p>
-            </div>
-          </div>
-          <p class="pwa-manual-note">
-            ⚠️ Requer acesso via <strong>HTTPS</strong>. Em rede local (HTTP), a instalação não está disponível.
-          </p>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+  <UBanner v-if="showAutoPrompt" class="pwa-banner" icon="i-lucide-download" title="Instale a Planilha para acesso rápido" :actions="[{ label: 'Instalar', onClick: install }]" close @close="dismiss" />
+  <BaseModal :open="showManual && !showAutoPrompt" title="Instalar Planilha" subtitle="Adicione à tela inicial do seu celular" @close="closeManual">
+    <ol class="space-y-4 text-sm text-muted">
+      <li class="flex items-start gap-3"><UBadge color="neutral" variant="subtle">1</UBadge><span>Abra o menu do navegador (⋮ ou ⋯), no topo ou na barra de endereço.</span></li>
+      <li class="flex items-start gap-3"><UBadge color="neutral" variant="subtle">2</UBadge><span>Toque em “Adicionar à tela inicial” ou “Instalar app”.</span></li>
+      <li class="flex items-start gap-3"><UBadge color="neutral" variant="subtle">3</UBadge><span>Confirme tocando em “Adicionar” ou “Instalar”.</span></li>
+    </ol>
+    <UAlert class="mt-5" color="neutral" variant="subtle" icon="i-lucide-info" description="A instalação depende do navegador. No celular, abra a Planilha por HTTPS para usar os recursos de aplicativo." />
+    <template #footer><UButton @click="closeManual">Entendi</UButton></template>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
@@ -82,146 +47,5 @@ const closeManual = () => { showManual.value = false }
 </script>
 
 <style scoped>
-.pwa-banner {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-4) var(--ds-space-4);
-  background: var(--surface);
-  border-top: 3px solid var(--border);
-  box-shadow: 0 -4px 0 var(--ds-shadow-color);
-}
-
-.pwa-banner-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-}
-
-.pwa-banner-text { flex: 1; min-width: 0 }
-
-.pwa-banner-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pwa-banner-desc { font-size: 12px; color: var(--text3); margin-top: 1px }
-
-.pwa-banner-btn {
-  flex-shrink: 0;
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 8px;
-  padding: 8px var(--ds-space-4);
-  transition: opacity 0.15s;
-}
-.pwa-banner-btn:active { opacity: 0.7 }
-.pwa-banner-install { background: var(--primary); color: var(--on-primary) }
-.pwa-banner-dismiss { background: transparent; color: var(--text3); padding: 8px 6px }
-
-/* Manual install modal */
-.pwa-manual-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: var(--overlay);
-  display: flex;
-  align-items: flex-end;
-  padding: var(--ds-space-4);
-}
-
-.pwa-manual {
-  width: 100%;
-  background: var(--surface);
-  border: 3px solid var(--border);
-  border-radius: var(--radius) var(--radius) 0 0;
-  box-shadow: 0 -6px 0 var(--ds-shadow-color);
-  padding: var(--ds-space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-4);
-}
-
-.pwa-manual-header {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-}
-
-.pwa-manual-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-}
-
-.pwa-manual-title { font-size: 15px; font-weight: 800; color: var(--text) }
-.pwa-manual-sub { font-size: 12px; color: var(--text3); margin-top: 2px }
-
-.pwa-manual-close {
-  margin-left: auto;
-  background: var(--surface2);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
-  box-shadow: var(--shadow-xs);
-  font-size: 16px;
-  cursor: pointer;
-  color: var(--text3);
-  flex-shrink: 0;
-  padding: 4px;
-}
-
-.pwa-manual-steps { display: flex; flex-direction: column; gap: var(--ds-space-3) }
-
-.pwa-manual-step {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ds-space-3);
-  font-size: 13px;
-  color: var(--text2);
-  line-height: 1.5;
-}
-
-.pwa-step-num {
-  width: 24px;
-  height: 24px;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-xs);
-  box-shadow: var(--shadow-xs);
-  background: var(--primary);
-  color: var(--on-primary);
-  font-size: 12px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.pwa-manual-note {
-  font-size: 11px;
-  color: var(--text3);
-  background: var(--surface2);
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: var(--ds-space-3) var(--ds-space-3);
-  line-height: 1.5;
-}
-
-.pwa-slide-enter-active,
-.pwa-slide-leave-active { transition: transform var(--ds-motion-base) linear, opacity var(--ds-motion-base) linear }
-.pwa-slide-enter-from,
-.pwa-slide-leave-to { transform: translateY(100%); opacity: 0 }
+.pwa-banner { position: fixed; left: 12px; right: 12px; bottom: calc(var(--app-bottom-offset, 0px) + 12px); z-index: 40; border-radius: var(--radius); }
 </style>

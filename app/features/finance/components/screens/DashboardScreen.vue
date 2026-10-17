@@ -1,134 +1,65 @@
 <template>
-  <div class="dash">
-    <BaseAlertBanner :alerts="smartAlerts" />
-
-    <!-- Ciclos de recebimento -->
-    <div class="dash__payment-cycles">
-      <BaseKpiCard
-        icon="calendar" label="1º ciclo · dias 1 a 15" :value="fmt(firstPaymentCycle.pendingTotal)" color="var(--warning)"
-        :sub="`${firstPaymentCycle.pendingCount} conta(s) pendente(s)`" :detail="`Impacto no saldo previsto: ${fmt(firstPaymentCycle.projectedBalanceImpact)}`"
-      />
-      <BaseKpiCard
-        icon="calendar" :label="`2º ciclo · dias 16 a ${secondPaymentCycle.endDay}`" :value="fmt(secondPaymentCycle.pendingTotal)" color="var(--warning)"
-        :sub="`${secondPaymentCycle.pendingCount} conta(s) pendente(s)`" :detail="`Impacto no saldo previsto: ${fmt(secondPaymentCycle.projectedBalanceImpact)}`"
-      />
+<div class="space-y-4">
+    <header class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-base font-semibold text-highlighted">Resumo de {{ currentMonthLabel }}</h2><p class="mt-1 text-xs text-muted">Valores cadastrados por {{ store.settings.periodMode === 'competence' ? 'competência' : 'vencimento' }}. Sobra prevista não é saldo bancário.</p></div><BaseButton variant="ghost" @click="$emit('navigate', 'planilha')">Abrir Planilha →</BaseButton></header>
+    <div v-if="widgetOn('kpis')" class="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <BaseKpiCard icon="income" label="Receitas previstas" :value="fmt(monthKpis.totalIncome)" color="var(--success)" />
+      <BaseKpiCard icon="expense" label="Despesas previstas" :value="fmt(monthKpis.totalExpense)" color="var(--danger)" />
+      <BaseKpiCard class="col-span-2 lg:col-span-1" icon="balance" label="Sobra prevista" :value="fmt(monthKpis.net)" :color="monthKpis.net < 0 ? 'var(--danger)' : 'var(--primary)'" sub="Receitas menos despesas cadastradas" />
     </div>
-
-    <!-- KPIs -->
-    <div class="dash__kpis">
-      <BaseKpiCard icon="income"   label="Receitas"        :value="fmt(store.monthlyKpis.totalIncome)"   color="var(--success)" :sub="currentMonthLabel" />
-      <BaseKpiCard icon="expense"  label="Despesas"        :value="fmt(store.monthlyKpis.totalExpense)"  color="var(--danger)"  :sub="currentMonthLabel" />
-      <BaseKpiCard icon="balance"  label="Saldo líquido"   :value="fmt(store.monthlyKpis.net)"           :color="store.monthlyKpis.net >= 0 ? 'var(--success)' : 'var(--danger)'" :sub="store.monthlyKpis.net >= 0 ? 'Positivo' : 'Negativo'" />
-      <BaseKpiCard icon="pending"  label="Em aberto"       :value="fmt(store.monthlyKpis.pendingAmount)" color="var(--warning)" sub="Pendências" />
-      <BaseKpiCard icon="calendar" label="Próx. 7 dias"    :value="fmt(store.monthlyKpis.upcoming7Days)" color="var(--accent)"  sub="Vencimentos" />
-      <BaseKpiCard icon="card"     label="Uso dos cartões" :value="`${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`" :color="store.monthlyKpis.cardsUsedPercent > 80 ? 'var(--danger)' : 'var(--primary)'" sub="do limite total" />
+    <div class="grid gap-4 xl:grid-cols-2">
+      <UCard :ui="{ body: 'p-0 sm:p-0' }" class="min-w-0" title="Pendências para resolver" :description="`${upcomingEntries.length} lançamento(s) vencido(s) ou vencendo nos próximos 14 dias`">
+        <BaseEmptyState v-if="!upcomingEntries.length" icon="check" title="Sem pendências próximas" body="Não há despesas vencidas ou vencendo nos próximos 14 dias." />
+        <NuxtLink v-for="item in upcomingEntries.slice(0, 6)" :key="item.id" :to="linkTo('planilha', { entry: item.id })" class="flex min-h-14 flex-wrap items-center gap-3 border-b border-default px-4 py-2 text-sm last:border-0 hover:bg-elevated focus-visible:outline-2 focus-visible:outline-primary">
+          <div class="min-w-0 flex-1"><p class="font-medium text-highlighted">{{ item.title }}</p><p class="mt-0.5 text-xs text-muted">{{ accountName(item.accountId) }} · {{ fmtDate(item.dueDate) }}</p></div><strong class="text-xs tabular-nums text-default">{{ fmt(item.amount) }}</strong><UBadge :color="item.daysLeft <= 3 ? 'error' : item.daysLeft <= 7 ? 'warning' : 'neutral'" variant="subtle" size="xs">{{ tagLabel(item.daysLeft) }}</UBadge>
+        </NuxtLink>
+        <template v-if="upcomingEntries.length > 6" #footer><NuxtLink :to="linkTo('planilha', { status: 'pending', view: 'list' })" class="text-sm text-primary">Ver todas na Planilha →</NuxtLink></template>
+      </UCard>
+      <UCard v-if="widgetOn('cashflow')" title="Fluxo de caixa" description="Últimos 6 meses · receitas e despesas cadastradas" class="min-w-0">
+        <BaseEmptyState v-if="!cashflowData.some(item => item.income || item.expense)" icon="reports" title="Sem dados" body="Sem lançamentos nos últimos 6 meses." /><BaseBarChart v-else :data="cashflowData" :height="160" :currency="store.settings.currency || 'BRL'" />
+      </UCard>
     </div>
-
-    <!-- Fluxo de caixa + próximos vencimentos -->
-    <div class="dash__row">
-      <section class="neo-panel">
-        <header class="neo-panel-header dash__panel-head">
-          <div>
-            <h3 class="dash__panel-title">Fluxo de caixa</h3>
-            <p class="dash__panel-sub">Últimos 6 meses</p>
-          </div>
-          <div class="dash__legend">
-            <span class="dash__chip" style="background: var(--success-light); color: var(--success)">
-              <span class="dash__chip-dot" />Receita
-            </span>
-            <span class="dash__chip" style="background: var(--danger-light); color: var(--danger)">
-              <span class="dash__chip-dot" />Despesa
-            </span>
-          </div>
-        </header>
-        <div class="dash__chart">
-          <BaseEmptyState v-if="cashflowData.length === 0" icon="reports" title="Sem dados" body="Sem lançamentos nos últimos 6 meses." />
-          <BaseBarChart v-else :data="cashflowData" :height="160" :currency="store.settings.currency || 'BRL'" />
-        </div>
-      </section>
-
-      <section class="neo-panel">
-        <header class="neo-panel-header dash__panel-head">
-          <h3 class="dash__panel-title">Próximos vencimentos</h3>
-          <span class="dash__chip" style="background: var(--danger-light); color: var(--danger)">{{ upcomingEntries.length }}</span>
-        </header>
-        <BaseEmptyState v-if="upcomingEntries.length === 0" icon="check" title="Sem vencimentos" body="Nenhuma despesa pendente nos próximos dias." style="padding: var(--ds-space-5)" />
-        <div v-for="item in upcomingEntries.slice(0, 5)" :key="item.id" class="dash__due">
-          <div class="dash__due-main">
-            <p class="dash__due-title">{{ item.title }}</p>
-            <p class="dash__due-sub">{{ accountName(item.accountId) }} · {{ fmtDate(item.dueDate) }}</p>
-          </div>
-          <span class="dash__due-amount ds-money">{{ fmt(item.amount) }}</span>
-          <span class="dash__due-tag" :style="tagStyle(item.daysLeft)">{{ tagLabel(item.daysLeft) }}</span>
-        </div>
-      </section>
-    </div>
-
-    <!-- Taxa de poupança -->
-    <section class="dash__savings">
-      <div class="dash__savings-figure">
-        <p class="dash__savings-label">Taxa de poupança</p>
-        <p class="dash__savings-value">{{ savingsRateLabel }}</p>
-      </div>
-      <div class="dash__savings-bar">
-        <BaseProgressBar :value="store.monthlyKpis.net" :max="store.monthlyKpis.totalIncome" color="var(--primary)" :height="9" />
-      </div>
-      <BaseButton variant="primary" @click="$emit('navigate', 'reports')">Relatório completo →</BaseButton>
-    </section>
+    <UCard v-if="widgetOn('upcoming')" title="Despesas pendentes por ciclo" description="Vencimentos deste mês; benefícios e itens fora do cálculo não entram.">
+      <div class="grid grid-cols-2 gap-3"><BaseKpiCard icon="calendar" label="1º ciclo · dias 1 a 15" :value="fmt(firstPaymentCycle.pendingTotal)" color="var(--warning)" :sub="`${firstPaymentCycle.pendingCount} conta(s) pendente(s)`" :detail="`Impacto previsto: ${fmt(firstPaymentCycle.projectedBalanceImpact)}`" /><BaseKpiCard icon="calendar" :label="`2º ciclo · dias 16 a ${secondPaymentCycle.endDay}`" :value="fmt(secondPaymentCycle.pendingTotal)" color="var(--warning)" :sub="`${secondPaymentCycle.pendingCount} conta(s) pendente(s)`" :detail="`Impacto previsto: ${fmt(secondPaymentCycle.projectedBalanceImpact)}`" /></div>
+    </UCard>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
-import { buildCashflowSeries } from '#shared/finance'
-import BaseAlertBanner from '~/components/base/BaseAlertBanner.vue'
+import { buildCashflowSeries, computeKpis, excludeBenefitEntries } from '#shared/finance'
+import { matrixDate } from '#shared/matrix'
+import { financialToday } from './auxiliaryFinancialViews'
+import { useFinanceNavigation } from '~/features/finance/composables/useFinanceNavigation'
 import BaseKpiCard     from '~/components/base/BaseKpiCard.vue'
-import BaseProgressBar from '~/components/base/BaseProgressBar.vue'
 import BaseBarChart    from '~/components/base/BaseBarChart.vue'
 import BaseEmptyState  from '~/components/base/BaseEmptyState.vue'
-import BaseButton      from '~/components/base/BaseButton.vue'
 
 defineEmits<{ navigate: [screen: string] }>()
 
 const store    = useFinanceStore()
+const { linkTo } = useFinanceNavigation()
+const widgetOn = (id: string) => (store.settings.dashboardConfig.visibleWidgets ?? []).includes(id)
 const currency = useCurrency()
 const fmt      = (v: number) => currency.format(v)
 const fmtDate  = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('pt-BR')
 
 const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-const MONTH_FULL  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
-const now         = new Date()
-const currentMKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
-
-const currentMonthLabel = computed(() => MONTH_FULL[now.getUTCMonth()] ?? '')
-
-// ── Alertas derivados dos dados reais ────────────────────────
-const smartAlerts = computed(() => {
-  type Tone = 'danger' | 'warning' | 'info' | 'success'
-  const alerts: { tone: Tone; title: string; body: string }[] = []
-  const todayStr = now.toISOString().slice(0, 10)
-  const in7      = new Date(now); in7.setDate(in7.getDate() + 7)
-  const in7Str   = in7.toISOString().slice(0, 10)
-
-  const urgent = store.entries.filter(
-    e => e.kind === 'expense' && e.status !== 'paid' && e.dueDate >= todayStr && e.dueDate <= in7Str
-  )
-  for (const e of urgent.slice(0, 2)) {
-    alerts.push({ tone: 'danger', title: `${e.title} vence em breve`, body: `${fmt(e.amount)} — ${fmtDate(e.dueDate)}` })
-  }
-  if (store.monthlyKpis.cardsUsedPercent >= 80) alerts.push({ tone: 'warning', title: `Cartões em ${store.monthlyKpis.cardsUsedPercent.toFixed(0)}%`, body: 'Atenção ao limite disponível.' })
-  return alerts.slice(0, 4)
-})
+const today = financialToday(store.settings.timezone)
+const currentMKey = today.slice(0, 7)
+const calendarNow = new Date(`${currentMKey}-01T12:00:00Z`)
+const currentMonthLabel = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${currentMKey}-01T12:00:00Z`))
+const cashEntries = computed(() => excludeBenefitEntries(store.entries, store.accounts))
+const monthKpis = computed(() => computeKpis(cashEntries.value.filter(entry => matrixDate(entry, store.settings.periodMode).startsWith(currentMKey)), store.accounts))
 
 // ── Fluxo de caixa (últimos 6 meses) ─────────────────────────
 const cashflowData = computed(() => {
-  const sixMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1))
-  const recent       = store.allCashableEntries.filter(e => new Date(e.dueDate + 'T00:00:00Z') >= sixMonthsAgo)
+  const sixMonthsAgo = new Date(Date.UTC(calendarNow.getUTCFullYear(), calendarNow.getUTCMonth() - 5, 1))
+  const recent       = cashEntries.value.filter(e => new Date(matrixDate(e, store.settings.periodMode) + 'T00:00:00Z') >= sixMonthsAgo)
   const series       = buildCashflowSeries(recent, store.settings.periodMode)
   const valuesByMonth = new Map(series.map(item => [item.month, item]))
   const months = Array.from({ length: 6 }, (_, index) => {
-    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5 + index, 1))
+    const date = new Date(Date.UTC(calendarNow.getUTCFullYear(), calendarNow.getUTCMonth() - 5 + index, 1))
     return date.toISOString().slice(0, 7)
   })
 
@@ -143,242 +74,26 @@ const cashflowData = computed(() => {
   })
 })
 
-// ── Próximos vencimentos ─────────────────────────────────────
+// ── Pendências para resolver ─────────────────────────────────────
 const upcomingEntries = computed(() => {
-  const todayStr = now.toISOString().slice(0, 10)
-  const in14     = new Date(now); in14.setDate(in14.getDate() + 14)
+  const todayStr = today
+  const in14 = new Date(`${todayStr}T12:00:00Z`); in14.setUTCDate(in14.getUTCDate() + 14)
   const in14Str  = in14.toISOString().slice(0, 10)
-  return store.entries
-    .filter(e => e.kind === 'expense' && e.status !== 'paid' && e.dueDate >= todayStr && e.dueDate <= in14Str)
+  return cashEntries.value
+    .filter(e => e.kind === 'expense' && e.status !== 'paid' && e.dueDate <= in14Str)
     .map(e => ({
       ...e,
-      daysLeft: Math.ceil((new Date(e.dueDate + 'T00:00:00Z').getTime() - now.getTime()) / 86400000)
+      daysLeft: Math.ceil((new Date(e.dueDate + 'T00:00:00Z').getTime() - new Date(`${today}T00:00:00Z`).getTime()) / 86400000)
     }))
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
 })
 
 const tagLabel = (daysLeft: number) =>
-  daysLeft <= 3 ? 'Urgente' : daysLeft <= 7 ? 'Esta semana' : `${daysLeft}d`
-
-const tagStyle = (daysLeft: number) =>
-  daysLeft <= 3
-    ? { background: 'var(--danger-light)', color: 'var(--danger)' }
-    : daysLeft <= 7
-      ? { background: 'var(--warning-light)', color: 'var(--warning)' }
-      : { background: 'var(--surface2)', color: 'var(--text2)' }
+  daysLeft < 0 ? 'Vencido' : daysLeft === 0 ? 'Hoje' : daysLeft <= 3 ? 'Urgente' : daysLeft <= 7 ? 'Esta semana' : `${daysLeft}d`
 
 const accountName = (id: string | null) =>
   id ? (store.accountMap.get(id)?.name ?? '—') : '—'
 
-const savingsRateLabel = computed(() =>
-  store.monthlyKpis.totalIncome > 0
-    ? `${((store.monthlyKpis.net / store.monthlyKpis.totalIncome) * 100).toFixed(1)}%`
-    : '0,0%'
-)
 const firstPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle => cycle.id === 'first-half') ?? { pendingTotal: 0, pendingCount: 0, projectedBalanceImpact: 0, endDay: 15 })
 const secondPaymentCycle = computed(() => store.expensePaymentCycles.find(cycle => cycle.id === 'second-half') ?? { pendingTotal: 0, pendingCount: 0, projectedBalanceImpact: 0, endDay: 30 })
 </script>
-
-<style scoped>
-.dash {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-5);
-}
-
-.dash__kpis {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: var(--ds-space-3);
-}
-
-.dash__payment-cycles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-3);
-}
-
-.dash__row {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: var(--ds-space-4);
-  align-items: start;
-}
-
-.dash__panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-3) var(--ds-space-4);
-}
-
-.dash__panel-title {
-  color: var(--text);
-  font-size: 13.5px;
-  font-weight: 800;
-}
-
-.dash__panel-sub {
-  margin-top: 2px;
-  color: var(--text3);
-  font-size: 10.5px;
-}
-
-.dash__legend {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.dash__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 9px;
-  border-radius: var(--radius-pill);
-  font-size: 10.5px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.dash__chip-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.dash__chart {
-  padding: var(--ds-space-5);
-}
-
-.dash__due {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-3) var(--ds-space-4);
-  border-bottom: 1px solid var(--border);
-}
-
-.dash__due:last-child {
-  border-bottom: none;
-}
-
-.dash__due-main {
-  flex: 1;
-  min-width: 0;
-}
-
-.dash__due-title {
-  overflow: hidden;
-  color: var(--text);
-  font-size: 12.5px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dash__due-sub {
-  margin-top: 2px;
-  color: var(--text3);
-  font-size: 10px;
-}
-
-.dash__due-amount {
-  color: var(--danger);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.dash__due-tag {
-  padding: 2px 9px;
-  border-radius: var(--radius-pill);
-  font-size: 9.5px;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.dash__savings {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-6);
-  padding: var(--ds-space-4) var(--ds-space-5);
-  background: var(--primary-dim);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-}
-
-.dash__savings-figure {
-  flex: 1;
-  min-width: 0;
-}
-
-.dash__savings-label {
-  color: var(--on-primary-dim);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.dash__savings-value {
-  margin-top: 3px;
-  color: var(--primary);
-  font-size: 22px;
-  font-weight: 800;
-}
-
-.dash__savings-bar {
-  flex: 2;
-}
-
-@media (max-width: 1180px) {
-  .dash__kpis {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
-  .dash__row {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .dash {
-    gap: var(--ds-space-4);
-  }
-
-  .dash__kpis {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-
-  .dash__payment-cycles {
-    gap: 8px;
-  }
-
-  .dash__chart {
-    padding: var(--ds-space-4);
-  }
-
-  .dash__savings {
-    flex-wrap: wrap;
-    gap: var(--ds-space-3);
-    padding: var(--ds-space-4);
-  }
-
-  .dash__savings-figure,
-  .dash__savings-bar {
-    flex: 1 1 100%;
-  }
-
-  .dash__savings :deep(button) {
-    width: 100%;
-    justify-content: center;
-  }
-}
-</style>

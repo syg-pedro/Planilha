@@ -1,61 +1,25 @@
 <template>
-  <section class="ds-panel base-panel" :class="{ 'base-panel--dense': dense }">
-    <header v-if="$slots.header || title" class="base-panel__header">
-      <div class="base-panel__heading">
-        <h3 v-if="title" class="base-panel__title">{{ title }}</h3>
-        <p v-if="subtitle" class="base-panel__subtitle">{{ subtitle }}</p>
-      </div>
-      <slot name="header" />
-    </header>
-
+  <UCard
+    as="section"
+    class="base-panel"
+    :ui="{ body: dense ? 'p-3 sm:p-3' : 'p-4 sm:p-4', header: 'p-3 sm:p-3' }"
+  >
+    <template v-if="$slots.header || title" #header
+      ><div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h3 v-if="title" class="text-sm font-semibold text-highlighted">
+            {{ title }}
+          </h3>
+          <p v-if="subtitle" class="mt-1 text-xs text-muted">{{ subtitle }}</p>
+        </div>
+        <slot name="header" /></div
+    ></template>
     <slot />
-  </section>
+  </UCard>
 </template>
-
 <script setup lang="ts">
 withDefaults(
-  defineProps<{
-    title?: string
-    subtitle?: string
-    dense?: boolean
-  }>(),
-  {
-    title: '',
-    subtitle: '',
-    dense: false
-  }
+  defineProps<{ title?: string; subtitle?: string; dense?: boolean }>(),
+  { title: '', subtitle: '', dense: false },
 )
-
 </script>
-
-<style scoped>
-.base-panel--dense {
-  padding: var(--ds-space-3);
-}
-
-.base-panel__header {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ds-space-3);
-  margin-bottom: var(--ds-space-4);
-  padding-bottom: var(--ds-space-3);
-  border-bottom: 2px solid var(--border);
-}
-
-.base-panel__heading {
-  margin-right: auto;
-}
-
-.base-panel__title {
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.base-panel__subtitle {
-  margin-top: 4px;
-  color: var(--text3);
-  font-size: 12px;
-  font-weight: 600;
-}
-</style>

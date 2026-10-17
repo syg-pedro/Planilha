@@ -6,8 +6,8 @@
   border: var(--ds-border-width) solid var(--ds-color-border-default);
   border-radius: var(--ds-radius-sm);
   color: var(--ds-color-text-primary);
-  font-weight: 650;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear;
+  font-weight: 450;
+  transition: border-color var(--ds-motion-fast) var(--ds-motion-ease), box-shadow var(--ds-motion-fast) var(--ds-motion-ease);
 }
 
 /* Previne zoom automático do iOS Safari em inputs com font-size < 16px */
@@ -36,9 +36,8 @@
 }
 
 .ds-field:focus {
-  border-color: var(--ds-color-border-strong);
-  box-shadow: 3px 3px 0 var(--primary);
-  transform: translate(-1px, -1px);
+  border-color: var(--primary);
+  box-shadow: var(--ds-focus-ring);
 }
 
 textarea.ds-field {
@@ -93,8 +92,7 @@ textarea.ds-field {
 }
 
 .ds-kpi-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-md);
+  border-color: var(--ds-color-border-strong);
 }
 
 @media (max-width: 640px) {
@@ -209,14 +207,14 @@ textarea.ds-field {
   border-style: solid !important;
   border-color: var(--border) !important;
   border-radius: var(--radius) !important;
-  box-shadow: var(--shadow-sm) !important;
+  box-shadow: none !important;
 }
 
 :where(.sheet, .sheet-container) {
   border: var(--ds-border-width-strong) solid var(--border) !important;
   border-bottom: 0 !important;
   border-radius: var(--radius) var(--radius) 0 0 !important;
-  box-shadow: 0 -6px 0 var(--ds-shadow-color) !important;
+  box-shadow: var(--shadow-lg) !important;
 }
 
 :where(.sheet-overlay, .modal-overlay, .cal-modal-overlay) {
@@ -244,7 +242,7 @@ textarea.ds-field {
 
 :where(.panel-title, .sheet-title, .modal-title) {
   font-family: var(--ds-font-family-display) !important;
-  font-weight: 800 !important;
+  font-weight: 650 !important;
   letter-spacing: -0.02em;
 }
 
@@ -273,10 +271,10 @@ textarea.ds-field {
 ) {
   border: var(--ds-border-width) solid var(--border) !important;
   border-radius: var(--radius-sm) !important;
-  box-shadow: var(--shadow-sm) !important;
+  box-shadow: none !important;
   font-family: var(--ds-font-family-sans) !important;
-  font-weight: 750 !important;
-  transition: transform var(--ds-motion-fast) linear, box-shadow var(--ds-motion-fast) linear !important;
+  font-weight: 600 !important;
+  transition: background var(--ds-motion-fast) var(--ds-motion-ease), border-color var(--ds-motion-fast) var(--ds-motion-ease) !important;
 }
 
 :where(
@@ -297,8 +295,8 @@ textarea.ds-field {
   .theme-btn,
   .pwa-banner-btn
 ):not(:disabled):active {
-  box-shadow: 1px 1px 0 var(--ds-shadow-color) !important;
-  transform: translate(2px, 2px) !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 :where(

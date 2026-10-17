@@ -79,7 +79,7 @@ const makeSettings = (): HouseholdSettings => ({
   id: DEFAULT_HOUSEHOLD_ID,
   currency: 'BRL',
   timezone: 'America/Sao_Paulo',
-  themeMode: 'dark',
+  themeMode: 'system',
   densityMode: 'compact',
   periodMode: 'due_date',
   horizonMonths: 18,

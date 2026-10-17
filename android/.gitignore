@@ -100,8 +100,7 @@ app/src/main/assets/capacitor.config.json
 app/src/main/assets/capacitor.plugins.json
 app/src/main/res/xml/config.xml
 
-# Capacitor template icons superseded by @drawable/app_icon.
-app/src/main/res/mipmap-*/
+# Superseded Capacitor template backgrounds. Launcher mipmaps are maintained assets.
 app/src/main/res/drawable-v24/ic_launcher_foreground.xml
 app/src/main/res/drawable/ic_launcher_background.xml
 app/src/main/res/values/ic_launcher_background.xml

@@ -1,118 +1,28 @@
 <template>
   <div>
-    <h1 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 6px">Entrar</h1>
-    <p style="font-size: 13px; color: var(--text3); margin-bottom: var(--ds-space-6)">Acesse sua conta da Planilha</p>
-
-    <form style="display: flex; flex-direction: column; gap: var(--ds-space-4)" @submit.prevent="onSubmit">
-      <div>
-        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">E-mail</label>
-        <input
-          v-model="email"
-          type="email"
-          autocomplete="email"
-          placeholder="seu@email.com"
-          required
-          :style="inputStyle"
-        />
-      </div>
-
-      <div>
-        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 6px">Senha</label>
-        <div style="position: relative">
-          <input
-            v-model="password"
-            :type="showPassword ? 'text' : 'password'"
-            autocomplete="current-password"
-            placeholder="••••••••"
-            required
-            :style="{ ...inputStyle, paddingRight: '44px' }"
-          />
-          <button
-            type="button"
-            :style="eyeButtonStyle"
-            @click="showPassword = !showPassword"
-          >
-            <svg v-if="showPassword" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-              <line x1="1" y1="1" x2="23" y2="23"/>
-            </svg>
-            <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
+    <h1 class="text-xl font-semibold text-highlighted">Entrar</h1>
+    <p class="mb-6 mt-1 text-sm text-muted">Acesse sua conta da Planilha</p>
+    <form class="space-y-4" @submit.prevent="onSubmit">
+      <UFormField label="E-mail" required><UInput v-model="email" type="email" autocomplete="email" placeholder="seu@email.com" required class="w-full" icon="i-lucide-mail" :ui="{ base: 'finance-control' }" /></UFormField>
+      <UFormField label="Senha" required>
+        <UInput v-model="password" :type="showPassword ? 'text' : 'password'" autocomplete="current-password" placeholder="Sua senha" required class="w-full" :ui="{ base: 'finance-control', trailing: 'pe-1' }">
+          <template #trailing><UButton color="neutral" variant="link" size="sm" :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'" :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'" @click="showPassword = !showPassword" /></template>
+        </UInput>
+      </UFormField>
+      <UCheckbox v-model="rememberUser" label="Lembrar neste aparelho" />
+      <div v-if="recentUsers.length" class="space-y-2">
+        <p class="text-xs font-medium text-muted">Usuários recentes</p>
+        <div class="flex flex-wrap gap-2">
+          <UFieldGroup v-for="recentUser in recentUsers" :key="recentUser.email" class="max-w-full">
+            <UButton color="neutral" variant="outline" class="min-w-0 max-w-60" :aria-label="`Usar ${recentUser.email}`" @click="selectRecentUser(recentUser.email)"><span class="truncate">{{ recentUser.email }}</span></UButton>
+            <UButton color="neutral" variant="outline" icon="i-lucide-x" :aria-label="`Remover ${recentUser.email}`" @click="removeRecentUser(recentUser.email)" />
+          </UFieldGroup>
         </div>
       </div>
-
-      <label style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; color: var(--text2); font-size: 12px; font-weight: 600; cursor: pointer">
-        <input v-model="rememberUser" type="checkbox" style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer" />
-        Lembrar neste aparelho
-      </label>
-
-      <div v-if="recentUsers.length" style="display: flex; flex-direction: column; gap: 7px">
-        <p style="margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--text3)">Usuários recentes</p>
-        <div style="display: flex; flex-wrap: wrap; gap: 7px">
-          <div v-for="recentUser in recentUsers" :key="recentUser.email" style="display: inline-flex; align-items: center; max-width: 100%; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--surface2); overflow: hidden">
-            <button
-              type="button"
-              :aria-label="`Usar ${recentUser.email}`"
-              style="max-width: 220px; padding: 7px 9px; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 12px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer"
-              @click="selectRecentUser(recentUser.email)"
-            >
-              {{ recentUser.email }}
-            </button>
-            <button
-              type="button"
-              :aria-label="`Remover ${recentUser.email}`"
-              style="padding: 7px 8px; border: 0; border-left: 1px solid var(--border); background: transparent; color: var(--text3); font: inherit; font-weight: 800; cursor: pointer"
-              @click="removeRecentUser(recentUser.email)"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div
-        v-if="errorMsg"
-        style="padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--radius-xs); background: var(--danger-light); border: 1px solid var(--danger); font-size: 13px; color: var(--danger); font-weight: 600"
-      >
-        {{ errorMsg }}
-      </div>
-
-      <button
-        type="submit"
-        :disabled="loading"
-        :style="{
-          width: '100%',
-          padding: 'var(--ds-space-3) var(--ds-space-4)',
-          borderRadius: 'var(--radius-sm)',
-          border: 'none',
-          background: loading ? 'var(--primary-dim)' : 'var(--primary)',
-          color: loading ? 'var(--primary)' : 'var(--on-primary)',
-          fontSize: '14px',
-          fontWeight: '700',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          transition: 'background .15s',
-          fontFamily: 'inherit',
-        }"
-      >
-        <svg v-if="loading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 0.8s linear infinite">
-          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-        </svg>
-        {{ loading ? 'Entrando...' : 'Entrar' }}
-      </button>
+      <UAlert v-if="errorMsg" color="error" variant="subtle" icon="i-lucide-circle-alert" :description="errorMsg" role="alert" />
+      <UButton type="submit" :loading="loading" block class="finance-control">{{ loading ? 'Entrando…' : 'Entrar' }}</UButton>
     </form>
-
-    <p style="margin-top: var(--ds-space-5); text-align: center; font-size: 13px; color: var(--text3)">
-      Não tem conta?
-      <a href="/signup" style="color: var(--primary); font-weight: 700; text-decoration: none">Criar conta</a>
-    </p>
+    <p class="mt-5 text-center text-sm text-muted">Não tem conta? <ULink to="/signup" class="font-medium">Criar conta</ULink></p>
   </div>
 </template>
 
@@ -142,34 +52,6 @@ const loading = ref(false)
 const errorMsg = ref<string | null>(null)
 const rememberUser = ref(true)
 const recentUsers = ref<RecentUser[]>([])
-
-const inputStyle = {
-  width: '100%',
-  padding: 'var(--ds-space-3) var(--ds-space-3)',
-  borderRadius: 'var(--radius-xs)',
-  border: '1.5px solid var(--border)',
-  background: 'var(--surface2)',
-  color: 'var(--text)',
-  fontSize: '14px',
-  fontFamily: 'inherit',
-  outline: 'none',
-  boxSizing: 'border-box' as const,
-}
-
-const eyeButtonStyle = {
-  position: 'absolute' as const,
-  right: '0',
-  top: '0',
-  bottom: '0',
-  width: '44px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  color: 'var(--text3)',
-}
 
 const isNativePlatform = Capacitor.isNativePlatform()
 
@@ -265,10 +147,3 @@ const onSubmit = async () => {
   }
 }
 </script>
-
-<style scoped>
-@keyframes spin {
-  from { transform: rotate(0deg) }
-  to   { transform: rotate(360deg) }
-}
-</style>

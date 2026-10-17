@@ -1,5 +1,7 @@
 import { excludeBenefitEntries } from './finance'
+import { sumMoney } from './money'
 import type { Account, EntryKind, FinanceEntry, PeriodMode } from './types'
+export { sumMoney } from './money'
 
 export type MatrixGroup = 'expenses' | 'cards' | 'income' | 'excluded'
 export interface MatrixValue {
@@ -34,8 +36,6 @@ export interface MatrixMonthSummary {
   expenseCount: number
 }
 
-export const sumMoney = (values: number[]) =>
-  values.reduce((total, value) => total + Math.round(value * 100), 0) / 100
 export const matrixDate = (entry: FinanceEntry, mode: PeriodMode) =>
   mode === 'competence' ? entry.competenceDate : entry.dueDate
 export function matrixMonths(start: string, count = 12): string[] {

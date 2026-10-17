@@ -3,23 +3,23 @@ import type { ColorTokens, DashboardConfig, ThemeMode } from './types'
 export const DEFAULT_HOUSEHOLD_ID = 'household-main'
 
 export const DEFAULT_COLORS: ColorTokens = {
-  primary: '#5b5bf7',
-  accent: '#ffd43b',
-  positive: '#13a86b',
-  negative: '#e84545',
-  neutral: '#5f6472',
-  background: '#f3efe6',
-  card: '#fffdf6'
+  primary: '#00C16A',
+  accent: '#3b82f6',
+  positive: '#00C16A',
+  negative: '#ef4444',
+  neutral: '#64748b',
+  background: '#ffffff',
+  card: '#ffffff'
 }
 
 export const DARK_COLORS: ColorTokens = {
-  primary: '#00ff33',
-  accent: '#bb00ff',
-  positive: '#13a86b',
-  negative: '#e84545',
-  neutral: '#9aa2b2',
-  background: '#090b10',
-  card: '#171c25'
+  primary: '#00DC82',
+  accent: '#60a5fa',
+  positive: '#00DC82',
+  negative: '#f87171',
+  neutral: '#94a3b8',
+  background: '#0f172a',
+  card: '#1e293b'
 }
 
 export const THEME_PRESETS: Record<ThemeMode, ColorTokens> = {
@@ -41,7 +41,8 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {
     'upcoming'
   ],
   sortMode: 'date_asc',
-  defaultRange: 'month'
+  defaultRange: 'month',
+  uiTheme: { version: 1, preset: 'default' }
 }
 
 export const MONTH_ALIASES: Record<string, number> = {
