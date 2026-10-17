@@ -1,6 +1,6 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
-const productionWebUrl = process.env.CAPACITOR_SERVER_URL || 'https://planilha-cyan.vercel.app'
+const productionWebUrl = process.env.CAPACITOR_SERVER_URL || 'https://planilha-mocha.vercel.app'
 const useBundledWebAssets = process.env.CAPACITOR_USE_BUNDLED_WEB === 'true'
 
 const config: CapacitorConfig = {

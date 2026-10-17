@@ -61,7 +61,7 @@ export default defineNuxtConfig({
       appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.1.1',
       webBuildVersion,
       webVersionUrl: '/api/web-version',
-      updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || 'https://planilha-cyan.vercel.app/api/android-release',
+      updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || 'https://planilha-mocha.vercel.app/api/android-release',
       defaultEditKey: process.env.EDIT_KEY || 'demo-finance-key',
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '',
       supabaseUrl: envSupabaseUrl,
@@ -117,7 +117,7 @@ export default defineNuxtConfig({
       globPatterns: ['**/*.{js,css,png,svg,ico,webmanifest,woff2}'],
       runtimeCaching: [
         {
-          urlPattern: /^https:\/\/planilha-cyan\.vercel\.app\/api\/.*/i,
+          urlPattern: /^https:\/\/planilha-mocha\.vercel\.app\/api\/.*/i,
           handler: 'NetworkFirst',
           options: {
             cacheName: 'api-cache',

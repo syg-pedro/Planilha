@@ -15,6 +15,11 @@ on:
         description: Notas exibidas no GitHub Release e no aplicativo
         required: true
         type: string
+      publish_release:
+        description: Publicar no GitHub Releases (o APK também fica nos artefatos da execução)
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write
@@ -31,6 +36,7 @@ jobs:
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       NUXT_PUBLIC_APP_VERSION: ${{ inputs.version }}
       NUXT_PUBLIC_API_BASE_URL: ${{ vars.NUXT_PUBLIC_API_BASE_URL }}
+      CAPACITOR_SERVER_URL: ${{ vars.NUXT_PUBLIC_API_BASE_URL || 'https://planilha-mocha.vercel.app' }}
       NUXT_PUBLIC_SUPABASE_URL: ${{ vars.NUXT_PUBLIC_SUPABASE_URL }}
       NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
     steps:
@@ -69,8 +75,17 @@ jobs:
         run: |
           mkdir -p release
           cp android/app/build/outputs/apk/release/app-release.apk "release/Financeiro-Familiar-v${{ inputs.version }}.apk"
+          sha256sum "release/Financeiro-Familiar-v${{ inputs.version }}.apk" > "release/Financeiro-Familiar-v${{ inputs.version }}.apk.sha256"
+
+      - name: Disponibilizar APK assinado
+        uses: actions/upload-artifact@v4
+        with:
+          name: Planilha-v${{ inputs.version }}
+          path: release/*
+          retention-days: 14
 
       - name: Publicar GitHub Release
+        if: ${{ inputs.publish_release }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ inputs.version }}
