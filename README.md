@@ -6,7 +6,7 @@ Organize receitas, despesas, contas, cartões e vencimentos em um só lugar.
 
 ## Testar pelo navegador
 
-[**Abrir o Planilha na web**](https://planilha-mocha.vercel.app)
+[**Abrir o Planilha na web**](https://planilha-cyan.vercel.app)
 
 Use a conta de demonstração para explorar o aplicativo:
 

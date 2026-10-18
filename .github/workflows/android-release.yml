@@ -36,7 +36,7 @@ jobs:
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       NUXT_PUBLIC_APP_VERSION: ${{ inputs.version }}
       NUXT_PUBLIC_API_BASE_URL: ${{ vars.NUXT_PUBLIC_API_BASE_URL }}
-      CAPACITOR_SERVER_URL: ${{ vars.NUXT_PUBLIC_API_BASE_URL || 'https://planilha-mocha.vercel.app' }}
+      CAPACITOR_SERVER_URL: ${{ vars.NUXT_PUBLIC_API_BASE_URL || 'https://planilha-cyan.vercel.app' }}
       NUXT_PUBLIC_SUPABASE_URL: ${{ vars.NUXT_PUBLIC_SUPABASE_URL }}
       NUXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NUXT_PUBLIC_SUPABASE_ANON_KEY }}
     steps:

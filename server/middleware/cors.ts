@@ -1,11 +1,9 @@
 import { defineEventHandler, getHeader, getMethod, setHeader, setResponseStatus } from 'h3'
+import { mobileAllowedOrigins } from '../../shared/deployment'
 
 export default defineEventHandler((event) => {
   const origin = getHeader(event, 'origin')
-  const allowedOrigins = String(useRuntimeConfig(event).mobileAllowedOrigins || '')
-    .split(',')
-    .map(value => value.trim())
-    .filter(Boolean)
+  const allowedOrigins = mobileAllowedOrigins(String(useRuntimeConfig(event).mobileAllowedOrigins || ''))
 
   if (!origin || !allowedOrigins.includes(origin)) return
 

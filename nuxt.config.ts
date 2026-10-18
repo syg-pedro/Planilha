@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { execFileSync } from 'node:child_process'
+import { DEFAULT_MOBILE_ALLOWED_ORIGINS, PRODUCTION_WEB_URL } from './shared/deployment'
 
 const envSupabaseUrl =
   process.env.SUPABASE_URL ||
@@ -52,7 +53,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     editKey: process.env.EDIT_KEY || 'demo-finance-key',
-    mobileAllowedOrigins: process.env.MOBILE_ALLOWED_ORIGINS || 'https://localhost',
+    mobileAllowedOrigins: process.env.MOBILE_ALLOWED_ORIGINS || DEFAULT_MOBILE_ALLOWED_ORIGINS.join(','),
     supabaseUrl: envSupabaseUrl,
     supabaseServiceKey: envSupabaseServiceKey,
     dataFilePath: process.env.DATA_FILE_PATH || '',
@@ -61,7 +62,7 @@ export default defineNuxtConfig({
       appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.1.1',
       webBuildVersion,
       webVersionUrl: '/api/web-version',
-      updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || 'https://planilha-mocha.vercel.app/api/android-release',
+      updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || `${PRODUCTION_WEB_URL}/api/android-release`,
       defaultEditKey: process.env.EDIT_KEY || 'demo-finance-key',
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '',
       supabaseUrl: envSupabaseUrl,

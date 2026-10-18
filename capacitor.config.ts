@@ -1,6 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli'
+import { PRODUCTION_WEB_URL } from './shared/deployment'
 
-const productionWebUrl = process.env.CAPACITOR_SERVER_URL || 'https://planilha-mocha.vercel.app'
+const productionWebUrl = process.env.CAPACITOR_SERVER_URL || PRODUCTION_WEB_URL
 const useBundledWebAssets = process.env.CAPACITOR_USE_BUNDLED_WEB === 'true'
 
 const config: CapacitorConfig = {
