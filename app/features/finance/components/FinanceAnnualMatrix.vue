@@ -28,7 +28,7 @@
       >
       <span v-if="filtered">{{ entries.length }} lançamento(s) no resultado · totais filtrados</span>
       <button
-        v-if="hiddenMonths.some((month) => months.includes(month))"
+        v-if="!compact && query.presentation === 'matrix' && hiddenMonths.some((month) => months.includes(month))"
         type="button"
         @click="hiddenMonths = []"
       >
@@ -77,7 +77,7 @@
     </div>
     <Transition name="fade-slide" mode="out-in">
     <FinanceMatrixTable
-      v-if="query.presentation === 'matrix'"
+      v-if="!compact && query.presentation === 'matrix'"
       :key="`matrix:${query.month}:${query.range}`"
       ref="table"
       :groups="groups"
@@ -113,7 +113,7 @@
       @toggle="toggleEntryStatus"
     />
     </Transition>
-    <p class="planilha__legend">
+    <p v-if="!compact && query.presentation === 'matrix'" class="planilha__legend">
       <span class="text-success">✓ Pago / recebido</span> · <span class="text-error">○ Pendente</span> ·
       <span class="text-error">◐ Parcial</span> · <span class="text-error">! Revisar</span> ·
       — Sem lançamento · 0,00 Valor cadastrado
@@ -310,11 +310,10 @@ import AccountEditorSheet from './AccountEditorSheet.vue'
 const store = useFinanceStore(),
   route = useRoute(),
   router = useRouter()
-const { query, months, entries, periodEntries, filtered, todayMonth, clearFilters } = usePlanilhaQuery()
+const { query, months, entries, periodEntries, filtered, todayMonth, clearFilters, compact } = usePlanilhaQuery()
 const { format: fmt } = useCurrency(),
   { formatDate } = useDateFormat()
-const compact = ref(false),
-  expanded = ref(false),
+const expanded = ref(false),
   showMetadata = ref(false)
 const focusMonth = useState(`planilha-focus:${store.settings.id}`, () => query.value.month)
 const screenHost = ref<HTMLElement | null>(null),
@@ -726,15 +725,17 @@ watch(
   () => {
     selection.enabled.value = false
     activeCell.value = null
+    detailOpen.value = false
+    expanded.value = false
+    actionRow.value = null
+    actionMonth.value = ''
   }
 )
 
 let observer: ResizeObserver | undefined,
-  media: MediaQueryList | undefined,
   active = true
 function updateHeight() {
   if (!active || !screenHost.value) return
-  compact.value = media?.matches ?? false
   const region = table.value?.host
   if (!region) return
   const styles = getComputedStyle(document.documentElement)
@@ -803,8 +804,6 @@ watch(
 )
 const preferenceKey = computed(() => `finance-planilha:${store.settings.id}`)
 onMounted(() => {
-  media = window.matchMedia('(max-width: 767px)')
-  compact.value = media.matches
   try {
     const saved = JSON.parse(
       localStorage.getItem(preferenceKey.value) ??

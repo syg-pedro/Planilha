@@ -1,4 +1,4 @@
-import { computed, nextTick, onActivated, onMounted, onScopeDispose, watch } from 'vue'
+import { computed, nextTick, onActivated, onMounted, onScopeDispose, ref, watch } from 'vue'
 import {
   createFinanceQuery,
   financeQueryMonths,
@@ -13,6 +13,9 @@ export function usePlanilhaQuery() {
   const store = useFinanceStore()
   const route = useRoute()
   const router = useRouter()
+  const compact = ref(import.meta.client && window.matchMedia('(max-width: 767px)').matches)
+  let media: MediaQueryList | undefined
+  const updateViewport = () => { compact.value = media?.matches ?? false }
   const today = new Intl.DateTimeFormat('en-CA', {
     timeZone: store.settings.timezone,
     year: 'numeric',
@@ -29,6 +32,13 @@ export function usePlanilhaQuery() {
       state.value.query = value
     }
   })
+  watch(
+    [compact, () => query.value.presentation],
+    ([mobile, presentation]) => {
+      if (mobile && presentation !== 'list') query.value.presentation = 'list'
+    },
+    { immediate: true, flush: 'sync' }
+  )
   let timer: ReturnType<typeof setTimeout> | undefined
   let applyingRoute = false
   function syncRoute() {
@@ -60,14 +70,20 @@ export function usePlanilhaQuery() {
     { deep: true }
   )
   onMounted(() => {
+    media = window.matchMedia('(max-width: 767px)')
+    updateViewport()
+    media.addEventListener('change', updateViewport)
     if (!state.value.initialized) {
-      if (!route.query.range && window.matchMedia('(max-width: 767px)').matches) query.value.range = 'month'
+      if (!route.query.range && compact.value) query.value.range = 'month'
       state.value.initialized = true
     }
     void nextTick(syncRoute)
   })
   onActivated(() => void nextTick(syncRoute))
-  onScopeDispose(() => clearTimeout(timer))
+  onScopeDispose(() => {
+    clearTimeout(timer)
+    media?.removeEventListener('change', updateViewport)
+  })
   const months = computed(() => financeQueryMonths(query.value))
   const entries = computed(() => filterFinanceQuery(store.entries, store.accounts, query.value))
   const periodEntries = computed(() =>
@@ -83,5 +99,5 @@ export function usePlanilhaQuery() {
   function clearFilters() {
     Object.assign(query.value, { search: '', kind: 'all', status: 'all', accountId: '' })
   }
-  return { query, months, entries, periodEntries, filtered, todayMonth, clearFilters }
+  return { query, months, entries, periodEntries, filtered, todayMonth, clearFilters, compact }
 }

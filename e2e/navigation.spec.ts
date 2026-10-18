@@ -92,10 +92,10 @@ test.describe('navegação da Planilha', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   })
 
-  test('preserva filtros na URL, no histórico e ao recarregar', async ({ page }) => {
+  test('preserva filtros na URL, no histórico e ao recarregar', async ({ page }, testInfo) => {
     await openApp(page)
-    const expectedQuery = { month: '2026-10', range: 'quarter', view: 'matrix', date: 'due_date', q: 'a', kind: 'expense', status: 'pending' }
-    const query = new URLSearchParams({ key: 'demo-finance-key', ...expectedQuery })
+    const expectedQuery = { month: '2026-10', range: 'quarter', view: testInfo.project.name === 'Desktop Chrome' ? 'matrix' : 'list', date: 'due_date', q: 'a', kind: 'expense', status: 'pending' }
+    const query = new URLSearchParams({ key: 'demo-finance-key', ...expectedQuery, view: 'matrix' })
     await page.goto(`/planilha?${query}`)
     await expect(page.getByRole('searchbox', { name: 'Buscar na planilha', exact: true })).toHaveValue('a')
     const readQuery = () => Object.fromEntries(Object.keys(expectedQuery).map(key => [key, new URL(page.url()).searchParams.get(key)]))

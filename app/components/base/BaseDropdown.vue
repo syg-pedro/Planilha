@@ -27,6 +27,8 @@
         base: 'finance-control',
         content: 'base-select-menu',
         item: 'base-select-option',
+        itemLabel: 'overflow-visible text-clip whitespace-normal break-words',
+        value: wrap ? 'overflow-visible text-clip whitespace-normal break-words text-start' : undefined,
       }"
       :content="{ position: 'popper', sideOffset: 4, collisionPadding: 8 }"
       @update:model-value="updateValue"
@@ -66,6 +68,7 @@ const props = withDefaults(
     ariaLabel?: string
     disabled?: boolean
     readonly?: boolean
+    wrap?: boolean
   }>(),
   {
     options: undefined,
@@ -78,6 +81,7 @@ const props = withDefaults(
     ariaLabel: undefined,
     disabled: false,
     readonly: false,
+    wrap: false,
   },
 )
 const emit = defineEmits<{ 'update:modelValue': [value: T] }>()

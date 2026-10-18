@@ -191,9 +191,14 @@ test.describe('fluxos da Planilha após a refatoração', () => {
     if (!await search.isVisible()) await page.getByRole('button', { name: 'Abrir busca', exact: true }).click()
     await search.fill(fixture.prefix)
     await expect(pendingAmount).toHaveText('R$ 12,34')
-    await page.getByRole('tab', { name: 'Planilha', exact: true }).click()
-    await expect(pendingAmount).toHaveText('R$ 12,34')
-    await page.getByRole('tab', { name: 'Lista', exact: true }).click()
+    if (page.viewportSize()!.width >= 768) {
+      await page.getByRole('tab', { name: 'Planilha', exact: true }).click()
+      await expect(pendingAmount).toHaveText('R$ 12,34')
+      await page.getByRole('tab', { name: 'Lista', exact: true }).click()
+    } else {
+      await expect(page.locator('.annual-table')).toHaveCount(0)
+      await expect(page.getByRole('tab', { name: 'Planilha', exact: true })).toHaveCount(0)
+    }
     await page.getByRole('button', { name: `Editar ${fixture.prefix}`, exact: true }).click()
     await expectDate(dialog, 'Competência', '2026-09-20')
     const editedTitle = `${fixture.prefix} editado`
@@ -295,17 +300,32 @@ test.describe('fluxos da Planilha após a refatoração', () => {
     await expect(summary.locator('strong')).toHaveText(/Soma:\s*R\$\s*0,00/)
   })
 
-  test('começa com um mês no celular e mantém conteúdo e editor dentro das larguras suportadas', async ({ page }, testInfo) => {
+  test('usa somente lista no celular e mantém filtros e editor legíveis nas larguras suportadas', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'Desktop Chrome', 'Varre as larguras em um único navegador para evitar repetição.')
     await page.setViewportSize({ width: 360, height: 900 })
     await openWorkspace(page)
-    await expect(page.locator('.annual-table .annual-month')).toHaveCount(1)
+    await expect.poll(() => new URL(page.url()).searchParams.get('range')).toBe('month')
+    await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBe('list')
+    await expect(page.locator('.annual-table')).toHaveCount(0)
     await page.getByRole('combobox', { name: 'Período visível', exact: true }).click()
     await page.getByRole('option', { name: '3 meses', exact: true }).click()
-    await expect(page.locator('.annual-table .annual-month')).toHaveCount(3)
-    for (const width of [360, 390, 768, 1024, 1440]) {
+    await expect.poll(() => new URL(page.url()).searchParams.get('range')).toBe('quarter')
+    for (const width of [320, 360, 390, 612, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 })
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+      if (width < 768) {
+        await expect(page.locator('.annual-table')).toHaveCount(0)
+        await expect(page.getByRole('tab', { name: 'Planilha', exact: true })).toHaveCount(0)
+        await page.getByRole('button', { name: /^Filtros/ }).click()
+        const dateFilter = page.getByRole('combobox', { name: 'Organizar pela data', exact: true })
+        await expect(dateFilter).toContainText('Vencimento / recebimento')
+        await dateFilter.click()
+        const option = page.getByRole('option', { name: 'Vencimento / recebimento', exact: true })
+        await expect(option).toBeVisible()
+        await expect(option.locator('[data-slot="itemLabel"]')).toHaveCSS('white-space', 'normal')
+        await page.keyboard.press('Escape')
+        await page.getByRole('button', { name: /^Filtros/ }).click()
+      }
       await createButton(page).click()
       const dialog = entryDialog(page)
       const description = dialog.getByLabel('Descrição', { exact: true })

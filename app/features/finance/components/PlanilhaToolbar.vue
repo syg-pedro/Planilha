@@ -30,7 +30,7 @@
       ><span class="planilha-toolbar__new-short">Novo</span></BaseButton
     >
     <div class="planilha-toolbar__break" />
-    <UTabs :model-value="query.presentation" :items="[{ label: 'Planilha', value: 'matrix' }, { label: 'Lista', value: 'list' }]" :content="false" class="planilha-toolbar__views" aria-label="Apresentação da planilha" @update:model-value="query.presentation = $event as FinanceQuery['presentation']" />
+    <UTabs v-if="!compact" :model-value="query.presentation" :items="[{ label: 'Planilha', value: 'matrix' }, { label: 'Lista', value: 'list' }]" :content="false" class="planilha-toolbar__views" aria-label="Apresentação da planilha" @update:model-value="query.presentation = $event as FinanceQuery['presentation']" />
     <div v-if="!compact || searchOpen || query.search" class="planilha-toolbar__search">
       <BaseInput
         v-model="query.search"
@@ -57,7 +57,7 @@
       @click="searchOpen = !searchOpen"
       ><BaseIcon name="search" :size="17"
     /></BaseButton>
-    <template v-if="query.presentation === 'matrix'">
+    <template v-if="!compact && query.presentation === 'matrix'">
       <BaseButton
         variant="ghost"
         class="planilha-toolbar__advanced"
@@ -76,28 +76,12 @@
     <UCollapsible :open="filtersOpen" class="planilha-toolbar__filters">
       <template #content>
       <UCard id="planilha-filters" :ui="{ body: 'planilha-toolbar__filter-grid' }">
-        <BaseDropdown v-model="query.dateMode" label="Organizar pela data" :options="dateOptions" />
-        <BaseDropdown v-model="query.kind" label="Tipo" :options="kindOptions" />
-        <BaseDropdown v-model="query.status" label="Status" :options="statusOptions" />
-        <BaseDropdown v-model="query.accountId" label="Conta" :options="accountOptions" />
-        <UCheckbox v-if="query.presentation === 'matrix'" :model-value="metadata" label="Mostrar limites e totais por linha" class="planilha-toolbar__check" @update:model-value="$emit('metadata', $event === true)" />
+        <BaseDropdown v-model="query.dateMode" label="Organizar pela data" :options="dateOptions" wrap />
+        <BaseDropdown v-model="query.kind" label="Tipo" :options="kindOptions" wrap />
+        <BaseDropdown v-model="query.status" label="Status" :options="statusOptions" wrap />
+        <BaseDropdown v-model="query.accountId" label="Conta" :options="accountOptions" wrap />
+        <UCheckbox v-if="!compact && query.presentation === 'matrix'" :model-value="metadata" label="Mostrar limites e totais por linha" class="planilha-toolbar__check" @update:model-value="$emit('metadata', $event === true)" />
         <BaseButton variant="ghost" @click="$emit('clear')">Limpar filtros</BaseButton>
-        <BaseButton
-          v-if="query.presentation === 'matrix'"
-          variant="ghost"
-          class="planilha-toolbar__mobile-action"
-          :aria-pressed="selecting"
-          @click="$emit('select')"
-          >{{ selecting ? 'Concluir seleção' : 'Selecionar células' }}</BaseButton
-        >
-        <BaseButton
-          v-if="query.presentation === 'matrix'"
-          variant="ghost"
-          class="planilha-toolbar__mobile-action"
-          :aria-pressed="expanded"
-          @click="$emit('expand')"
-          >{{ expanded ? 'Reduzir' : 'Ampliar' }}</BaseButton
-        >
       </UCard>
       </template>
     </UCollapsible>
@@ -205,9 +189,6 @@ const filterCount = computed(
   flex-basis: 100%;
   height: 0;
 }
-.planilha-toolbar__mobile-action {
-  display: none;
-}
 .planilha-toolbar__views { flex-shrink: 0; }
 .planilha-toolbar__search {
   flex: 1;
@@ -224,7 +205,7 @@ const filterCount = computed(
   color: var(--primary);
 }
 .planilha-toolbar__filters { width: 100%; min-width: 0; }
-.planilha-toolbar__filters :deep(.planilha-toolbar__filter-grid) { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); align-items: end; gap: var(--ds-space-4); }
+.planilha-toolbar__filters :deep(.planilha-toolbar__filter-grid) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; gap: var(--ds-space-4); }
 .planilha-toolbar__check {
   display: flex;
   gap: 8px;
@@ -233,6 +214,10 @@ const filterCount = computed(
   color: var(--text2);
   font-size: 12px;
   min-height: 32px;
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .planilha-toolbar__filters :deep(.planilha-toolbar__filter-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .planilha-toolbar__check { grid-column: 1 / -1; }
 }
 @media (max-width: 767px) {
   .planilha-toolbar {
@@ -267,9 +252,6 @@ const filterCount = computed(
   .planilha-toolbar__advanced {
     display: none;
   }
-  .planilha-toolbar__mobile-action {
-    display: flex;
-  }
   .planilha-toolbar__search {
     order: 3;
     flex-basis: 100%;
@@ -281,7 +263,7 @@ const filterCount = computed(
   .planilha-toolbar__filters {
     order: 4;
   }
-  .planilha-toolbar__filters :deep(.planilha-toolbar__filter-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .planilha-toolbar__filters :deep(.planilha-toolbar__filter-grid) { grid-template-columns: minmax(0, 1fr); }
   .planilha-toolbar__check {
     grid-column: 1 / -1;
   }
