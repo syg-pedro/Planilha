@@ -27,16 +27,17 @@
           <strong>{{ format(entry.amount) }}</strong
           ><FinanceEntryStatusBadge :entry="entry" />
         </div>
-        <BaseButton
-          variant="ghost"
-          class="ledger__status"
+        <UButton
+          :color="entry.status === 'paid' ? 'neutral' : 'primary'"
+          :variant="entry.status === 'paid' ? 'outline' : 'solid'"
+          :icon="entry.status === 'paid' ? 'i-lucide-undo-2' : 'i-lucide-check'"
+          class="finance-control ledger__status"
           :disabled="busy"
-          :aria-label="`${entry.status === 'paid' ? 'Marcar pendente' : entry.kind === 'income' ? 'Marcar recebido' : 'Marcar pago'}: ${entry.title}`"
+          :aria-label="`${entry.status === 'paid' ? entry.kind === 'income' ? 'Desfazer recebimento' : 'Desfazer pagamento' : entry.kind === 'income' ? 'Receber' : 'Pagar'}: ${entry.title}`"
           @click="$emit('toggle', entry)"
-          ><span aria-hidden="true">{{ entry.status === 'paid' ? '↶' : '✓' }}</span
-          ><span class="ledger__action-label">{{
+          >{{
             entry.status === 'paid' ? 'Desfazer' : entry.kind === 'income' ? 'Receber' : 'Pagar'
-          }}</span></BaseButton
+          }}</UButton
         >
       </li>
     </ul>
@@ -129,6 +130,9 @@ const excluded = (entry: FinanceEntry) =>
 .ledger__income strong {
   color: var(--success);
 }
+.ledger__status {
+  justify-content: center;
+}
 .ledger__row--saved {
   animation: ds-saved-row 600ms ease-out;
 }
@@ -139,17 +143,25 @@ const excluded = (entry: FinanceEntry) =>
 }
 @media (max-width: 767px) {
   .ledger__row {
-    grid-template-columns: minmax(0, 1fr) auto 38px;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 8px;
     padding: 7px 10px;
   }
-  .ledger__status {
-    min-width: 38px;
-    min-height: 44px;
-    padding: 4px;
+  .ledger__description {
+    grid-column: 1;
+    grid-row: 1 / span 2;
   }
-  .ledger__action-label {
-    display: none;
+  .ledger__amount {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .ledger__status {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: end;
+    min-width: 104px;
+    min-height: 44px;
+    padding: 6px 12px;
   }
 }
 </style>
