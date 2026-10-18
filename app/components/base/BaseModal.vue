@@ -74,9 +74,10 @@ const contentProps = computed(() => ({
 }))
 const modalUi = computed(() => ({
   content: `base-modal base-modal--${props.mode}`,
-  header: 'base-modal__header',
+  header: 'base-modal__header shrink-0',
+  wrapper: 'min-w-0 pe-8',
   body: 'base-modal__body',
-  footer: 'base-modal__footer block',
+  footer: 'base-modal__footer shrink-0 flex-wrap justify-end gap-2',
   title: 'base-modal__title',
   description: 'base-modal__subtitle',
 }))
@@ -171,7 +172,6 @@ defineExpose({ focusFirst })
   border-bottom-right-radius: 0;
 }
 @media (max-width: 767px) {
-  .base-modal--auto,
   .base-modal--sheet {
     top: calc(
       var(--base-modal-viewport-top, 0px) +
