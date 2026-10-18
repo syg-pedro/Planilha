@@ -14,5 +14,14 @@ atualizar a compatibilidade com APKs existentes.
 
 Para publicar, configure `VERCEL_ORG_ID` e `VERCEL_PROJECT_ID` com os identificadores
 do projeto antigo e execute `vercel deploy deployment/legacy-mobile --prod`.
-Confira o destino, a configuração pública do login e o preflight CORS antes de
-promover o domínio legado. Não modifique o vínculo Vercel da raiz do repositório.
+Não modifique o vínculo Vercel da raiz do repositório.
+
+A rota `/` redireciona temporariamente para `/planilha` no próprio domínio,
+preservando os parâmetros da URL. Essa é a abertura usada pelos APKs já
+instalados; o encaminhamento genérico das demais rotas não atendia a raiz.
+
+Na validação da publicação, abra primeiro `https://planilha-mocha.vercel.app/`,
+inclusive com parâmetros de URL, e confirme que o login aparece sem mudar o
+domínio. Testar somente `/login` não cobre a abertura do aplicativo. Confira
+também os arquivos da interface, a configuração pública do login, a versão
+web, os cabeçalhos sem cache das APIs e o preflight CORS.

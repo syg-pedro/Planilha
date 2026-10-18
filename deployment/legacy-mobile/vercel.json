@@ -4,6 +4,13 @@
   "buildCommand": null,
   "installCommand": null,
   "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/planilha",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/:path*",
