@@ -43,11 +43,6 @@
       <UButton color="neutral" variant="link" trailing-icon="i-lucide-chevron-down">Consultar resumo geral do período</UButton>
       <template #content><FinancePeriodSummary :totals="generalTotals" label="Resumo geral, sem filtros" /></template>
     </UCollapsible>
-    <Transition name="ds-reveal"
-      ><UAlert v-if="feedback" class="planilha__feedback" role="status" aria-live="polite" :color="store.offlineQueue.length ? 'warning' : 'success'" variant="subtle" :title="feedback" icon="i-lucide-circle-check">
-        <template v-if="undoStatus" #actions><UButton color="neutral" variant="outline" :disabled="busy" @click="restoreStatus">Desfazer</UButton></template>
-      </UAlert></Transition
-    >
     <UAlert v-if="error && !editorEntry && !accountEditor && !confirmation" :description="error" color="error" variant="subtle" role="alert" />
     <UCard v-if="!store.entries.length" title="Sua organização começa aqui" description="Cadastre o primeiro lançamento. Você pode adicionar uma conta agora ou escolher depois.">
       <BaseButton @click="newEntry()">Criar primeiro lançamento</BaseButton
@@ -310,6 +305,7 @@ import AccountEditorSheet from './AccountEditorSheet.vue'
 const store = useFinanceStore(),
   route = useRoute(),
   router = useRouter()
+const toast = useToast()
 const { query, months, entries, periodEntries, filtered, todayMonth, clearFilters, compact } = usePlanilhaQuery()
 const { format: fmt } = useCurrency(),
   { formatDate } = useDateFormat()
@@ -473,18 +469,30 @@ const editorEntry = ref<FinanceEntry | null>(null),
   creating = ref(false),
   busy = ref(false),
   error = ref(''),
-  feedback = ref(''),
   highlighted = ref<string[]>([])
-const undoStatus = ref<FinanceEntry | null>(null)
+let feedbackToastId: string | number | undefined
 let feedbackTimer: ReturnType<typeof setTimeout> | undefined
-function announce(message: string, ids: string[] = []) {
-  feedback.value = message
+function announce(message: string, ids: string[] = [], undo?: FinanceEntry) {
+  if (feedbackToastId !== undefined) toast.remove(feedbackToastId)
+  feedbackToastId = toast.add({
+    title: message,
+    color: store.offlineQueue.length ? 'warning' : 'success',
+    icon: store.offlineQueue.length ? 'i-lucide-cloud-off' : 'i-lucide-circle-check',
+    duration: 6500,
+    class: 'planilha-toast',
+    actions: undo ? [{
+      label: 'Desfazer',
+      color: 'neutral',
+      variant: 'outline',
+      loadingAuto: true,
+      closeOnClick: false,
+      onClick: () => restoreStatus(undo)
+    }] : []
+  }).id
   highlighted.value = ids
   clearTimeout(feedbackTimer)
   feedbackTimer = setTimeout(() => {
-    feedback.value = ''
     highlighted.value = []
-    undoStatus.value = null
   }, 6500)
 }
 function openEditor(entry: FinanceEntry) {
@@ -546,13 +554,13 @@ function newEntry(
     updatedAt: now
   }
 }
-async function persist(upserts: Partial<FinanceEntry>[], deletes: string[] = []): Promise<boolean> {
+async function persist(upserts: Partial<FinanceEntry>[], deletes: string[] = [], notify = true): Promise<boolean> {
   if (busy.value) return false
   busy.value = true
   error.value = ''
   try {
     await store.saveEntriesBatch({ upserts, deletes })
-    announce(
+    if (notify) announce(
       store.offlineQueue.length
         ? 'Pendente de sincronização. Seus dados estão salvos neste dispositivo.'
         : 'Alteração salva.',
@@ -577,25 +585,21 @@ async function saveEditor(values: Partial<FinanceEntry>[]) {
 }
 async function toggleEntryStatus(entry: FinanceEntry) {
   const previous = { ...entry }
-  if (await persist([{ ...entry, status: entry.status === 'paid' ? 'pending' : 'paid' }])) {
-    undoStatus.value = previous
-    feedback.value = store.offlineQueue.length
+  if (await persist([{ ...entry, status: entry.status === 'paid' ? 'pending' : 'paid' }], [], false)) {
+    announce(store.offlineQueue.length
       ? 'Status atualizado neste dispositivo. Pendente de sincronização.'
       : entry.status === 'paid'
         ? 'Lançamento marcado como pendente.'
         : entry.kind === 'income'
           ? 'Recebimento confirmado.'
-          : 'Pagamento confirmado.'
+          : 'Pagamento confirmado.', [entry.id], previous)
   }
 }
-async function restoreStatus() {
-  if (!undoStatus.value) return
-  const previous = undoStatus.value
-  if (await persist([previous])) {
-    undoStatus.value = null
-    feedback.value = store.offlineQueue.length
+async function restoreStatus(previous: FinanceEntry) {
+  if (await persist([previous], [], false)) {
+    announce(store.offlineQueue.length
       ? 'Status restaurado neste dispositivo. Pendente de sincronização.'
-      : 'Status anterior restaurado.'
+      : 'Status anterior restaurado.', [previous.id])
   }
 }
 const cardCommitment = (row: MatrixRow) => matrixCardCommitment(store.entries, row.account!)
@@ -870,6 +874,7 @@ onDeactivated(() => {
 })
 onBeforeUnmount(() => {
   clearTimeout(feedbackTimer)
+  if (feedbackToastId !== undefined) toast.remove(feedbackToastId)
   observer?.disconnect()
   window.removeEventListener('resize', updateHeight)
   window.visualViewport?.removeEventListener('resize', updateHeight)
