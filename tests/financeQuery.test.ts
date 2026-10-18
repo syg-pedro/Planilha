@@ -4,7 +4,8 @@ import {
   filterFinanceQuery,
   financeQueryMonths,
   parseFinanceQuery,
-  serializeFinanceQuery
+  serializeFinanceQuery,
+  sortFinanceListEntries
 } from '../shared/financeQuery'
 import { buildFinanceMatrix } from '../shared/matrix'
 import type { Account, FinanceEntry } from '../shared/types'
@@ -45,6 +46,37 @@ const entry = (id: string, changes: Partial<FinanceEntry> = {}): FinanceEntry =>
 })
 
 describe('consulta compartilhada da Planilha', () => {
+  it('prioriza despesas em aberto, depois receitas pendentes e por último itens quitados, sem alterar os registros', () => {
+    const records = [
+      entry('paid-expense', { status: 'paid', dueDate: '2026-10-01' }),
+      entry('pending-income', { kind: 'income', dueDate: '2026-10-01' }),
+      entry('late-expense', { dueDate: '2026-10-25' }),
+      entry('review-expense', { status: 'review', title: 'Revisar conta', dueDate: '2026-10-10' }),
+      entry('paid-income', { kind: 'income', status: 'paid', dueDate: '2026-10-05' }),
+      entry('early-expense', { title: 'Água', dueDate: '2026-10-10' })
+    ]
+    const originalIds = records.map(entry => entry.id)
+    const sorted = sortFinanceListEntries(records)
+    expect(sorted.map(entry => entry.id)).toEqual([
+      'early-expense', 'review-expense', 'late-expense', 'pending-income', 'paid-expense', 'paid-income'
+    ])
+    expect(records.map(entry => entry.id)).toEqual(originalIds)
+    expect(sorted[0]).toBe(records[5])
+    expect(sortFinanceListEntries(records.map(record => record.id === 'early-expense' ? { ...record, status: 'paid' as const } : record)).map(entry => entry.id)).toEqual([
+      'review-expense', 'late-expense', 'pending-income', 'paid-expense', 'paid-income', 'early-expense'
+    ])
+  })
+
+  it('mantém a prioridade dos pendentes ao ordenar por competência em vez de vencimento', () => {
+    const records = [
+      entry('first-due', { dueDate: '2026-10-01', competenceDate: '2026-10-30' }),
+      entry('first-competence', { dueDate: '2026-10-20', competenceDate: '2026-10-01' }),
+      entry('paid', { status: 'paid', dueDate: '2026-10-01', competenceDate: '2026-10-01' })
+    ]
+    expect(sortFinanceListEntries(records).map(entry => entry.id)).toEqual(['first-due', 'first-competence', 'paid'])
+    expect(sortFinanceListEntries(records, 'competence').map(entry => entry.id)).toEqual(['first-competence', 'first-due', 'paid'])
+  })
+
   it('preserva registros e totais ao alternar Planilha e Lista, incluindo critérios e exclusões', () => {
     const records = [
       entry('first'),

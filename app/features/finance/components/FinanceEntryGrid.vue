@@ -2,7 +2,7 @@
   <UCard class="ledger" :ui="{ body: 'p-0 sm:p-0' }">
     <ul v-if="entries.length" class="ledger__list" aria-label="Lançamentos do período">
       <li
-        v-for="entry in entries"
+        v-for="entry in sortedEntries"
         :key="entry.id"
         class="ledger__row"
         :class="{ 'ledger__row--saved': highlighted.includes(entry.id) }"
@@ -25,7 +25,7 @@
         </UButton>
         <div class="ledger__amount" :class="{ ledger__income: entry.kind === 'income' }">
           <strong>{{ format(entry.amount) }}</strong
-          ><small>{{ statusLabel(entry) }}</small>
+          ><FinanceEntryStatusBadge :entry="entry" />
         </div>
         <BaseButton
           variant="ghost"
@@ -53,8 +53,11 @@
   </UCard>
 </template>
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { Account, FinanceEntry, PeriodMode } from '#shared/types'
+import { sortFinanceListEntries } from '#shared/financeQuery'
 import { useCurrency } from '../composables/useCurrency'
+import FinanceEntryStatusBadge from './FinanceEntryStatusBadge.vue'
 const props = withDefaults(
   defineProps<{
     entries: FinanceEntry[]
@@ -68,19 +71,12 @@ const props = withDefaults(
 defineEmits<{ edit: [entry: FinanceEntry]; toggle: [entry: FinanceEntry] }>()
 const { format } = useCurrency()
 const { formatDate } = useDateFormat()
+const sortedEntries = computed(() => sortFinanceListEntries(props.entries, props.dateMode))
 const accountName = (entry: FinanceEntry) =>
   props.accounts.find((account) => account.id === entry.accountId)?.name ?? 'Sem conta'
 const excluded = (entry: FinanceEntry) =>
   entry.excludeFromCalc ||
   props.accounts.some((account) => account.id === entry.accountId && account.type === 'benefit')
-const statusLabel = (entry: FinanceEntry) =>
-  entry.status === 'paid'
-    ? entry.kind === 'income'
-      ? 'Recebido'
-      : 'Pago'
-    : entry.status === 'review'
-      ? 'Em revisão'
-      : 'Pendente'
 </script>
 <style scoped>
 .ledger__list {
@@ -116,13 +112,13 @@ const statusLabel = (entry: FinanceEntry) =>
   font-size: 13px;
   overflow-wrap: anywhere;
 }
-.ledger__description small,
-.ledger__amount small {
+.ledger__description small {
   color: var(--text3);
   font-size: 11px;
 }
 .ledger__amount {
   display: grid;
+  justify-items: end;
   gap: 4px;
   text-align: right;
   font-variant-numeric: tabular-nums;

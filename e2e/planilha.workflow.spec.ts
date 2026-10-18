@@ -66,6 +66,19 @@ async function savedBatch(page: Page, action: () => Promise<unknown>) {
   return await (await response).json() as { entries: FinanceEntry[] }
 }
 
+async function expectPaymentColor(badge: Locator, paid: boolean) {
+  const [red = 0, green = 0, blue = 0] = await badge.evaluate(element => {
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 1
+    const context = canvas.getContext('2d')!
+    context.fillStyle = getComputedStyle(element).color
+    context.fillRect(0, 0, 1, 1)
+    return Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3)
+  })
+  expect(paid ? green : red).toBeGreaterThan(paid ? red : green)
+  expect(paid ? green : red).toBeGreaterThan(blue)
+}
+
 async function seedSelectionRow(page: Page) {
   const fixture = batches.get(page)!
   const now = new Date().toISOString()
@@ -83,6 +96,47 @@ async function seedSelectionRow(page: Page) {
 }
 
 test.describe('fluxos da Planilha após a refatoração', () => {
+  test('mostra despesas em aberto primeiro e mantém as tags verdes ou vermelhas ao pagar e desfazer', async ({ page }) => {
+    const fixture = batches.get(page)!
+    const name = (title: string) => `${fixture.prefix} ${title}`
+    const now = new Date().toISOString()
+    const scenarios: Partial<FinanceEntry>[] = [
+      { title: 'Pago antigo', status: 'paid', dueDate: '2026-10-01', competenceDate: '2026-10-01' },
+      { title: 'Receita pendente', kind: 'income', dueDate: '2026-10-01', competenceDate: '2026-10-01' },
+      { title: 'Pendente próximo', dueDate: '2026-10-03', competenceDate: '2026-10-27' },
+      { title: 'Pendente futuro', dueDate: '2026-10-25', competenceDate: '2026-10-02' },
+      { title: 'Em revisão', status: 'review', dueDate: '2026-10-15', competenceDate: '2026-10-15' },
+      { title: 'Receita recebida', kind: 'income', status: 'paid', dueDate: '2026-10-05', competenceDate: '2026-10-05' }
+    ]
+    const records: FinanceEntry[] = scenarios.map(scenario => ({
+      id: randomUUID(), householdId: 'household-main', description: 'Fixture temporária de ordenação e status',
+      amount: 12.34, kind: 'expense', status: 'pending', dueDate: '2026-10-01', competenceDate: '2026-10-01',
+      accountId: null, categoryId: null, ruleId: null, installmentIndex: null, installmentTotal: null,
+      origin: 'manual', excludeFromCalc: false, metadata: null, createdAt: now, updatedAt: now,
+      ...scenario, title: name(scenario.title!)
+    }))
+    for (const record of records) fixture.ids.add(record.id)
+    const seeded = await page.request.post('/api/entries/batch', { headers: editHeaders, data: { upserts: records, deletes: [] } })
+    expect(seeded.ok()).toBe(true)
+    await openWorkspace(page, { month: '2026-10', range: 'month', view: 'list', q: fixture.prefix })
+    const titles = page.locator('.ledger__description strong')
+    const row = (title: string) => page.locator('.ledger__row').filter({ has: page.getByRole('button', { name: `Editar ${name(title)}`, exact: true }) })
+    const order = ['Pendente próximo', 'Em revisão', 'Pendente futuro', 'Receita pendente', 'Pago antigo', 'Receita recebida'].map(name)
+    await expect(titles).toHaveText(order)
+    for (const title of ['Pendente próximo', 'Receita pendente', 'Em revisão']) await expectPaymentColor(row(title).locator('.finance-entry-status'), false)
+    for (const title of ['Pago antigo', 'Receita recebida']) await expectPaymentColor(row(title).locator('.finance-entry-status'), true)
+    await savedBatch(page, () => row('Pendente próximo').getByRole('button', { name: `Marcar pago: ${name('Pendente próximo')}`, exact: true }).click())
+    await expect(titles).toHaveText(['Em revisão', 'Pendente futuro', 'Receita pendente', 'Pago antigo', 'Pendente próximo', 'Receita recebida'].map(name))
+    await expectPaymentColor(row('Pendente próximo').locator('.finance-entry-status'), true)
+    await savedBatch(page, () => page.locator('.planilha__feedback').getByRole('button', { name: 'Desfazer', exact: true }).click())
+    await expect(titles).toHaveText(order)
+    await expectPaymentColor(row('Pendente próximo').locator('.finance-entry-status'), false)
+    await openWorkspace(page, { month: '2026-10', range: 'month', view: 'list', q: fixture.prefix, date: 'competence' })
+    await expect(titles).toHaveText(['Pendente futuro', 'Em revisão', 'Pendente próximo', 'Receita pendente', 'Pago antigo', 'Receita recebida'].map(name))
+    await openWorkspace(page, { month: '2026-10', range: 'month', view: 'list', q: fixture.prefix, status: 'paid' })
+    await expect(titles).toHaveText(['Pago antigo', 'Receita recebida'].map(name))
+  })
+
   test('usa o mês da célula ao criar e Hoje restaura o mês de foco', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'Desktop Chrome', 'A seleção da célula por destaque é específica do desktop.')
     await openWorkspace(page, { month: '2026-10', range: 'quarter', view: 'matrix' })
@@ -150,12 +204,12 @@ test.describe('fluxos da Planilha após a refatoração', () => {
     const row = page.locator('.ledger__row').filter({ has: page.getByRole('button', { name: `Editar ${editedTitle}`, exact: true }) })
     const paid = await savedBatch(page, () => row.getByRole('button', { name: `Marcar pago: ${editedTitle}`, exact: true }).click())
     expect(paid.entries.find(entry => entry.id === created!.id)).toMatchObject({ status: 'paid', competenceDate: '2026-09-20' })
-    await expect(row.locator('.ledger__amount small')).toHaveText('Pago')
+    await expect(row.getByText('Pago', { exact: true })).toBeVisible()
     await expect(pendingAmount).toHaveText('R$ 0,00')
     await expect(pendingSummary).toContainText('Nenhuma despesa pendente.')
     const restored = await savedBatch(page, () => page.locator('.planilha__feedback').getByRole('button', { name: 'Desfazer', exact: true }).click())
     expect(restored.entries.find(entry => entry.id === created!.id)).toMatchObject({ status: 'pending', competenceDate: '2026-09-20' })
-    await expect(row.locator('.ledger__amount small')).toHaveText('Pendente')
+    await expect(row.getByText('Pendente', { exact: true })).toBeVisible()
     await expect(pendingAmount).toHaveText('R$ 12,34')
   })
 

@@ -104,7 +104,7 @@
     <FinanceEntryGrid
       v-else
       key="list"
-      :entries="sortedEntries"
+      :entries="entries"
       :accounts="store.accounts"
       :date-mode="query.dateMode"
       :busy="busy"
@@ -114,7 +114,9 @@
     />
     </Transition>
     <p class="planilha__legend">
-      ✓ Pago / recebido · ○ Pendente · ◐ Parcial · ! Revisar · — Sem lançamento · 0,00 Valor cadastrado
+      <span class="text-success">✓ Pago / recebido</span> · <span class="text-error">○ Pendente</span> ·
+      <span class="text-error">◐ Parcial</span> · <span class="text-error">! Revisar</span> ·
+      — Sem lançamento · 0,00 Valor cadastrado
     </p>
 
     <BaseModal
@@ -375,13 +377,6 @@ const summarize = (source: ReturnType<typeof buildFinanceMatrix>) =>
   ) as Pick<MatrixMonthSummary, (typeof totalFields)[number]>
 const totals = computed(() => summarize(model.value)),
   generalTotals = computed(() => summarize(generalModel.value))
-const sortedEntries = computed(() =>
-  [...entries.value].sort(
-    (a, b) =>
-      matrixDate(a, query.value.dateMode).localeCompare(matrixDate(b, query.value.dateMode)) ||
-      a.title.localeCompare(b.title, 'pt-BR')
-  )
-)
 const cell = (row: MatrixRow, month: string) => row.cells[month]!
 const rowDueCaption = (row: MatrixRow) => {
   const days = row.dueDays.length ? row.dueDays : row.account?.dueDay ? [row.account.dueDay] : []

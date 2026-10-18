@@ -36,6 +36,18 @@ export const financeQueryMonths = (query: FinanceQuery): string[] =>
     shiftFinanceMonth(query.month, index)
   )
 
+/** Outstanding expenses come first; each group keeps the selected date criterion. */
+export const sortFinanceListEntries = (
+  entries: FinanceEntry[],
+  dateMode: PeriodMode = 'due_date'
+): FinanceEntry[] => {
+  const priority = (entry: FinanceEntry) => entry.status === 'paid' ? 2 : entry.kind === 'expense' ? 0 : 1
+  const date = (entry: FinanceEntry) => dateMode === 'competence' ? entry.competenceDate : entry.dueDate
+  return [...entries].sort((a, b) =>
+    priority(a) - priority(b) || date(a).localeCompare(date(b)) || a.title.localeCompare(b.title, 'pt-BR')
+  )
+}
+
 /** Presentation never changes the records, period, search or financial exclusions. */
 export const filterFinanceQuery = (
   entries: FinanceEntry[],
