@@ -8,6 +8,7 @@
         <template #income-cell="{ row }"><span class="text-success tabular-nums">{{ row.original.hasRecords ? fmt(row.original.income) : '—' }}</span></template>
         <template #expense-cell="{ row }"><span class="text-error tabular-nums">{{ row.original.hasRecords ? fmt(row.original.expense) : '—' }}</span></template>
         <template #net-cell="{ row }"><span :class="row.original.net < 0 ? 'text-error' : 'text-success'" class="tabular-nums">{{ row.original.hasRecords ? fmt(row.original.net) : '—' }}</span></template>
+        <template #net-footer><span :class="annualKpis.totalNet < 0 ? 'text-error' : 'text-success'">{{ fmt(annualKpis.totalNet) }}</span></template>
         <template #accumulated-cell="{ row }"><span class="tabular-nums" :class="row.original.accumulated < 0 ? 'text-error' : 'text-default'">{{ row.original.hasRecords ? fmt(row.original.accumulated) : '—' }}</span></template>
         <template #status-cell="{ row }"><UBadge v-if="row.original.hasRecords" :color="row.original.net < 0 ? 'error' : 'success'" variant="subtle" size="xs">{{ row.original.net < 0 ? 'Déficit' : 'Superávit' }}</UBadge><span v-else class="text-muted">Sem registros</span></template>
       </UTable>

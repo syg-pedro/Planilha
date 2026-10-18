@@ -153,9 +153,15 @@
           :style="{ '--footer-offset': `${(2 - index) * 28}px` }"
         >
           <th class="annual-name" scope="row" :colspan="metadata ? 2 : 1">{{ item.label }}</th>
-          <td v-for="month in months" :key="month">{{ number(summaries[month]?.[item.key] ?? 0) }}</td>
+          <td v-for="month in months" :key="month">
+            <span :class="item.key === 'net' ? balanceClass(summaries[month]?.net ?? 0) : undefined">
+              {{ number(summaries[month]?.[item.key] ?? 0) }}
+            </span>
+          </td>
           <td v-if="metadata" class="annual-total">
-            {{ number(sumMoney(Object.values(summaries).map((summary) => summary[item.key]))) }}
+            <span :class="item.key === 'net' ? balanceClass(item.total) : undefined">
+              {{ number(item.total) }}
+            </span>
           </td>
         </tr>
       </tfoot>
@@ -233,11 +239,15 @@ const cellLabel = (row: MatrixRow, month: string) => {
   const value = row.cells[month]!
   return `${row.title}, ${shortMonth(month)}: ${value.entries.length ? `${number(value.amount)}, ${value.entries.length} lançamento(s), ${value.status === 'paid' ? 'quitado' : value.status === 'mixed' ? 'parcial' : value.status === 'review' ? 'em revisão' : 'pendente'}` : 'sem lançamento'}`
 }
-const totalRows = [
+const balanceClass = (amount: number) => amount < 0 ? 'text-error' : 'text-success'
+const totalRows = computed(() => [
   { key: 'expense' as const, label: 'Despesas' },
   { key: 'income' as const, label: 'Receitas' },
   { key: 'net' as const, label: 'Sobra prevista' }
-]
+].map(item => ({
+  ...item,
+  total: sumMoney(Object.values(props.summaries).map(summary => summary[item.key]))
+})))
 async function keydown(row: MatrixRow, month: string, event: KeyboardEvent) {
   if (event.key === 'Enter' || event.key === 'F2') {
     event.preventDefault()

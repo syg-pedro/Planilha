@@ -34,7 +34,6 @@
 .annual-value:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .annual-table tfoot th, .annual-table tfoot td { position: sticky; bottom: var(--footer-offset); background: var(--surface2); z-index: 2; height: 28px; font-weight: 600; padding: 4px 8px; }
 .annual-table tfoot .annual-name { z-index: 3; background: var(--surface2); }
-.annual-net td { color: var(--primary); }
 .annual-empty { padding: 30px 16px !important; text-align: center !important; color: var(--text3); white-space: normal; }
 .annual-excluded .annual-row-title, .annual-excluded .annual-value { color: var(--text3); }
 .annual-saved td, .annual-saved .annual-name { animation: ds-saved-row 600ms ease-out; }
