@@ -2,6 +2,14 @@ const PUBLIC_ROUTES = ['/login', '/signup']
 
 export default defineNuxtRouteMiddleware(async (to) => {
   const config = useRuntimeConfig()
+  if (import.meta.dev && config.public.javaLab) {
+    if (import.meta.server) return
+    const { user, getAccessToken } = useAuth()
+    await getAccessToken()
+    if (!user.value && !PUBLIC_ROUTES.includes(to.path)) return navigateTo('/login')
+    if (user.value && PUBLIC_ROUTES.includes(to.path)) return navigateTo('/')
+    return
+  }
   if (!config.public.supabaseUrl || !config.public.supabaseAnonKey) return
 
   // Skip on SSR: o access token pode estar expirado no servidor sem poder ser renovado.

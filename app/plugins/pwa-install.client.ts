@@ -7,7 +7,7 @@ export default defineNuxtPlugin(() => {
   const deferredPrompt = ref<BeforeInstallPromptEvent | null>(null)
   const isInstalled = ref(false)
 
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && !(import.meta.dev && useRuntimeConfig().public.javaLab)) {
     isInstalled.value = window.matchMedia('(display-mode: standalone)').matches
 
     window.addEventListener('beforeinstallprompt', (e) => {

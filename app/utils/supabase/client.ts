@@ -2,6 +2,7 @@ import { createBrowserClient } from '@supabase/ssr'
 
 export const createSupabaseBrowserClient = () => {
   const config = useRuntimeConfig()
+  if (import.meta.dev && config.public.javaLab) throw new Error('Supabase está desativado no laboratório Java.')
   const supabaseUrl = config.public.supabaseUrl
   const supabaseKey = config.public.supabaseAnonKey
 

@@ -1,0 +1,2946 @@
+[
+  {
+    "name": "centavos-cartoes-beneficios-zero-e-parcelas",
+    "accounts": [
+      {
+        "id": "bank",
+        "householdId": "fixture-family",
+        "name": "Conta fictícia bank",
+        "owner": "Pessoa fictícia",
+        "type": "bank",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      },
+      {
+        "id": "card",
+        "householdId": "fixture-family",
+        "name": "Cartão fictício",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": 1000,
+        "closingDay": null,
+        "dueDay": 28,
+        "active": true
+      },
+      {
+        "id": "empty",
+        "householdId": "fixture-family",
+        "name": "Cartão vazio fictício",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": 5,
+        "active": true
+      },
+      {
+        "id": "inactive",
+        "householdId": "fixture-family",
+        "name": "Conta fictícia inactive",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": 200,
+        "closingDay": null,
+        "dueDay": 15,
+        "active": false
+      },
+      {
+        "id": "benefit",
+        "householdId": "fixture-family",
+        "name": "Conta fictícia benefit",
+        "owner": "Pessoa fictícia",
+        "type": "benefit",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      }
+    ],
+    "entries": [
+      {
+        "id": "salary",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Receita fictícia",
+        "description": "",
+        "amount": 500,
+        "kind": "income",
+        "dueDate": "2028-01-05",
+        "competenceDate": "2028-01-05",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "paid",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "future-salary",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Receita fictícia",
+        "description": "",
+        "amount": 100,
+        "kind": "income",
+        "dueDate": "2028-02-05",
+        "competenceDate": "2028-02-05",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "bank-paid",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Despesa base",
+        "description": "",
+        "amount": 10,
+        "kind": "expense",
+        "dueDate": "2028-01-08",
+        "competenceDate": "2027-12-31",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "paid",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "card-paid",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Compra fictícia",
+        "description": "",
+        "amount": 0.1,
+        "kind": "expense",
+        "dueDate": "2028-01-28",
+        "competenceDate": "2027-12-28",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "paid",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "card-installment",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Parcela fictícia",
+        "description": "",
+        "amount": 0.2,
+        "kind": "expense",
+        "dueDate": "2028-01-28",
+        "competenceDate": "2027-12-28",
+        "installmentIndex": 2,
+        "installmentTotal": 5,
+        "status": "review",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "card-future",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Futura fictícia",
+        "description": "",
+        "amount": 125,
+        "kind": "expense",
+        "dueDate": "2030-01-28",
+        "competenceDate": "2030-01-28",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "card-excluded",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Fora do saldo",
+        "description": "",
+        "amount": 40,
+        "kind": "expense",
+        "dueDate": "2028-01-28",
+        "competenceDate": "2028-01-28",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": true,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "benefit-income",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "benefit",
+        "categoryId": null,
+        "title": "Benefício fictício",
+        "description": "",
+        "amount": 700,
+        "kind": "income",
+        "dueDate": "2028-01-15",
+        "competenceDate": "2028-01-15",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "zero",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": null,
+        "categoryId": null,
+        "title": "Zero cadastrado",
+        "description": "",
+        "amount": 0,
+        "kind": "expense",
+        "dueDate": "2028-01-12",
+        "competenceDate": "2028-01-12",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "same-rule-a",
+        "householdId": "fixture-family",
+        "ruleId": "rule-a",
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Reserva fictícia",
+        "description": "",
+        "amount": 1,
+        "kind": "expense",
+        "dueDate": "2028-01-20",
+        "competenceDate": "2028-01-20",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "same-rule-b",
+        "householdId": "fixture-family",
+        "ruleId": "rule-b",
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Reserva fictícia",
+        "description": "",
+        "amount": 2,
+        "kind": "expense",
+        "dueDate": "2028-01-20",
+        "competenceDate": "2028-01-20",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      }
+    ],
+    "startMonth": "2028-01",
+    "count": 2,
+    "periodMode": "due_date",
+    "expected": {
+      "months": [
+        "2028-01",
+        "2028-02"
+      ],
+      "rows": [
+        {
+          "id": "[\"card\",\"empty\"]",
+          "title": "Cartão vazio fictício",
+          "kind": "expense",
+          "group": "cards",
+          "account": {
+            "id": "empty",
+            "householdId": "fixture-family",
+            "name": "Cartão vazio fictício",
+            "owner": "Pessoa fictícia",
+            "type": "credit_card",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": 5,
+            "active": true
+          },
+          "entries": [],
+          "cells": {
+            "2028-01": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 0,
+          "dueDays": [
+            5
+          ]
+        },
+        {
+          "id": "[\"income\",\"income\",\"bank\",null,\"Receita fictícia\"]",
+          "title": "Receita fictícia",
+          "kind": "income",
+          "group": "income",
+          "account": {
+            "id": "bank",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia bank",
+            "owner": "Pessoa fictícia",
+            "type": "bank",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "salary",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Receita fictícia",
+              "description": "",
+              "amount": 500,
+              "kind": "income",
+              "dueDate": "2028-01-05",
+              "competenceDate": "2028-01-05",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "paid",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            },
+            {
+              "id": "future-salary",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Receita fictícia",
+              "description": "",
+              "amount": 100,
+              "kind": "income",
+              "dueDate": "2028-02-05",
+              "competenceDate": "2028-02-05",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "salary",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Receita fictícia",
+                  "description": "",
+                  "amount": 500,
+                  "kind": "income",
+                  "dueDate": "2028-01-05",
+                  "competenceDate": "2028-01-05",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "paid",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 500,
+              "paid": 500,
+              "pending": 0,
+              "status": "paid"
+            },
+            "2028-02": {
+              "entries": [
+                {
+                  "id": "future-salary",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Receita fictícia",
+                  "description": "",
+                  "amount": 100,
+                  "kind": "income",
+                  "dueDate": "2028-02-05",
+                  "competenceDate": "2028-02-05",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 100,
+              "paid": 0,
+              "pending": 100,
+              "status": "pending"
+            }
+          },
+          "total": 600,
+          "dueDays": [
+            5
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",\"bank\",null,\"Despesa base\"]",
+          "title": "Despesa base",
+          "kind": "expense",
+          "group": "expenses",
+          "account": {
+            "id": "bank",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia bank",
+            "owner": "Pessoa fictícia",
+            "type": "bank",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "bank-paid",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Despesa base",
+              "description": "",
+              "amount": 10,
+              "kind": "expense",
+              "dueDate": "2028-01-08",
+              "competenceDate": "2027-12-31",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "paid",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "bank-paid",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Despesa base",
+                  "description": "",
+                  "amount": 10,
+                  "kind": "expense",
+                  "dueDate": "2028-01-08",
+                  "competenceDate": "2027-12-31",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "paid",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 10,
+              "paid": 10,
+              "pending": 0,
+              "status": "paid"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 10,
+          "dueDays": [
+            8
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",null,null,\"Zero cadastrado\"]",
+          "title": "Zero cadastrado",
+          "kind": "expense",
+          "group": "expenses",
+          "account": null,
+          "entries": [
+            {
+              "id": "zero",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": null,
+              "categoryId": null,
+              "title": "Zero cadastrado",
+              "description": "",
+              "amount": 0,
+              "kind": "expense",
+              "dueDate": "2028-01-12",
+              "competenceDate": "2028-01-12",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "zero",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": null,
+                  "categoryId": null,
+                  "title": "Zero cadastrado",
+                  "description": "",
+                  "amount": 0,
+                  "kind": "expense",
+                  "dueDate": "2028-01-12",
+                  "competenceDate": "2028-01-12",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 0,
+          "dueDays": [
+            12
+          ]
+        },
+        {
+          "id": "[\"excluded\",\"income\",\"benefit\",null,\"Benefício fictício\"]",
+          "title": "Benefício fictício",
+          "kind": "income",
+          "group": "excluded",
+          "account": {
+            "id": "benefit",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia benefit",
+            "owner": "Pessoa fictícia",
+            "type": "benefit",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "benefit-income",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "benefit",
+              "categoryId": null,
+              "title": "Benefício fictício",
+              "description": "",
+              "amount": 700,
+              "kind": "income",
+              "dueDate": "2028-01-15",
+              "competenceDate": "2028-01-15",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "benefit-income",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "benefit",
+                  "categoryId": null,
+                  "title": "Benefício fictício",
+                  "description": "",
+                  "amount": 700,
+                  "kind": "income",
+                  "dueDate": "2028-01-15",
+                  "competenceDate": "2028-01-15",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 700,
+              "paid": 0,
+              "pending": 700,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 700,
+          "dueDays": [
+            15
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",\"bank\",\"rule-a\",\"Reserva fictícia\"]",
+          "title": "Reserva fictícia",
+          "kind": "expense",
+          "group": "expenses",
+          "account": {
+            "id": "bank",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia bank",
+            "owner": "Pessoa fictícia",
+            "type": "bank",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "same-rule-a",
+              "householdId": "fixture-family",
+              "ruleId": "rule-a",
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Reserva fictícia",
+              "description": "",
+              "amount": 1,
+              "kind": "expense",
+              "dueDate": "2028-01-20",
+              "competenceDate": "2028-01-20",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "same-rule-a",
+                  "householdId": "fixture-family",
+                  "ruleId": "rule-a",
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Reserva fictícia",
+                  "description": "",
+                  "amount": 1,
+                  "kind": "expense",
+                  "dueDate": "2028-01-20",
+                  "competenceDate": "2028-01-20",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 1,
+              "paid": 0,
+              "pending": 1,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 1,
+          "dueDays": [
+            20
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",\"bank\",\"rule-b\",\"Reserva fictícia\"]",
+          "title": "Reserva fictícia",
+          "kind": "expense",
+          "group": "expenses",
+          "account": {
+            "id": "bank",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia bank",
+            "owner": "Pessoa fictícia",
+            "type": "bank",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "same-rule-b",
+              "householdId": "fixture-family",
+              "ruleId": "rule-b",
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Reserva fictícia",
+              "description": "",
+              "amount": 2,
+              "kind": "expense",
+              "dueDate": "2028-01-20",
+              "competenceDate": "2028-01-20",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "same-rule-b",
+                  "householdId": "fixture-family",
+                  "ruleId": "rule-b",
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Reserva fictícia",
+                  "description": "",
+                  "amount": 2,
+                  "kind": "expense",
+                  "dueDate": "2028-01-20",
+                  "competenceDate": "2028-01-20",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 2,
+              "paid": 0,
+              "pending": 2,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 2,
+          "dueDays": [
+            20
+          ]
+        },
+        {
+          "id": "[\"card\",\"card\"]",
+          "title": "Cartão fictício",
+          "kind": "expense",
+          "group": "cards",
+          "account": {
+            "id": "card",
+            "householdId": "fixture-family",
+            "name": "Cartão fictício",
+            "owner": "Pessoa fictícia",
+            "type": "credit_card",
+            "limitTotal": 1000,
+            "closingDay": null,
+            "dueDay": 28,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "card-paid",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "card",
+              "categoryId": null,
+              "title": "Compra fictícia",
+              "description": "",
+              "amount": 0.1,
+              "kind": "expense",
+              "dueDate": "2028-01-28",
+              "competenceDate": "2027-12-28",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "paid",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            },
+            {
+              "id": "card-installment",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "card",
+              "categoryId": null,
+              "title": "Parcela fictícia",
+              "description": "",
+              "amount": 0.2,
+              "kind": "expense",
+              "dueDate": "2028-01-28",
+              "competenceDate": "2027-12-28",
+              "installmentIndex": 2,
+              "installmentTotal": 5,
+              "status": "review",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            },
+            {
+              "id": "card-future",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "card",
+              "categoryId": null,
+              "title": "Futura fictícia",
+              "description": "",
+              "amount": 125,
+              "kind": "expense",
+              "dueDate": "2030-01-28",
+              "competenceDate": "2030-01-28",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "card-paid",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "card",
+                  "categoryId": null,
+                  "title": "Compra fictícia",
+                  "description": "",
+                  "amount": 0.1,
+                  "kind": "expense",
+                  "dueDate": "2028-01-28",
+                  "competenceDate": "2027-12-28",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "paid",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                },
+                {
+                  "id": "card-installment",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "card",
+                  "categoryId": null,
+                  "title": "Parcela fictícia",
+                  "description": "",
+                  "amount": 0.2,
+                  "kind": "expense",
+                  "dueDate": "2028-01-28",
+                  "competenceDate": "2027-12-28",
+                  "installmentIndex": 2,
+                  "installmentTotal": 5,
+                  "status": "review",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 0.3,
+              "paid": 0.1,
+              "pending": 0.2,
+              "status": "mixed"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 0.3,
+          "dueDays": [
+            28
+          ]
+        },
+        {
+          "id": "[\"excluded\",\"expense\",\"card\",null,\"Fora do saldo\"]",
+          "title": "Fora do saldo",
+          "kind": "expense",
+          "group": "excluded",
+          "account": {
+            "id": "card",
+            "householdId": "fixture-family",
+            "name": "Cartão fictício",
+            "owner": "Pessoa fictícia",
+            "type": "credit_card",
+            "limitTotal": 1000,
+            "closingDay": null,
+            "dueDay": 28,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "card-excluded",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "card",
+              "categoryId": null,
+              "title": "Fora do saldo",
+              "description": "",
+              "amount": 40,
+              "kind": "expense",
+              "dueDate": "2028-01-28",
+              "competenceDate": "2028-01-28",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": true,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "card-excluded",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "card",
+                  "categoryId": null,
+                  "title": "Fora do saldo",
+                  "description": "",
+                  "amount": 40,
+                  "kind": "expense",
+                  "dueDate": "2028-01-28",
+                  "competenceDate": "2028-01-28",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": true,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 40,
+              "paid": 0,
+              "pending": 40,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 40,
+          "dueDays": [
+            28
+          ]
+        }
+      ],
+      "summaries": {
+        "2028-01": {
+          "income": 500,
+          "expense": 13.3,
+          "net": 486.7,
+          "paid": 10.1,
+          "received": 500,
+          "pendingExpense": 3.2,
+          "pendingIncome": 0,
+          "settledNet": 489.9,
+          "excluded": 740,
+          "incomeCount": 1,
+          "expenseCount": 6
+        },
+        "2028-02": {
+          "income": 100,
+          "expense": 0,
+          "net": 100,
+          "paid": 0,
+          "received": 0,
+          "pendingExpense": 0,
+          "pendingIncome": 100,
+          "settledNet": 0,
+          "excluded": 0,
+          "incomeCount": 1,
+          "expenseCount": 0
+        }
+      },
+      "totals": {
+        "income": 600,
+        "expense": 13.3,
+        "net": 586.7,
+        "paid": 10.1,
+        "received": 500,
+        "pendingExpense": 3.2,
+        "pendingIncome": 100,
+        "settledNet": 489.9,
+        "excluded": 740,
+        "incomeCount": 2,
+        "expenseCount": 6
+      },
+      "cardCommitments": {
+        "card": {
+          "committed": 165.2,
+          "available": 834.8
+        },
+        "empty": {
+          "committed": 0,
+          "available": null
+        },
+        "inactive": {
+          "committed": 0,
+          "available": 200
+        }
+      }
+    }
+  },
+  {
+    "name": "competencia-atravessa-ano-e-preserva-vencimentos",
+    "accounts": [
+      {
+        "id": "bank",
+        "householdId": "fixture-family",
+        "name": "Conta fictícia bank",
+        "owner": "Pessoa fictícia",
+        "type": "bank",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      },
+      {
+        "id": "card",
+        "householdId": "fixture-family",
+        "name": "Cartão fictício",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": 1000,
+        "closingDay": null,
+        "dueDay": 28,
+        "active": true
+      },
+      {
+        "id": "empty",
+        "householdId": "fixture-family",
+        "name": "Cartão vazio fictício",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": 5,
+        "active": true
+      },
+      {
+        "id": "inactive",
+        "householdId": "fixture-family",
+        "name": "Conta fictícia inactive",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": 200,
+        "closingDay": null,
+        "dueDay": 15,
+        "active": false
+      },
+      {
+        "id": "benefit",
+        "householdId": "fixture-family",
+        "name": "Conta fictícia benefit",
+        "owner": "Pessoa fictícia",
+        "type": "benefit",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      }
+    ],
+    "entries": [
+      {
+        "id": "salary",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Receita fictícia",
+        "description": "",
+        "amount": 500,
+        "kind": "income",
+        "dueDate": "2028-01-05",
+        "competenceDate": "2028-01-05",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "paid",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "future-salary",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Receita fictícia",
+        "description": "",
+        "amount": 100,
+        "kind": "income",
+        "dueDate": "2028-02-05",
+        "competenceDate": "2028-02-05",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "bank-paid",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Despesa base",
+        "description": "",
+        "amount": 10,
+        "kind": "expense",
+        "dueDate": "2028-01-08",
+        "competenceDate": "2027-12-31",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "paid",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "card-paid",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Compra fictícia",
+        "description": "",
+        "amount": 0.1,
+        "kind": "expense",
+        "dueDate": "2028-01-28",
+        "competenceDate": "2027-12-28",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "paid",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "card-installment",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Parcela fictícia",
+        "description": "",
+        "amount": 0.2,
+        "kind": "expense",
+        "dueDate": "2028-01-28",
+        "competenceDate": "2027-12-28",
+        "installmentIndex": 2,
+        "installmentTotal": 5,
+        "status": "review",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "card-future",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Futura fictícia",
+        "description": "",
+        "amount": 125,
+        "kind": "expense",
+        "dueDate": "2030-01-28",
+        "competenceDate": "2030-01-28",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "card-excluded",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Fora do saldo",
+        "description": "",
+        "amount": 40,
+        "kind": "expense",
+        "dueDate": "2028-01-28",
+        "competenceDate": "2028-01-28",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": true,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "benefit-income",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "benefit",
+        "categoryId": null,
+        "title": "Benefício fictício",
+        "description": "",
+        "amount": 700,
+        "kind": "income",
+        "dueDate": "2028-01-15",
+        "competenceDate": "2028-01-15",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "zero",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": null,
+        "categoryId": null,
+        "title": "Zero cadastrado",
+        "description": "",
+        "amount": 0,
+        "kind": "expense",
+        "dueDate": "2028-01-12",
+        "competenceDate": "2028-01-12",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "same-rule-a",
+        "householdId": "fixture-family",
+        "ruleId": "rule-a",
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Reserva fictícia",
+        "description": "",
+        "amount": 1,
+        "kind": "expense",
+        "dueDate": "2028-01-20",
+        "competenceDate": "2028-01-20",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "same-rule-b",
+        "householdId": "fixture-family",
+        "ruleId": "rule-b",
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Reserva fictícia",
+        "description": "",
+        "amount": 2,
+        "kind": "expense",
+        "dueDate": "2028-01-20",
+        "competenceDate": "2028-01-20",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      }
+    ],
+    "startMonth": "2027-12",
+    "count": 3,
+    "periodMode": "competence",
+    "expected": {
+      "months": [
+        "2027-12",
+        "2028-01",
+        "2028-02"
+      ],
+      "rows": [
+        {
+          "id": "[\"card\",\"empty\"]",
+          "title": "Cartão vazio fictício",
+          "kind": "expense",
+          "group": "cards",
+          "account": {
+            "id": "empty",
+            "householdId": "fixture-family",
+            "name": "Cartão vazio fictício",
+            "owner": "Pessoa fictícia",
+            "type": "credit_card",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": 5,
+            "active": true
+          },
+          "entries": [],
+          "cells": {
+            "2027-12": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-01": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 0,
+          "dueDays": [
+            5
+          ]
+        },
+        {
+          "id": "[\"income\",\"income\",\"bank\",null,\"Receita fictícia\"]",
+          "title": "Receita fictícia",
+          "kind": "income",
+          "group": "income",
+          "account": {
+            "id": "bank",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia bank",
+            "owner": "Pessoa fictícia",
+            "type": "bank",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "salary",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Receita fictícia",
+              "description": "",
+              "amount": 500,
+              "kind": "income",
+              "dueDate": "2028-01-05",
+              "competenceDate": "2028-01-05",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "paid",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            },
+            {
+              "id": "future-salary",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Receita fictícia",
+              "description": "",
+              "amount": 100,
+              "kind": "income",
+              "dueDate": "2028-02-05",
+              "competenceDate": "2028-02-05",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2027-12": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "salary",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Receita fictícia",
+                  "description": "",
+                  "amount": 500,
+                  "kind": "income",
+                  "dueDate": "2028-01-05",
+                  "competenceDate": "2028-01-05",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "paid",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 500,
+              "paid": 500,
+              "pending": 0,
+              "status": "paid"
+            },
+            "2028-02": {
+              "entries": [
+                {
+                  "id": "future-salary",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Receita fictícia",
+                  "description": "",
+                  "amount": 100,
+                  "kind": "income",
+                  "dueDate": "2028-02-05",
+                  "competenceDate": "2028-02-05",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 100,
+              "paid": 0,
+              "pending": 100,
+              "status": "pending"
+            }
+          },
+          "total": 600,
+          "dueDays": [
+            5
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",\"bank\",null,\"Despesa base\"]",
+          "title": "Despesa base",
+          "kind": "expense",
+          "group": "expenses",
+          "account": {
+            "id": "bank",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia bank",
+            "owner": "Pessoa fictícia",
+            "type": "bank",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "bank-paid",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Despesa base",
+              "description": "",
+              "amount": 10,
+              "kind": "expense",
+              "dueDate": "2028-01-08",
+              "competenceDate": "2027-12-31",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "paid",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2027-12": {
+              "entries": [
+                {
+                  "id": "bank-paid",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Despesa base",
+                  "description": "",
+                  "amount": 10,
+                  "kind": "expense",
+                  "dueDate": "2028-01-08",
+                  "competenceDate": "2027-12-31",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "paid",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 10,
+              "paid": 10,
+              "pending": 0,
+              "status": "paid"
+            },
+            "2028-01": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 10,
+          "dueDays": [
+            8
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",null,null,\"Zero cadastrado\"]",
+          "title": "Zero cadastrado",
+          "kind": "expense",
+          "group": "expenses",
+          "account": null,
+          "entries": [
+            {
+              "id": "zero",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": null,
+              "categoryId": null,
+              "title": "Zero cadastrado",
+              "description": "",
+              "amount": 0,
+              "kind": "expense",
+              "dueDate": "2028-01-12",
+              "competenceDate": "2028-01-12",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2027-12": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "zero",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": null,
+                  "categoryId": null,
+                  "title": "Zero cadastrado",
+                  "description": "",
+                  "amount": 0,
+                  "kind": "expense",
+                  "dueDate": "2028-01-12",
+                  "competenceDate": "2028-01-12",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 0,
+          "dueDays": [
+            12
+          ]
+        },
+        {
+          "id": "[\"excluded\",\"income\",\"benefit\",null,\"Benefício fictício\"]",
+          "title": "Benefício fictício",
+          "kind": "income",
+          "group": "excluded",
+          "account": {
+            "id": "benefit",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia benefit",
+            "owner": "Pessoa fictícia",
+            "type": "benefit",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "benefit-income",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "benefit",
+              "categoryId": null,
+              "title": "Benefício fictício",
+              "description": "",
+              "amount": 700,
+              "kind": "income",
+              "dueDate": "2028-01-15",
+              "competenceDate": "2028-01-15",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2027-12": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "benefit-income",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "benefit",
+                  "categoryId": null,
+                  "title": "Benefício fictício",
+                  "description": "",
+                  "amount": 700,
+                  "kind": "income",
+                  "dueDate": "2028-01-15",
+                  "competenceDate": "2028-01-15",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 700,
+              "paid": 0,
+              "pending": 700,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 700,
+          "dueDays": [
+            15
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",\"bank\",\"rule-a\",\"Reserva fictícia\"]",
+          "title": "Reserva fictícia",
+          "kind": "expense",
+          "group": "expenses",
+          "account": {
+            "id": "bank",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia bank",
+            "owner": "Pessoa fictícia",
+            "type": "bank",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "same-rule-a",
+              "householdId": "fixture-family",
+              "ruleId": "rule-a",
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Reserva fictícia",
+              "description": "",
+              "amount": 1,
+              "kind": "expense",
+              "dueDate": "2028-01-20",
+              "competenceDate": "2028-01-20",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2027-12": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "same-rule-a",
+                  "householdId": "fixture-family",
+                  "ruleId": "rule-a",
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Reserva fictícia",
+                  "description": "",
+                  "amount": 1,
+                  "kind": "expense",
+                  "dueDate": "2028-01-20",
+                  "competenceDate": "2028-01-20",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 1,
+              "paid": 0,
+              "pending": 1,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 1,
+          "dueDays": [
+            20
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",\"bank\",\"rule-b\",\"Reserva fictícia\"]",
+          "title": "Reserva fictícia",
+          "kind": "expense",
+          "group": "expenses",
+          "account": {
+            "id": "bank",
+            "householdId": "fixture-family",
+            "name": "Conta fictícia bank",
+            "owner": "Pessoa fictícia",
+            "type": "bank",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": null,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "same-rule-b",
+              "householdId": "fixture-family",
+              "ruleId": "rule-b",
+              "accountId": "bank",
+              "categoryId": null,
+              "title": "Reserva fictícia",
+              "description": "",
+              "amount": 2,
+              "kind": "expense",
+              "dueDate": "2028-01-20",
+              "competenceDate": "2028-01-20",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2027-12": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "same-rule-b",
+                  "householdId": "fixture-family",
+                  "ruleId": "rule-b",
+                  "accountId": "bank",
+                  "categoryId": null,
+                  "title": "Reserva fictícia",
+                  "description": "",
+                  "amount": 2,
+                  "kind": "expense",
+                  "dueDate": "2028-01-20",
+                  "competenceDate": "2028-01-20",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 2,
+              "paid": 0,
+              "pending": 2,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 2,
+          "dueDays": [
+            20
+          ]
+        },
+        {
+          "id": "[\"card\",\"card\"]",
+          "title": "Cartão fictício",
+          "kind": "expense",
+          "group": "cards",
+          "account": {
+            "id": "card",
+            "householdId": "fixture-family",
+            "name": "Cartão fictício",
+            "owner": "Pessoa fictícia",
+            "type": "credit_card",
+            "limitTotal": 1000,
+            "closingDay": null,
+            "dueDay": 28,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "card-paid",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "card",
+              "categoryId": null,
+              "title": "Compra fictícia",
+              "description": "",
+              "amount": 0.1,
+              "kind": "expense",
+              "dueDate": "2028-01-28",
+              "competenceDate": "2027-12-28",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "paid",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            },
+            {
+              "id": "card-installment",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "card",
+              "categoryId": null,
+              "title": "Parcela fictícia",
+              "description": "",
+              "amount": 0.2,
+              "kind": "expense",
+              "dueDate": "2028-01-28",
+              "competenceDate": "2027-12-28",
+              "installmentIndex": 2,
+              "installmentTotal": 5,
+              "status": "review",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            },
+            {
+              "id": "card-future",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "card",
+              "categoryId": null,
+              "title": "Futura fictícia",
+              "description": "",
+              "amount": 125,
+              "kind": "expense",
+              "dueDate": "2030-01-28",
+              "competenceDate": "2030-01-28",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2027-12": {
+              "entries": [
+                {
+                  "id": "card-paid",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "card",
+                  "categoryId": null,
+                  "title": "Compra fictícia",
+                  "description": "",
+                  "amount": 0.1,
+                  "kind": "expense",
+                  "dueDate": "2028-01-28",
+                  "competenceDate": "2027-12-28",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "paid",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                },
+                {
+                  "id": "card-installment",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "card",
+                  "categoryId": null,
+                  "title": "Parcela fictícia",
+                  "description": "",
+                  "amount": 0.2,
+                  "kind": "expense",
+                  "dueDate": "2028-01-28",
+                  "competenceDate": "2027-12-28",
+                  "installmentIndex": 2,
+                  "installmentTotal": 5,
+                  "status": "review",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 0.3,
+              "paid": 0.1,
+              "pending": 0.2,
+              "status": "mixed"
+            },
+            "2028-01": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 0.3,
+          "dueDays": [
+            28
+          ]
+        },
+        {
+          "id": "[\"excluded\",\"expense\",\"card\",null,\"Fora do saldo\"]",
+          "title": "Fora do saldo",
+          "kind": "expense",
+          "group": "excluded",
+          "account": {
+            "id": "card",
+            "householdId": "fixture-family",
+            "name": "Cartão fictício",
+            "owner": "Pessoa fictícia",
+            "type": "credit_card",
+            "limitTotal": 1000,
+            "closingDay": null,
+            "dueDay": 28,
+            "active": true
+          },
+          "entries": [
+            {
+              "id": "card-excluded",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "card",
+              "categoryId": null,
+              "title": "Fora do saldo",
+              "description": "",
+              "amount": 40,
+              "kind": "expense",
+              "dueDate": "2028-01-28",
+              "competenceDate": "2028-01-28",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": true,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2027-12": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "card-excluded",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "card",
+                  "categoryId": null,
+                  "title": "Fora do saldo",
+                  "description": "",
+                  "amount": 40,
+                  "kind": "expense",
+                  "dueDate": "2028-01-28",
+                  "competenceDate": "2028-01-28",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": true,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 40,
+              "paid": 0,
+              "pending": 40,
+              "status": "pending"
+            },
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 40,
+          "dueDays": [
+            28
+          ]
+        }
+      ],
+      "summaries": {
+        "2027-12": {
+          "income": 0,
+          "expense": 10.3,
+          "net": -10.3,
+          "paid": 10.1,
+          "received": 0,
+          "pendingExpense": 0.2,
+          "pendingIncome": 0,
+          "settledNet": -10.1,
+          "excluded": 0,
+          "incomeCount": 0,
+          "expenseCount": 3
+        },
+        "2028-01": {
+          "income": 500,
+          "expense": 3,
+          "net": 497,
+          "paid": 0,
+          "received": 500,
+          "pendingExpense": 3,
+          "pendingIncome": 0,
+          "settledNet": 500,
+          "excluded": 740,
+          "incomeCount": 1,
+          "expenseCount": 3
+        },
+        "2028-02": {
+          "income": 100,
+          "expense": 0,
+          "net": 100,
+          "paid": 0,
+          "received": 0,
+          "pendingExpense": 0,
+          "pendingIncome": 100,
+          "settledNet": 0,
+          "excluded": 0,
+          "incomeCount": 1,
+          "expenseCount": 0
+        }
+      },
+      "totals": {
+        "income": 600,
+        "expense": 13.3,
+        "net": 586.7,
+        "paid": 10.1,
+        "received": 500,
+        "pendingExpense": 3.2,
+        "pendingIncome": 100,
+        "settledNet": 489.9,
+        "excluded": 740,
+        "incomeCount": 2,
+        "expenseCount": 6
+      },
+      "cardCommitments": {
+        "card": {
+          "committed": 165.2,
+          "available": 834.8
+        },
+        "empty": {
+          "committed": 0,
+          "available": null
+        },
+        "inactive": {
+          "committed": 0,
+          "available": 200
+        }
+      }
+    }
+  },
+  {
+    "name": "cartoes-vazios-ativos-e-limite-nulo",
+    "accounts": [
+      {
+        "id": "bank",
+        "householdId": "fixture-family",
+        "name": "Conta fictícia bank",
+        "owner": "Pessoa fictícia",
+        "type": "bank",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      },
+      {
+        "id": "card",
+        "householdId": "fixture-family",
+        "name": "Cartão fictício",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": 1000,
+        "closingDay": null,
+        "dueDay": 28,
+        "active": true
+      },
+      {
+        "id": "empty",
+        "householdId": "fixture-family",
+        "name": "Cartão vazio fictício",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": 5,
+        "active": true
+      },
+      {
+        "id": "inactive",
+        "householdId": "fixture-family",
+        "name": "Conta fictícia inactive",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": 200,
+        "closingDay": null,
+        "dueDay": 15,
+        "active": false
+      },
+      {
+        "id": "benefit",
+        "householdId": "fixture-family",
+        "name": "Conta fictícia benefit",
+        "owner": "Pessoa fictícia",
+        "type": "benefit",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      }
+    ],
+    "entries": [],
+    "startMonth": "2028-02",
+    "count": 2,
+    "periodMode": "due_date",
+    "expected": {
+      "months": [
+        "2028-02",
+        "2028-03"
+      ],
+      "rows": [
+        {
+          "id": "[\"card\",\"empty\"]",
+          "title": "Cartão vazio fictício",
+          "kind": "expense",
+          "group": "cards",
+          "account": {
+            "id": "empty",
+            "householdId": "fixture-family",
+            "name": "Cartão vazio fictício",
+            "owner": "Pessoa fictícia",
+            "type": "credit_card",
+            "limitTotal": null,
+            "closingDay": null,
+            "dueDay": 5,
+            "active": true
+          },
+          "entries": [],
+          "cells": {
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-03": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 0,
+          "dueDays": [
+            5
+          ]
+        },
+        {
+          "id": "[\"card\",\"card\"]",
+          "title": "Cartão fictício",
+          "kind": "expense",
+          "group": "cards",
+          "account": {
+            "id": "card",
+            "householdId": "fixture-family",
+            "name": "Cartão fictício",
+            "owner": "Pessoa fictícia",
+            "type": "credit_card",
+            "limitTotal": 1000,
+            "closingDay": null,
+            "dueDay": 28,
+            "active": true
+          },
+          "entries": [],
+          "cells": {
+            "2028-02": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            },
+            "2028-03": {
+              "entries": [],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": null
+            }
+          },
+          "total": 0,
+          "dueDays": [
+            28
+          ]
+        }
+      ],
+      "summaries": {
+        "2028-02": {
+          "income": 0,
+          "expense": 0,
+          "net": 0,
+          "paid": 0,
+          "received": 0,
+          "pendingExpense": 0,
+          "pendingIncome": 0,
+          "settledNet": 0,
+          "excluded": 0,
+          "incomeCount": 0,
+          "expenseCount": 0
+        },
+        "2028-03": {
+          "income": 0,
+          "expense": 0,
+          "net": 0,
+          "paid": 0,
+          "received": 0,
+          "pendingExpense": 0,
+          "pendingIncome": 0,
+          "settledNet": 0,
+          "excluded": 0,
+          "incomeCount": 0,
+          "expenseCount": 0
+        }
+      },
+      "totals": {
+        "income": 0,
+        "expense": 0,
+        "net": 0,
+        "paid": 0,
+        "received": 0,
+        "pendingExpense": 0,
+        "pendingIncome": 0,
+        "settledNet": 0,
+        "excluded": 0,
+        "incomeCount": 0,
+        "expenseCount": 0
+      },
+      "cardCommitments": {
+        "card": {
+          "committed": 0,
+          "available": 1000
+        },
+        "empty": {
+          "committed": 0,
+          "available": null
+        },
+        "inactive": {
+          "committed": 0,
+          "available": 200
+        }
+      }
+    }
+  },
+  {
+    "name": "status-revisao-pago-e-identidade-com-escape",
+    "accounts": [],
+    "entries": [
+      {
+        "id": "review",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": null,
+        "categoryId": null,
+        "title": "Nome \"fictício\" \\ revisão",
+        "description": "",
+        "amount": 1,
+        "kind": "expense",
+        "dueDate": "2028-01-20",
+        "competenceDate": "2028-01-20",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "review",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "pending",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": null,
+        "categoryId": null,
+        "title": "Nome \"fictício\" \\ revisão",
+        "description": "",
+        "amount": 2,
+        "kind": "expense",
+        "dueDate": "2028-01-20",
+        "competenceDate": "2028-01-20",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "paid",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": null,
+        "categoryId": null,
+        "title": "Pago fictício",
+        "description": "",
+        "amount": 0,
+        "kind": "expense",
+        "dueDate": "2028-01-03",
+        "competenceDate": "2028-01-20",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "paid",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      },
+      {
+        "id": "same-title",
+        "householdId": "fixture-family",
+        "ruleId": null,
+        "accountId": "unknown-account",
+        "categoryId": null,
+        "title": "Nome \"fictício\" \\ revisão",
+        "description": "",
+        "amount": 3,
+        "kind": "expense",
+        "dueDate": "2028-01-20",
+        "competenceDate": "2028-01-20",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2028-01-01T00:00:00Z",
+        "updatedAt": "2028-01-01T00:00:00Z"
+      }
+    ],
+    "startMonth": "2028-01",
+    "count": 1,
+    "periodMode": "due_date",
+    "expected": {
+      "months": [
+        "2028-01"
+      ],
+      "rows": [
+        {
+          "id": "[\"expense\",\"expense\",null,null,\"Pago fictício\"]",
+          "title": "Pago fictício",
+          "kind": "expense",
+          "group": "expenses",
+          "account": null,
+          "entries": [
+            {
+              "id": "paid",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": null,
+              "categoryId": null,
+              "title": "Pago fictício",
+              "description": "",
+              "amount": 0,
+              "kind": "expense",
+              "dueDate": "2028-01-03",
+              "competenceDate": "2028-01-20",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "paid",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "paid",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": null,
+                  "categoryId": null,
+                  "title": "Pago fictício",
+                  "description": "",
+                  "amount": 0,
+                  "kind": "expense",
+                  "dueDate": "2028-01-03",
+                  "competenceDate": "2028-01-20",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "paid",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 0,
+              "paid": 0,
+              "pending": 0,
+              "status": "paid"
+            }
+          },
+          "total": 0,
+          "dueDays": [
+            3
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",null,null,\"Nome \\\"fictício\\\" \\\\ revisão\"]",
+          "title": "Nome \"fictício\" \\ revisão",
+          "kind": "expense",
+          "group": "expenses",
+          "account": null,
+          "entries": [
+            {
+              "id": "review",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": null,
+              "categoryId": null,
+              "title": "Nome \"fictício\" \\ revisão",
+              "description": "",
+              "amount": 1,
+              "kind": "expense",
+              "dueDate": "2028-01-20",
+              "competenceDate": "2028-01-20",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "review",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            },
+            {
+              "id": "pending",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": null,
+              "categoryId": null,
+              "title": "Nome \"fictício\" \\ revisão",
+              "description": "",
+              "amount": 2,
+              "kind": "expense",
+              "dueDate": "2028-01-20",
+              "competenceDate": "2028-01-20",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "review",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": null,
+                  "categoryId": null,
+                  "title": "Nome \"fictício\" \\ revisão",
+                  "description": "",
+                  "amount": 1,
+                  "kind": "expense",
+                  "dueDate": "2028-01-20",
+                  "competenceDate": "2028-01-20",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "review",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                },
+                {
+                  "id": "pending",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": null,
+                  "categoryId": null,
+                  "title": "Nome \"fictício\" \\ revisão",
+                  "description": "",
+                  "amount": 2,
+                  "kind": "expense",
+                  "dueDate": "2028-01-20",
+                  "competenceDate": "2028-01-20",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 3,
+              "paid": 0,
+              "pending": 3,
+              "status": "review"
+            }
+          },
+          "total": 3,
+          "dueDays": [
+            20
+          ]
+        },
+        {
+          "id": "[\"expense\",\"expense\",\"unknown-account\",null,\"Nome \\\"fictício\\\" \\\\ revisão\"]",
+          "title": "Nome \"fictício\" \\ revisão",
+          "kind": "expense",
+          "group": "expenses",
+          "account": null,
+          "entries": [
+            {
+              "id": "same-title",
+              "householdId": "fixture-family",
+              "ruleId": null,
+              "accountId": "unknown-account",
+              "categoryId": null,
+              "title": "Nome \"fictício\" \\ revisão",
+              "description": "",
+              "amount": 3,
+              "kind": "expense",
+              "dueDate": "2028-01-20",
+              "competenceDate": "2028-01-20",
+              "installmentIndex": null,
+              "installmentTotal": null,
+              "status": "pending",
+              "origin": "manual",
+              "excludeFromCalc": false,
+              "metadata": null,
+              "createdAt": "2028-01-01T00:00:00Z",
+              "updatedAt": "2028-01-01T00:00:00Z"
+            }
+          ],
+          "cells": {
+            "2028-01": {
+              "entries": [
+                {
+                  "id": "same-title",
+                  "householdId": "fixture-family",
+                  "ruleId": null,
+                  "accountId": "unknown-account",
+                  "categoryId": null,
+                  "title": "Nome \"fictício\" \\ revisão",
+                  "description": "",
+                  "amount": 3,
+                  "kind": "expense",
+                  "dueDate": "2028-01-20",
+                  "competenceDate": "2028-01-20",
+                  "installmentIndex": null,
+                  "installmentTotal": null,
+                  "status": "pending",
+                  "origin": "manual",
+                  "excludeFromCalc": false,
+                  "metadata": null,
+                  "createdAt": "2028-01-01T00:00:00Z",
+                  "updatedAt": "2028-01-01T00:00:00Z"
+                }
+              ],
+              "amount": 3,
+              "paid": 0,
+              "pending": 3,
+              "status": "pending"
+            }
+          },
+          "total": 3,
+          "dueDays": [
+            20
+          ]
+        }
+      ],
+      "summaries": {
+        "2028-01": {
+          "income": 0,
+          "expense": 6,
+          "net": -6,
+          "paid": 0,
+          "received": 0,
+          "pendingExpense": 6,
+          "pendingIncome": 0,
+          "settledNet": 0,
+          "excluded": 0,
+          "incomeCount": 0,
+          "expenseCount": 4
+        }
+      },
+      "totals": {
+        "income": 0,
+        "expense": 6,
+        "net": -6,
+        "paid": 0,
+        "received": 0,
+        "pendingExpense": 6,
+        "pendingIncome": 0,
+        "settledNet": 0,
+        "excluded": 0,
+        "incomeCount": 0,
+        "expenseCount": 4
+      },
+      "cardCommitments": {}
+    }
+  }
+]

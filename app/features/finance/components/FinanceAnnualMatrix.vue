@@ -806,12 +806,13 @@ watch(
   },
   { immediate: true }
 )
-const preferenceKey = computed(() => `finance-planilha:${store.settings.id}`)
+const preferenceKey = computed(() => store.storageKey(`finance-planilha:${store.settings.id}`))
+const browserStorage = () => store.javaLab ? sessionStorage : localStorage
 onMounted(() => {
   try {
     const saved = JSON.parse(
-      localStorage.getItem(preferenceKey.value) ??
-        localStorage.getItem(`finance-annual-matrix:${store.settings.id}`) ??
+      browserStorage().getItem(preferenceKey.value) ??
+        browserStorage().getItem(store.storageKey(`finance-annual-matrix:${store.settings.id}`)) ??
         '{}'
     )
     rowOrder.value = Array.isArray(saved.rowOrder)
@@ -841,7 +842,7 @@ watch(
   () => {
     if (!import.meta.client) return
     try {
-      localStorage.setItem(
+      browserStorage().setItem(
         preferenceKey.value,
         JSON.stringify({
           hiddenMonths: hiddenMonths.value,

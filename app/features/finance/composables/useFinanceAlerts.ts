@@ -15,6 +15,7 @@ export interface SmartAlert {
 /** One source for the alert center, summary and navigation badge. */
 export function useFinanceAlerts() {
   const store = useFinanceStore()
+  const browserStorage = () => store.javaLab ? sessionStorage : localStorage
   const currency = useCurrency()
   const dismissedIds = useState<string[]>('finance-dismissed-alerts', () => [])
   const storageLoaded = useState('finance-dismissed-alerts-loaded', () => false)
@@ -24,14 +25,14 @@ export function useFinanceAlerts() {
   onMounted(() => {
     if (storageLoaded.value) return
     try {
-      const saved: unknown = JSON.parse(localStorage.getItem('ff-dismissed-alerts') ?? '[]')
+      const saved: unknown = JSON.parse(browserStorage().getItem(store.storageKey('ff-dismissed-alerts')) ?? '[]')
       if (Array.isArray(saved)) dismissedIds.value = saved.filter((id): id is string => typeof id === 'string')
     } catch { /* Keep alerts available when browser storage is unavailable. */ }
     storageLoaded.value = true
   })
   watch(dismissedIds, (ids) => {
     if (!import.meta.client || !storageLoaded.value) return
-    try { localStorage.setItem('ff-dismissed-alerts', JSON.stringify(ids)) } catch { /* Storage is optional. */ }
+    try { browserStorage().setItem(store.storageKey('ff-dismissed-alerts'), JSON.stringify(ids)) } catch { /* Storage is optional. */ }
   }, { deep: true })
 
   const generatedAlerts = computed((): SmartAlert[] => {

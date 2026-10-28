@@ -46,6 +46,7 @@ const releases = [
 ]
 
 const checkForUpdates = async () => {
+  if (import.meta.dev && config.public.javaLab) return
   if (checking.value) return
 
   checking.value = true
@@ -75,6 +76,7 @@ const checkForUpdates = async () => {
 }
 
 onMounted(async () => {
+  if (import.meta.dev && config.public.javaLab) return
   if (Capacitor.isNativePlatform()) {
     installedVersion.value = (await App.getInfo()).version
   }

@@ -4,6 +4,7 @@ import WebSocket from 'ws'
 
 export const createSupabaseServerClient = (event: H3Event) => {
   const config = useRuntimeConfig(event)
+  if (import.meta.dev && process.env.NUXT_JAVA_LAB === '1') throw new Error('Supabase está desativado no laboratório Java.')
   const supabaseUrl = config.public.supabaseUrl as string
   const supabaseKey = (config.public.supabaseAnonKey as string) || (config.supabaseServiceKey as string)
 

@@ -1,0 +1,22 @@
+name: financeiro-java-lab
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: financeiro_lab
+      POSTGRES_USER: financeiro_lab
+      POSTGRES_PASSWORD: lab_password
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U financeiro_lab -d financeiro_lab"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: "no"
+
+volumes:
+  postgres_data:

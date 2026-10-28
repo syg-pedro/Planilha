@@ -12,6 +12,7 @@ function parseCookieHeader(cookieHeader: string): { name: string; value: string 
 
 export const useSupabaseClient = (): SupabaseClient | null => {
   const config = useRuntimeConfig()
+  if (import.meta.dev && config.public.javaLab) return null
   const url = config.public.supabaseUrl as string
   const key = config.public.supabaseAnonKey as string
   if (!url || !key) return null

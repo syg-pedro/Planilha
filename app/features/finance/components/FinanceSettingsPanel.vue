@@ -77,7 +77,7 @@ const store = useFinanceStore()
 const currency = useCurrency()
 const { user: authUser } = useAuth()
 const { logout } = useLogout()
-const isNativePlatform = computed(() => process.client && Capacitor.isNativePlatform())
+const isNativePlatform = computed(() => !store.javaLab && process.client && Capacitor.isNativePlatform())
 
 const config = useRuntimeConfig()
 const isSupabaseConfigured = computed(() => !!(config.public.supabaseUrl && config.public.supabaseAnonKey))
@@ -113,6 +113,7 @@ const { $pwaPrompt, $pwaInstalled } = useNuxtApp()
 const showPwaManual = useState('pwa-show-manual', () => false)
 
 const installPwa = async () => {
+  if (store.javaLab) return
   if ($pwaPrompt.value) {
     await $pwaPrompt.value.prompt()
   } else {

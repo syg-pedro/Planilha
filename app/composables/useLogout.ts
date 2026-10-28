@@ -1,4 +1,5 @@
 import { useAuth } from '~/composables/useAuth'
+import { financeStorageKey } from '#shared/javaLab'
 
 /**
  * Logout centralizado: encerra a sessão do Supabase (quando configurado),
@@ -6,13 +7,15 @@ import { useAuth } from '~/composables/useAuth'
  */
 export const useLogout = () => {
   const { signOut } = useAuth()
+  const javaLab = Boolean(import.meta.dev && useRuntimeConfig().public.javaLab)
 
   const logout = async () => {
     try {
       await signOut()
     } finally {
       if (import.meta.client) {
-        localStorage.removeItem('finance-edit-key')
+        const storage = javaLab ? sessionStorage : localStorage
+        storage.removeItem(financeStorageKey('finance-edit-key', javaLab))
       }
       await navigateTo('/login')
     }

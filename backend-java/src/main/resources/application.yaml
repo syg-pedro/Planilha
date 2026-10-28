@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: financeiro-lab
+  profiles:
+    default: local
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:55432/financeiro_lab
+    username: financeiro_lab
+    password: lab_password
+    hikari:
+      connection-timeout: 3000
+  jpa:
+    open-in-view: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    clean-disabled: true
+  sql:
+    init:
+      mode: never
+
+server:
+  address: 127.0.0.1
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

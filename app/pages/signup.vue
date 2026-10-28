@@ -67,6 +67,10 @@ const onSubmit = async () => {
       }
       return
     }
+    if (import.meta.dev && useRuntimeConfig().public.javaLab) {
+      await navigateTo('/')
+      return
+    }
     successMsg.value = 'Conta criada! Verifique seu e-mail para confirmar o cadastro ou faça login.'
   } finally {
     loading.value = false

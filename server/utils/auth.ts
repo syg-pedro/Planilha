@@ -12,6 +12,9 @@ export const extractEditKey = (event: H3Event): string | null => {
 }
 
 export const assertEditKey = async (event: H3Event): Promise<{ householdId: string }> => {
+  if (import.meta.dev && process.env.NUXT_JAVA_LAB === '1') {
+    throw createError({ statusCode: 503, statusMessage: 'A API original está desativada no laboratório Java.' })
+  }
   const config = useRuntimeConfig(event)
   const isSupabaseEnabled = Boolean(
     config.public.supabaseUrl && (config.public.supabaseAnonKey || config.supabaseServiceKey)

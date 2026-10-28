@@ -1,6 +1,6 @@
 <template>
   <UApp :locale="pt_br" :toaster="{ position: 'top-right' }">
-    <NuxtPwaManifest />
+    <NuxtPwaManifest v-if="!javaLab" />
     <main v-if="!appReady" class="app-loading" aria-busy="true" aria-live="polite">
       <UCard class="w-full max-w-xs text-center" :ui="{ body: 'space-y-4 p-6' }">
         <UIcon name="i-lucide-table-2" class="size-8 text-primary" />
@@ -11,7 +11,7 @@
     </main>
     <NuxtLayout v-else :key="layoutName" :name="layoutName"><NuxtPage /></NuxtLayout>
     <span v-if="appReady" data-testid="app-ready" hidden aria-hidden="true" />
-    <PwaInstallBanner v-if="!isNativePlatform" />
+    <PwaInstallBanner v-if="!javaLab && !isNativePlatform" />
     <BaseModal :open="Boolean(visibleUpdate)" :title="updateTitle" :subtitle="updateEyebrow" @close="dismissAvailableUpdate">
       <ul class="list-disc space-y-2 pl-5 text-sm text-muted"><li v-for="note in visibleUpdate?.notes" :key="note">{{ note }}</li></ul>
       <UAlert class="mt-4" color="neutral" variant="subtle" icon="i-lucide-info" :description="updateInstruction" />
@@ -57,9 +57,10 @@ type AvailableUpdate = ApkUpdate | WebUpdate
 const store = useFinanceStore()
 const { user } = useAuth()
 const runtime = useRuntimeConfig()
+const javaLab = Boolean(import.meta.dev && runtime.public.javaLab)
 const route = useRoute()
-const isNativePlatform = Capacitor.isNativePlatform()
-const requiresAuthentication = Boolean(
+const isNativePlatform = !javaLab && Capacitor.isNativePlatform()
+const requiresAuthentication = javaLab || Boolean(
   runtime.public.supabaseUrl && runtime.public.supabaseAnonKey
 )
 const appReady = ref(false)
@@ -103,6 +104,7 @@ const formatReleaseNotes = (comment?: string) => {
 }
 
 const notifyAboutUpdate = async (update: AvailableUpdate | null) => {
+  if (javaLab) return
   if (!update) return
 
   const title = update.type === 'apk' ? 'Novo APK disponível' : 'Atualização disponível'
@@ -129,6 +131,7 @@ const notifyAboutUpdate = async (update: AvailableUpdate | null) => {
 }
 
 const checkForNativeUpdate = async () => {
+  if (javaLab) return
   if (!isNativePlatform) return
 
   const url = runtime.public.updateManifestUrl as string
@@ -160,7 +163,7 @@ const isRemoteNativeWebShell = () => {
   return /^https?:$/.test(window.location.protocol) && !['localhost', '127.0.0.1'].includes(window.location.hostname)
 }
 
-const shouldCheckForWebUpdates = () => !isNativePlatform || isRemoteNativeWebShell()
+const shouldCheckForWebUpdates = () => !javaLab && (!isNativePlatform || isRemoteNativeWebShell())
 
 const checkForWebUpdate = async () => {
   if (!shouldCheckForWebUpdates() || pendingWebUpdate.value) return
@@ -205,7 +208,7 @@ const reloadForWebUpdate = () => {
 }
 
 // Ao trocar de conta: resetar store e recarregar dados do novo usuário
-watch(user, async (newUser, oldUser) => {
+watch(() => user.value, async (newUser, oldUser) => {
   const changedUser = newUser?.id !== oldUser?.id
   if (!changedUser) return
 

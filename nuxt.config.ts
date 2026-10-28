@@ -1,27 +1,33 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import { execFileSync } from 'node:child_process'
 import { DEFAULT_MOBILE_ALLOWED_ORIGINS, PRODUCTION_WEB_URL } from './shared/deployment'
+import { assertJavaLabDevelopment, assertJavaLabTarget, javaLabConfigured, JAVA_LAB_ORIGIN, JAVA_LAB_PORT } from './shared/javaLab'
 
-const envSupabaseUrl =
+const javaLab = javaLabConfigured(process.env.NUXT_JAVA_LAB, process.env.NUXT_PUBLIC_JAVA_LAB)
+if (javaLab && process.env.NODE_ENV === 'production') assertJavaLabDevelopment(false)
+if (javaLab && process.env.NUXT_DEV_API_PROXY_TARGET) assertJavaLabTarget(process.env.NUXT_DEV_API_PROXY_TARGET)
+if (javaLab && process.env.NUXT_PUBLIC_API_BASE_URL) assertJavaLabTarget(process.env.NUXT_PUBLIC_API_BASE_URL)
+
+const envSupabaseUrl = javaLab ? '' : (
   process.env.SUPABASE_URL ||
   process.env.NUXT_PUBLIC_SUPABASE_URL ||
   process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  ''
+  '')
 
-const envSupabaseServiceKey =
+const envSupabaseServiceKey = javaLab ? '' : (
   process.env.SUPABASE_SERVICE_KEY ||
   process.env.SUPABASE_SECRET_KEY ||
   process.env.SUPABASE_SECRET ||
-  ''
+  '')
 
-const envSupabasePublishableKey =
+const envSupabasePublishableKey = javaLab ? '' : (
   process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  ''
+  '')
 
 const envNitroOutputDir = process.env.NITRO_OUTPUT_DIR || ''
-const envDevApiProxyTarget = process.env.NUXT_DEV_API_PROXY_TARGET || ''
+const envDevApiProxyTarget = javaLab ? JAVA_LAB_ORIGIN : process.env.NUXT_DEV_API_PROXY_TARGET || ''
 const resolveWebBuildVersion = () => {
   const versionFromEnvironment = process.env.NUXT_PUBLIC_WEB_BUILD_VERSION ||
     process.env.VERCEL_GIT_COMMIT_SHA ||
@@ -38,6 +44,12 @@ const resolveWebBuildVersion = () => {
 const webBuildVersion = resolveWebBuildVersion()
 
 export default defineNuxtConfig({
+  ...(javaLab ? { devServer: { host: '127.0.0.1', port: JAVA_LAB_PORT } } : {}),
+  hooks: {
+    ready(nuxt) {
+      if (javaLab) assertJavaLabDevelopment(nuxt.options.dev)
+    }
+  },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
@@ -58,23 +70,25 @@ export default defineNuxtConfig({
     supabaseServiceKey: envSupabaseServiceKey,
     dataFilePath: process.env.DATA_FILE_PATH || '',
     public: {
+      javaLab,
       appName: 'Planilha',
       appVersion: process.env.NUXT_PUBLIC_APP_VERSION || '1.1.1',
       webBuildVersion,
-      webVersionUrl: '/api/web-version',
-      updateManifestUrl: process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || `${PRODUCTION_WEB_URL}/api/android-release`,
-      defaultEditKey: process.env.EDIT_KEY || 'demo-finance-key',
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '',
+      webVersionUrl: javaLab ? '' : '/api/web-version',
+      updateManifestUrl: javaLab ? '' : process.env.NUXT_PUBLIC_UPDATE_MANIFEST_URL || `${PRODUCTION_WEB_URL}/api/android-release`,
+      defaultEditKey: javaLab ? 'finance-java-lab' : process.env.EDIT_KEY || 'demo-finance-key',
+      apiBaseUrl: javaLab ? '' : process.env.NUXT_PUBLIC_API_BASE_URL || '',
       supabaseUrl: envSupabaseUrl,
       supabaseAnonKey: envSupabasePublishableKey
     }
   },
   pwa: {
+    disable: javaLab,
     registerType: 'autoUpdate',
-    injectRegister: 'auto',
+    injectRegister: javaLab ? false : 'auto',
     strategies: 'generateSW',
     devOptions: {
-      enabled: true,
+      enabled: !javaLab,
     },
     manifest: {
       name: 'Planilha',
@@ -139,9 +153,11 @@ export default defineNuxtConfig({
         'data-theme': 'light'
       },
       link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap' },
+        ...(javaLab ? [] : [
+          { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+          { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' as const },
+          { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap' }
+        ]),
         { rel: 'icon', type: 'image/x-icon', sizes: '16x16 32x32 48x48', href: '/favicon.ico?v=2' },
         { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png?v=2' },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg?v=2' },

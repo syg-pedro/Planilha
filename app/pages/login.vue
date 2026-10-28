@@ -30,6 +30,7 @@
 import { onMounted, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { SecureStorage } from '@aparajita/capacitor-secure-storage'
+import { financeStorageKey } from '#shared/javaLab'
 
 type RecentUser = {
   email: string
@@ -37,9 +38,11 @@ type RecentUser = {
   password?: string
 }
 
-const RECENT_USERS_KEY = 'finance-recent-users'
-const SECURE_RECENT_USERS_KEY = 'finance-secure-recent-users'
-const REMEMBERED_EMAIL_KEY = 'finance-remembered-email'
+const javaLab = Boolean(import.meta.dev && useRuntimeConfig().public.javaLab)
+const browserStorage = () => javaLab ? sessionStorage : localStorage
+const RECENT_USERS_KEY = financeStorageKey('finance-recent-users', javaLab)
+const SECURE_RECENT_USERS_KEY = financeStorageKey('finance-secure-recent-users', javaLab)
+const REMEMBERED_EMAIL_KEY = financeStorageKey('finance-remembered-email', javaLab)
 
 definePageMeta({ layout: 'auth' })
 
@@ -50,10 +53,10 @@ const password = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
 const errorMsg = ref<string | null>(null)
-const rememberUser = ref(true)
+const rememberUser = ref(!javaLab)
 const recentUsers = ref<RecentUser[]>([])
 
-const isNativePlatform = Capacitor.isNativePlatform()
+const isNativePlatform = !javaLab && Capacitor.isNativePlatform()
 
 const parseRecentUsers = (raw: string | null): RecentUser[] => {
   if (!raw) return []
@@ -78,7 +81,7 @@ const readRecentUsers = async (): Promise<RecentUser[]> => {
       return []
     }
   }
-  return parseRecentUsers(localStorage.getItem(RECENT_USERS_KEY))
+  return parseRecentUsers(browserStorage().getItem(RECENT_USERS_KEY))
 }
 
 const persistRecentUser = async (currentEmail: string, currentPassword: string) => {
@@ -98,8 +101,8 @@ const persistRecentUser = async (currentEmail: string, currentPassword: string) 
 
   // No navegador mantemos apenas o e-mail. Senhas ficam restritas ao Android KeyStore.
   const publicUsers = nextUsers.map(({ email: savedEmail, lastUsedAt }) => ({ email: savedEmail, lastUsedAt }))
-  localStorage.setItem(RECENT_USERS_KEY, JSON.stringify(publicUsers))
-  localStorage.setItem(REMEMBERED_EMAIL_KEY, normalizedEmail)
+  browserStorage().setItem(RECENT_USERS_KEY, JSON.stringify(publicUsers))
+  browserStorage().setItem(REMEMBERED_EMAIL_KEY, normalizedEmail)
 }
 
 const selectRecentUser = (recentEmail: string) => {
@@ -115,15 +118,15 @@ const removeRecentUser = async (recentEmail: string) => {
     await SecureStorage.set(SECURE_RECENT_USERS_KEY, recentUsers.value)
     return
   }
-  localStorage.setItem(RECENT_USERS_KEY, JSON.stringify(recentUsers.value))
-  if (localStorage.getItem(REMEMBERED_EMAIL_KEY) === recentEmail) {
-    localStorage.removeItem(REMEMBERED_EMAIL_KEY)
+  browserStorage().setItem(RECENT_USERS_KEY, JSON.stringify(recentUsers.value))
+  if (browserStorage().getItem(REMEMBERED_EMAIL_KEY) === recentEmail) {
+    browserStorage().removeItem(REMEMBERED_EMAIL_KEY)
   }
 }
 
 onMounted(async () => {
   recentUsers.value = await readRecentUsers()
-  const rememberedEmail = isNativePlatform ? recentUsers.value[0]?.email : localStorage.getItem(REMEMBERED_EMAIL_KEY)
+  const rememberedEmail = isNativePlatform ? recentUsers.value[0]?.email : browserStorage().getItem(REMEMBERED_EMAIL_KEY)
   if (rememberedEmail) {
     email.value = rememberedEmail
   }

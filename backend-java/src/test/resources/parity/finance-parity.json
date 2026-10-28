@@ -1,0 +1,538 @@
+[
+  {
+    "name": "centavos-beneficios-status-e-vencimento-hoje",
+    "now": "2026-02-10T12:00:00Z",
+    "accounts": [
+      {
+        "id": "bank",
+        "householdId": "local-demo",
+        "name": "Conta fictícia bank",
+        "owner": "Pessoa fictícia",
+        "type": "bank",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      },
+      {
+        "id": "card",
+        "householdId": "local-demo",
+        "name": "Conta fictícia card",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": 1000,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      },
+      {
+        "id": "benefit",
+        "householdId": "local-demo",
+        "name": "Conta fictícia benefit",
+        "owner": "Pessoa fictícia",
+        "type": "benefit",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      }
+    ],
+    "entries": [
+      {
+        "id": "income",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Lançamento fictício income",
+        "description": "",
+        "amount": 1000,
+        "kind": "income",
+        "dueDate": "2026-02-10",
+        "competenceDate": "2026-02-10",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "cent-1",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Lançamento fictício cent-1",
+        "description": "",
+        "amount": 0.1,
+        "kind": "expense",
+        "dueDate": "2026-02-11",
+        "competenceDate": "2026-02-11",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "cent-2",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Lançamento fictício cent-2",
+        "description": "",
+        "amount": 0.2,
+        "kind": "expense",
+        "dueDate": "2026-02-15",
+        "competenceDate": "2026-02-15",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "review",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "paid",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Lançamento fictício paid",
+        "description": "",
+        "amount": 20,
+        "kind": "expense",
+        "dueDate": "2026-02-17",
+        "competenceDate": "2026-02-17",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "paid",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "benefit",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "benefit",
+        "categoryId": null,
+        "title": "Lançamento fictício benefit",
+        "description": "",
+        "amount": 100,
+        "kind": "expense",
+        "dueDate": "2026-02-13",
+        "competenceDate": "2026-02-13",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "excluded",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Lançamento fictício excluded",
+        "description": "",
+        "amount": 50,
+        "kind": "expense",
+        "dueDate": "2026-02-13",
+        "competenceDate": "2026-02-13",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": true,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "today",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Lançamento fictício today",
+        "description": "",
+        "amount": 5,
+        "kind": "expense",
+        "dueDate": "2026-02-10",
+        "competenceDate": "2026-02-10",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      }
+    ],
+    "expected": {
+      "kpis": {
+        "totalIncome": 1000,
+        "totalExpense": 25.3,
+        "net": 974.7,
+        "pendingAmount": -994.7,
+        "upcoming7Days": 0.3,
+        "cardsUsedPercent": 2
+      },
+      "paymentCycles": [
+        {
+          "id": "first-half",
+          "startDay": 1,
+          "endDay": 15,
+          "pendingTotal": 5.3,
+          "pendingCount": 3,
+          "projectedBalanceImpact": -5.3
+        },
+        {
+          "id": "second-half",
+          "startDay": 16,
+          "endDay": 28,
+          "pendingTotal": 0,
+          "pendingCount": 0,
+          "projectedBalanceImpact": 0
+        }
+      ],
+      "dueCashflow": [
+        {
+          "month": "2026-02",
+          "income": 1000,
+          "expense": 25.3,
+          "net": 974.7
+        }
+      ],
+      "competenceCashflow": [
+        {
+          "month": "2026-02",
+          "income": 1000,
+          "expense": 25.3,
+          "net": 974.7
+        }
+      ]
+    }
+  },
+  {
+    "name": "fevereiro-bissexto-e-competencia",
+    "now": "2024-02-20T03:00:00Z",
+    "accounts": [
+      {
+        "id": "bank",
+        "householdId": "local-demo",
+        "name": "Conta fictícia bank",
+        "owner": "Pessoa fictícia",
+        "type": "bank",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      },
+      {
+        "id": "card",
+        "householdId": "local-demo",
+        "name": "Conta fictícia card",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": 100,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      }
+    ],
+    "entries": [
+      {
+        "id": "leap",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Lançamento fictício leap",
+        "description": "",
+        "amount": 2,
+        "kind": "expense",
+        "dueDate": "2024-02-29",
+        "competenceDate": "2024-03-01",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "review",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "received",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Lançamento fictício received",
+        "description": "",
+        "amount": 10,
+        "kind": "income",
+        "dueDate": "2024-02-01",
+        "competenceDate": "2024-01-01",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "paid",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "zero",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Lançamento fictício zero",
+        "description": "",
+        "amount": 0,
+        "kind": "expense",
+        "dueDate": "2024-02-15",
+        "competenceDate": "2024-02-15",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      }
+    ],
+    "expected": {
+      "kpis": {
+        "totalIncome": 10,
+        "totalExpense": 2,
+        "net": 8,
+        "pendingAmount": 2,
+        "upcoming7Days": 0,
+        "cardsUsedPercent": 2
+      },
+      "paymentCycles": [
+        {
+          "id": "first-half",
+          "startDay": 1,
+          "endDay": 15,
+          "pendingTotal": 0,
+          "pendingCount": 1,
+          "projectedBalanceImpact": 0
+        },
+        {
+          "id": "second-half",
+          "startDay": 16,
+          "endDay": 29,
+          "pendingTotal": 2,
+          "pendingCount": 1,
+          "projectedBalanceImpact": -2
+        }
+      ],
+      "dueCashflow": [
+        {
+          "month": "2024-02",
+          "income": 10,
+          "expense": 2,
+          "net": 8
+        }
+      ],
+      "competenceCashflow": [
+        {
+          "month": "2024-01",
+          "income": 10,
+          "expense": 0,
+          "net": 10
+        },
+        {
+          "month": "2024-02",
+          "income": 0,
+          "expense": 0,
+          "net": 0
+        },
+        {
+          "month": "2024-03",
+          "income": 0,
+          "expense": 2,
+          "net": -2
+        }
+      ]
+    }
+  },
+  {
+    "name": "virada-de-ano-e-parcelas-futuras",
+    "now": "2026-12-31T23:00:00Z",
+    "accounts": [
+      {
+        "id": "bank",
+        "householdId": "local-demo",
+        "name": "Conta fictícia bank",
+        "owner": "Pessoa fictícia",
+        "type": "bank",
+        "limitTotal": null,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      },
+      {
+        "id": "card",
+        "householdId": "local-demo",
+        "name": "Conta fictícia card",
+        "owner": "Pessoa fictícia",
+        "type": "credit_card",
+        "limitTotal": 500,
+        "closingDay": null,
+        "dueDay": null,
+        "active": true
+      }
+    ],
+    "entries": [
+      {
+        "id": "next-year",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "card",
+        "categoryId": null,
+        "title": "Lançamento fictício next-year",
+        "description": "",
+        "amount": 5,
+        "kind": "expense",
+        "dueDate": "2027-01-05",
+        "competenceDate": "2026-12-15",
+        "installmentIndex": 2,
+        "installmentTotal": 3,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "last-day",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Lançamento fictício last-day",
+        "description": "",
+        "amount": 10,
+        "kind": "income",
+        "dueDate": "2026-12-31",
+        "competenceDate": "2026-12-31",
+        "installmentIndex": null,
+        "installmentTotal": null,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      },
+      {
+        "id": "later",
+        "householdId": "local-demo",
+        "ruleId": null,
+        "accountId": "bank",
+        "categoryId": null,
+        "title": "Lançamento fictício later",
+        "description": "",
+        "amount": 5,
+        "kind": "expense",
+        "dueDate": "2027-02-05",
+        "competenceDate": "2027-02-05",
+        "installmentIndex": 3,
+        "installmentTotal": 3,
+        "status": "pending",
+        "origin": "manual",
+        "excludeFromCalc": false,
+        "metadata": null,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z"
+      }
+    ],
+    "expected": {
+      "kpis": {
+        "totalIncome": 10,
+        "totalExpense": 10,
+        "net": 0,
+        "pendingAmount": 0,
+        "upcoming7Days": 5,
+        "cardsUsedPercent": 1
+      },
+      "paymentCycles": [
+        {
+          "id": "first-half",
+          "startDay": 1,
+          "endDay": 15,
+          "pendingTotal": 0,
+          "pendingCount": 0,
+          "projectedBalanceImpact": 0
+        },
+        {
+          "id": "second-half",
+          "startDay": 16,
+          "endDay": 31,
+          "pendingTotal": 0,
+          "pendingCount": 0,
+          "projectedBalanceImpact": 0
+        }
+      ],
+      "dueCashflow": [
+        {
+          "month": "2026-12",
+          "income": 10,
+          "expense": 0,
+          "net": 10
+        },
+        {
+          "month": "2027-01",
+          "income": 0,
+          "expense": 5,
+          "net": -5
+        },
+        {
+          "month": "2027-02",
+          "income": 0,
+          "expense": 5,
+          "net": -5
+        }
+      ],
+      "competenceCashflow": [
+        {
+          "month": "2026-12",
+          "income": 10,
+          "expense": 5,
+          "net": 5
+        },
+        {
+          "month": "2027-02",
+          "income": 0,
+          "expense": 5,
+          "net": -5
+        }
+      ]
+    }
+  }
+]

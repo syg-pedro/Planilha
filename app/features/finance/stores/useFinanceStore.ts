@@ -8,6 +8,9 @@ import { createDefaultOnboardingState } from '#shared/onboarding'
 import { normalizeUiTheme, type UiThemePreferences } from '#shared/uiTheme'
 import { useFinanceUiTheme } from '~/features/finance/composables/useFinanceUiTheme'
 import { syncFinanceWidgetSnapshot } from '~/features/finance/utils/financeWidget'
+import { assertJavaLabBrowserOrigin, financeStorageKey, javaLabActive } from '#shared/javaLab'
+import { combineJavaLabBatches, createJavaLabAdapter } from '#shared/javaLabAdapter'
+import type { JavaLabRequest } from '#shared/javaLabAdapter'
 import type {
   Account,
   BootstrapResponse,
@@ -50,6 +53,10 @@ const defaultFilters = (): DashboardFilters => ({
 
 export const useFinanceStore = defineStore('finance', () => {
   const runtime = useRuntimeConfig()
+  const javaLab = javaLabActive(runtime.public.javaLab, import.meta.dev)
+  const storageKey = (key: string) => financeStorageKey(javaLab && key === 'finance-offline-queue'
+    ? `${key}:${useAuth().user.value?.id ?? 'anonymous'}:${settings.value.id}` : key, javaLab)
+  const storage = () => javaLab ? sessionStorage : localStorage
   const route = useRoute()
   const uiThemeRuntime = useFinanceUiTheme()
   const uiThemeSaving = ref(false)
@@ -113,10 +120,31 @@ export const useFinanceStore = defineStore('finance', () => {
     heatmap: buildHeatmap(cashableEntries.value)
   }))
 
+  const requestJava: JavaLabRequest = async <T>(path: string, options = {}): Promise<T> => {
+    if (!import.meta.client) throw new Error('Use o navegador exclusivo do laboratório Java.')
+    assertJavaLabBrowserOrigin(window.location.origin)
+    if (Capacitor.isNativePlatform()) throw new Error('O laboratório Java está disponível somente no navegador local.')
+    const auth = useAuth()
+    const session = auth.getSessionKey()
+    const token = await auth.getAccessToken()
+    if (!token) throw new Error('Entre na sua conta local para continuar.')
+    if (session !== auth.getSessionKey()) throw new Error('A sessão local mudou. Carregue os dados novamente.')
+    try {
+      const response = await $fetch<T>(path, { ...options, credentials: 'same-origin', headers: { authorization: `Bearer ${token}` } }) as T
+      if (session !== auth.getSessionKey()) throw new Error('A sessão local mudou. Carregue os dados novamente.')
+      return response
+    } catch (error) {
+      console.error('Falha ao acessar a API local do laboratório.', { status: (error as { response?: { status?: number } }).response?.status })
+      throw new Error('Não foi possível concluir no laboratório. Confira se o backend local está em execução e tente novamente.')
+    }
+  }
+  const javaApi = createJavaLabAdapter(requestJava)
+
   const fetchApi = async <T>(
     path: string,
     options: { method?: 'GET' | 'POST'; body?: any } = {}
   ): Promise<T> => {
+    if (javaLab) return javaApi<T>(path, options)
     const apiBaseUrl = runtime.public.apiBaseUrl as string
     const url = apiBaseUrl ? new URL(path, apiBaseUrl).toString() : path
     const accessToken = await useAuth().getAccessToken()
@@ -226,7 +254,7 @@ export const useFinanceStore = defineStore('finance', () => {
     if (!process.client) {
       return
     }
-    const raw = localStorage.getItem('finance-offline-queue')
+    const raw = storage().getItem(storageKey('finance-offline-queue'))
     if (!raw) {
       return
     }
@@ -241,7 +269,7 @@ export const useFinanceStore = defineStore('finance', () => {
     if (!process.client) {
       return
     }
-    localStorage.setItem('finance-offline-queue', JSON.stringify(offlineQueue.value))
+    storage().setItem(storageKey('finance-offline-queue'), JSON.stringify(offlineQueue.value))
   }
 
   const pushOfflineBatch = (batch: EntryBatchRequest) => {
@@ -256,6 +284,15 @@ export const useFinanceStore = defineStore('finance', () => {
 
     syncingOfflineQueue.value = true
     try {
+      if (javaLab) {
+        const pending = offlineQueue.value.length
+        const batch = combineJavaLabBatches(offlineQueue.value as { upserts: Record<string, unknown>[]; deletes: string[] }[])
+        await fetchApi('/api/entries/batch', { method: 'POST', body: batch })
+        offlineQueue.value.splice(0, pending)
+        persistOfflineQueue()
+        await bootstrap()
+        return
+      }
       while (offlineQueue.value.length) {
         const batch = offlineQueue.value[0]!
         await fetchApi<{ entries: FinanceEntry[] }>('/api/entries/batch', { method: 'POST', body: batch })
@@ -275,19 +312,20 @@ export const useFinanceStore = defineStore('finance', () => {
     }
 
     const queryKey = typeof route.query.key === 'string' ? route.query.key : null
-    const saved = localStorage.getItem('finance-edit-key')
+    const saved = storage().getItem(storageKey('finance-edit-key'))
     editKey.value = queryKey ?? saved ?? runtime.public.defaultEditKey
-    localStorage.setItem('finance-edit-key', editKey.value)
+    storage().setItem(storageKey('finance-edit-key'), editKey.value)
   }
 
   const setEditKey = (value: string) => {
     editKey.value = value.trim()
     if (process.client) {
-      localStorage.setItem('finance-edit-key', editKey.value)
+      storage().setItem(storageKey('finance-edit-key'), editKey.value)
     }
   }
 
   const syncWidgetSnapshot = async () => {
+    if (javaLab) return
     if (!process.client || !Capacitor.isNativePlatform()) {
       return
     }
@@ -337,6 +375,7 @@ export const useFinanceStore = defineStore('finance', () => {
   }
 
   const saveEntriesBatch = async (batch: EntryBatchRequest) => {
+    if (javaLab && syncingOfflineQueue.value) throw new Error('Aguarde a sincronização local antes de salvar outra alteração.')
     if (process.client && !navigator.onLine) {
       pushOfflineBatch(batch)
       for (const entry of batch.upserts) {
@@ -469,6 +508,7 @@ export const useFinanceStore = defineStore('finance', () => {
   }
 
   const requestNotifications = async () => {
+    if (javaLab) return
     if (!process.client) {
       return
     }
@@ -484,6 +524,7 @@ export const useFinanceStore = defineStore('finance', () => {
   }
 
   const notifyUpcoming = () => {
+    if (javaLab) return
     if (Capacitor.isNativePlatform()) {
       void scheduleUpcomingNotifications()
       return
@@ -539,6 +580,7 @@ export const useFinanceStore = defineStore('finance', () => {
   }
 
   const scheduleUpcomingNotifications = async () => {
+    if (javaLab) return
     if (!process.client || !Capacitor.isNativePlatform()) return
     const permission = await LocalNotifications.checkPermissions()
     if (permission.display !== 'granted') return
@@ -580,8 +622,12 @@ export const useFinanceStore = defineStore('finance', () => {
 
   const boot = async () => {
     initEditKey()
-    loadOfflineQueue()
+    if (!javaLab) loadOfflineQueue()
     await bootstrap()
+    if (javaLab) {
+      loadOfflineQueue()
+      await flushOfflineQueue()
+    }
     if (process.client) {
       window.removeEventListener('online', retryOfflineQueue)
       window.addEventListener('online', retryOfflineQueue)
@@ -593,6 +639,8 @@ export const useFinanceStore = defineStore('finance', () => {
   }
 
   return {
+    javaLab,
+    storageKey,
     loading,
     initialized,
     error,

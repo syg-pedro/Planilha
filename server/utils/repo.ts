@@ -1182,6 +1182,7 @@ const makeSupabaseRepo = (householdId: string): Repository => ({
 })
 
 export const getRepository = (householdId: string = DEFAULT_HOUSEHOLD_ID): Repository => {
+  if (import.meta.dev && process.env.NUXT_JAVA_LAB === '1') throw new Error('O repositório original está desativado no laboratório Java.')
   const config = useRuntimeConfig()
   const hasSupabase = Boolean(config.supabaseUrl) && Boolean(config.supabaseServiceKey)
   return hasSupabase ? makeSupabaseRepo(householdId) : makeMemoryRepo()
