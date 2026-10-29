@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { Button, Modal } from '@heroui/react'
+import { Capacitor } from '@capacitor/core'
+import { LocalNotifications } from '@capacitor/local-notifications'
 import { useSessao } from '../hooks/useSessao'
 import { useFinanceiro, useGravar } from '../hooks/useFinanceiro'
+import { useMobile } from '../hooks/useMobile'
 import { Carregando, Falha } from './Controles'
 import type { HouseholdSettings } from '../types'
 
@@ -30,6 +33,8 @@ export default function Estrutura() {
   const preferencias = financeiro.data?.settings
   const caminho = useLocation().pathname
   const pagina = grupos.flatMap(grupo => grupo.paginas).find(([rota]) => rota === caminho)?.[1] ?? 'Planilha'
+
+  useMobile(menuAberto, () => definirMenuAberto(false))
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const aplicar = () => {
@@ -62,7 +67,8 @@ export default function Estrutura() {
   }, [preferencias])
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') return
+    const isNative = Capacitor.isNativePlatform()
+    if (!isNative && (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted')) return
     const lancamentos = financeiro.data?.entries
     const diasAviso = preferencias?.notificationDays
     if (!lancamentos?.length || !diasAviso?.length) return
@@ -81,12 +87,24 @@ export default function Estrutura() {
     })
 
     if (proximos.length > 0) {
+      const mensagem = proximos.length === 1
+        ? `O lançamento "${proximos[0].title}" vence em breve.`
+        : `Você tem ${proximos.length} lançamentos com vencimento próximo.`
       try {
-        new Notification('Planilha: Vencimentos Próximos', {
-          body: proximos.length === 1
-            ? `O lançamento "${proximos[0].title}" vence em breve.`
-            : `Você tem ${proximos.length} lançamentos com vencimento próximo.`
-        })
+        if (isNative) {
+          void LocalNotifications.schedule({
+            notifications: [
+              {
+                id: Math.floor(Date.now() % 100000),
+                title: 'Planilha: Vencimentos Próximos',
+                body: mensagem,
+                schedule: { at: new Date(Date.now() + 500) }
+              }
+            ]
+          })
+        } else if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('Planilha: Vencimentos Próximos', { body: mensagem })
+        }
         sessionStorage.setItem(chaveArmazenamento, 'true')
       } catch { }
     }

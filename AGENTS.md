@@ -34,6 +34,11 @@ npm run verify:back
 
 # Unified local CI check
 npm run ci
+
+# Mobile development (Capacitor + Android)
+npm run build:mobile       # Build frontend and sync with native Capacitor assets
+npm run cap:sync           # Sync Capacitor assets and native plugins
+npm run cap:open:android   # Open native Android project in Android Studio
 ```
 
 ---
@@ -53,7 +58,9 @@ npm run ci
 │   ├── src/main/resources/db/migration/ # Flyway SQL migrations (PostgreSQL 17)
 │   ├── pom.xml
 │   └── mvnw.cmd
-├── frontend-react/             # React 19 + HeroUI + Tailwind + Dark Neon
+├── frontend-react/             # React 19 + HeroUI + Tailwind + Dark Neon + Capacitor
+│   ├── android/                # Native Android application project (Capacitor 8)
+│   ├── capacitor.config.ts     # Capacitor configuration (appId: com.pedro.planilha)
 │   ├── src/
 │   │   ├── components/         # Reusable UI primitives (Controles, Tabela, Indicadores, Estrutura)
 │   │   ├── features/           # Domain-driven feature modules:

@@ -3,6 +3,11 @@ import type { Sessao } from '../types'
 let token: string | null = null
 let renovacao: Promise<Sessao | null> | null = null
 
+const obterBaseUrl = () => {
+  const envUrl = (import.meta.env.VITE_API_URL as string | undefined) || ''
+  return envUrl.replace(/\/+$/, '')
+}
+
 export class FalhaApi extends Error {
   constructor(public status: number, public fields: Record<string, string> = {}) {
     super(status === 401 ? 'Sua sessão expirou. Entre novamente.'
@@ -17,8 +22,9 @@ export class FalhaApi extends Error {
 export const definirToken = (novo: string | null) => { token = novo }
 
 export const renovarSessao = (): Promise<Sessao | null> => {
-  renovacao ??= fetch('/api/auth/refresh', {
-    method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'FinanceiroLab' }
+  const base = obterBaseUrl()
+  renovacao ??= fetch(`${base}/api/auth/refresh`, {
+    method: 'POST', credentials: base ? 'include' : 'same-origin', headers: { 'X-Requested-With': 'FinanceiroLab' }
   }).then(async resposta => {
     if (!resposta.ok) { token = null; return null }
     const sessao = await resposta.json() as Sessao
@@ -31,10 +37,11 @@ export const renovarSessao = (): Promise<Sessao | null> => {
 
 export async function api<T>(caminho: string, opcoes: { method?: string; body?: unknown } = {}, repetir = true): Promise<T> {
   if (!caminho.startsWith('/api/') || caminho.includes('://')) throw new FalhaApi(400)
+  const base = obterBaseUrl()
   let resposta: Response
   try {
-    resposta = await fetch(caminho, {
-      method: opcoes.method ?? 'GET', credentials: 'same-origin',
+    resposta = await fetch(`${base}${caminho}`, {
+      method: opcoes.method ?? 'GET', credentials: base ? 'include' : 'same-origin',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'FinanceiroLab',
         ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: opcoes.body === undefined ? undefined : JSON.stringify(opcoes.body)

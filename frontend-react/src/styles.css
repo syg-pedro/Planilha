@@ -1225,12 +1225,24 @@ input[type="color"]::-webkit-color-swatch {
   .ff-sidebar { display: none; }
   .ff-workspace { margin-left: 0; }
   .ff-mobile-menu { display: block; }
-  .ff-topbar { padding: 10px 14px; gap: 10px; min-height: 52px; }
+  .ff-topbar {
+    padding-top: max(10px, env(safe-area-inset-top, 10px));
+    padding-left: max(14px, env(safe-area-inset-left, 14px));
+    padding-right: max(14px, env(safe-area-inset-right, 14px));
+    padding-bottom: 10px;
+    gap: 10px;
+    min-height: calc(52px + env(safe-area-inset-top, 0px));
+  }
   .ff-topbar__family { flex: 1; min-width: 0; }
   .ff-topbar__family strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
   .ff-topbar__actions { gap: 4px; }
   .ff-user { display: none; }
-  .ff-main { padding: 14px 12px 24px; }
+  .ff-main {
+    padding-top: 14px;
+    padding-left: max(12px, env(safe-area-inset-left, 12px));
+    padding-right: max(12px, env(safe-area-inset-right, 12px));
+    padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));
+  }
   .ff-breadcrumb { margin-bottom: 12px; }
   .ff-page-title { align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px; }
   .ff-panel { padding: 14px; margin-bottom: 12px; }

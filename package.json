@@ -11,7 +11,11 @@
     "test:e2e": "npm --prefix frontend-react run test:e2e",
     "test:back": "powershell -NoProfile -Command \"Set-Location backend-java; .\\mvnw.cmd test -B -ntp\"",
     "verify:back": "powershell -NoProfile -Command \"Set-Location backend-java; .\\mvnw.cmd verify -B -ntp\"",
-    "ci": "powershell -ExecutionPolicy Bypass -File scripts/java-react/ci-local.ps1"
+    "ci": "powershell -ExecutionPolicy Bypass -File scripts/java-react/ci-local.ps1",
+    "cap": "powershell -NoProfile -Command \"Set-Location frontend-react; npx cap\"",
+    "cap:sync": "powershell -NoProfile -Command \"Set-Location frontend-react; npx cap sync\"",
+    "cap:open:android": "powershell -NoProfile -Command \"Set-Location frontend-react; npx cap open android\"",
+    "build:mobile": "powershell -NoProfile -Command \"npm run build:front; Set-Location frontend-react; npx cap sync\""
   },
   "keywords": [
     "financas",
