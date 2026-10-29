@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@heroui/react'
-import { Campo, Carregando, Escolha, Falha, Marcacao, Painel } from '../components/Controles'
+import { Alerta, Campo, Carregando, Escolha, Falha, Marcacao, Painel } from '../components/Controles'
 import { useFinanceiro, useGravar } from '../hooks/useFinanceiro'
 import { useSessao } from '../hooks/useSessao'
 import { useNotificacoes } from '../hooks/useNotificacoes'
@@ -61,9 +61,10 @@ function Formulario({ settings, responsavel }: { settings: HouseholdSettings; re
       <p className="ff-muted">{!avisos.suportado ? 'Este navegador não oferece notificações neste contexto.' : avisos.permissao === 'granted' ? 'Permissão concedida neste navegador.' : avisos.permissao === 'denied' ? 'Permissão bloqueada. Altere nas configurações do navegador.' : 'A permissão ainda não foi solicitada.'}</p>
       {avisos.suportado && <div className="ff-actions"><Button type="button" variant="outline" isDisabled={avisos.permissao !== 'default'} isPending={avisos.pendente} onPress={() => void avisos.solicitar()}>Permitir notificações</Button>
         <Button type="button" variant="tertiary" isDisabled={avisos.permissao !== 'granted'} onPress={avisos.testar}>Testar aviso</Button></div>}
-      {avisos.falha && <p role="alert" className="ff-error">Não foi possível exibir o aviso neste navegador.</p>}
+      {avisos.falha && <Alerta tipo="erro">Não foi possível exibir o aviso neste navegador.</Alerta>}
     </div></Painel>
-    {gravar.isError && <Falha erro={gravar.error} />}{salvo && <p role="status">{pt.salvo}</p>}
+    {gravar.isError && <Falha erro={gravar.error} />}
+    {salvo && <Alerta tipo="sucesso">{pt.salvo}</Alerta>}
     <div className="ff-actions ff-actions--end"><Button type="submit" isDisabled={!responsavel} isPending={gravar.isPending}>{pt.salvar}</Button></div>
   </form>
 }

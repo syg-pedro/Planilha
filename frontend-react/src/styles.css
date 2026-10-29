@@ -389,6 +389,352 @@ h3 { font-size: 0.925rem; font-weight: 600; }
 .ff-form { display: grid; gap: 14px; }
 .ff-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
+/* ==========================================================================
+   PADRONIZAÇÃO DE CONTROLES, INPUTS, TEXTOS, DROPDOWNS E CALENDÁRIOS
+   ========================================================================== */
+
+/* 1. Labels e Textos de Formulário */
+.ff-field label,
+[data-slot="label"] {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ff-muted);
+  margin-bottom: 5px;
+  transition: color 0.15s ease;
+}
+
+.ff-field:focus-within label {
+  color: var(--ff-cyan);
+}
+
+.ff-field__hint {
+  font-size: 0.75rem;
+  color: var(--ff-muted);
+  margin-top: 4px;
+}
+
+[data-slot="error-message"],
+[data-slot="field-error"] {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ff-negative);
+  margin-top: 4px;
+  display: block;
+  animation: ff-fade-slide 0.2s ease-out;
+}
+
+/* 2. Inputs e Textareas Globais */
+input, textarea, select {
+  font: inherit;
+  color-scheme: dark;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+textarea {
+  width: 100%;
+  background: rgba(14, 20, 32, 0.85);
+  color: var(--ff-text);
+  border: 1px solid var(--ff-border);
+  border-radius: 9px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+textarea:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(18, 25, 40, 0.9);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+textarea:focus {
+  outline: none;
+  border-color: #00d2ff;
+  background: rgba(18, 25, 40, 0.95);
+  box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.2), 0 0 14px rgba(0, 210, 255, 0.25);
+}
+
+input[aria-invalid="true"],
+[data-invalid="true"] input {
+  border-color: var(--ff-negative) !important;
+  box-shadow: 0 0 0 2px rgba(255, 51, 102, 0.2), 0 0 10px rgba(255, 51, 102, 0.2) !important;
+}
+
+/* 3. Estilização Elegante de Calendários e Seletores de Data/Mês */
+input[type="date"],
+input[type="month"],
+input[type="time"] {
+  cursor: pointer;
+  position: relative;
+  letter-spacing: 0.02em;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(0.8) sepia(100%) saturate(300%) hue-rotate(130deg);
+  border-radius: 4px;
+  padding: 3px;
+  opacity: 0.85;
+  transition: filter 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="month"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  filter: invert(1) drop-shadow(0 0 6px #00d2ff);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* 4. Estilização de Entradas de Busca e Números */
+input[type="search"] {
+  padding-left: 10px;
+}
+input[type="search"]::-webkit-search-cancel-button {
+  cursor: pointer;
+  filter: invert(0.8);
+}
+
+/* 5. Dropdowns e Seleções (HeroUI Select) */
+[data-slot="trigger"] {
+  background: rgba(14, 20, 32, 0.85) !important;
+  color: var(--ff-text) !important;
+  border: 1px solid var(--ff-border) !important;
+  border-radius: 9px !important;
+  padding: 8px 12px !important;
+  font-size: 0.875rem !important;
+  min-height: 38px !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+[data-slot="trigger"]:hover {
+  border-color: rgba(0, 210, 255, 0.4) !important;
+  background: rgba(18, 25, 40, 0.9) !important;
+}
+
+[data-slot="trigger"]:focus-visible,
+[data-slot="trigger"][data-focused="true"] {
+  outline: none !important;
+  border-color: #00d2ff !important;
+  box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.2), 0 0 14px rgba(0, 210, 255, 0.25) !important;
+}
+
+/* Popover do Dropdown */
+[data-slot="popover"],
+.ff-select-popover,
+.heroui-select-popover {
+  background: rgba(10, 15, 24, 0.96) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(0, 210, 255, 0.12) !important;
+  border-radius: 11px !important;
+  padding: 6px !important;
+  z-index: 100 !important;
+}
+
+[data-slot="listbox"],
+[role="listbox"] {
+  background: transparent !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  padding: 0 !important;
+}
+
+[data-slot="listbox-item"],
+[role="option"] {
+  border-radius: 7px !important;
+  padding: 7px 11px !important;
+  font-size: 0.835rem !important;
+  color: #e2e8f0 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+[data-slot="listbox-item"]:hover,
+[role="option"]:hover,
+[data-slot="listbox-item"][data-focused="true"] {
+  background: rgba(0, 210, 255, 0.12) !important;
+  color: #00d2ff !important;
+}
+
+[data-slot="listbox-item"][aria-selected="true"],
+[role="option"][aria-selected="true"] {
+  background: rgba(0, 245, 155, 0.12) !important;
+  color: #00f59b !important;
+  font-weight: 600 !important;
+}
+
+/* 6. Checkboxes e Indicadores de Marcação */
+.ff-checkbox [data-slot="control"] {
+  border-radius: 6px !important;
+  border: 1px solid var(--ff-border) !important;
+  background: rgba(14, 20, 32, 0.85) !important;
+  transition: all 0.2s ease !important;
+}
+
+.ff-checkbox[data-selected="true"] [data-slot="control"] {
+  background: #00f59b !important;
+  border-color: #00f59b !important;
+  box-shadow: var(--neon-glow-green) !important;
+}
+
+/* 7. Modais Padronizados com Estilo Glass Obsidian */
+.ff-modal-dialog,
+[data-slot="dialog"] {
+  background: rgba(10, 15, 24, 0.94) !important;
+  backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 24px rgba(0, 210, 255, 0.15) !important;
+  border-radius: 16px !important;
+  color: var(--ff-text) !important;
+}
+
+/* 8. Alertas e Banners Unificados */
+.ff-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.865rem;
+  line-height: 1.45;
+  backdrop-filter: blur(12px);
+  margin-bottom: 14px;
+  animation: ff-fade-slide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ff-alert__icon {
+  font-weight: 800;
+  font-size: 1rem;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.ff-alert__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ff-alert--sucesso {
+  background: rgba(0, 245, 155, 0.08);
+  border: 1px solid rgba(0, 245, 155, 0.35);
+  color: #00f59b;
+  box-shadow: var(--neon-glow-green);
+}
+
+.ff-alert--aviso {
+  background: rgba(255, 184, 0, 0.08);
+  border: 1px solid rgba(255, 184, 0, 0.35);
+  color: #ffb800;
+  box-shadow: var(--neon-glow-amber);
+}
+
+.ff-alert--erro {
+  background: rgba(255, 51, 102, 0.08);
+  border: 1px solid rgba(255, 51, 102, 0.35);
+  color: #ff3366;
+  box-shadow: var(--neon-glow-pink);
+}
+
+.ff-alert--info {
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.35);
+  color: #00d2ff;
+  box-shadow: var(--neon-glow-cyan);
+}
+
+/* 9. Badges / Rótulos Neon Padronizados */
+.ff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.725rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  line-height: 1.4;
+}
+
+.ff-badge--sucesso {
+  background: rgba(0, 245, 155, 0.12);
+  color: #00f59b;
+  border-color: rgba(0, 245, 155, 0.3);
+}
+
+.ff-badge--aviso {
+  background: rgba(255, 184, 0, 0.12);
+  color: #ffb800;
+  border-color: rgba(255, 184, 0, 0.3);
+}
+
+.ff-badge--erro {
+  background: rgba(255, 51, 102, 0.12);
+  color: #ff3366;
+  border-color: rgba(255, 51, 102, 0.3);
+}
+
+.ff-badge--info {
+  background: rgba(0, 210, 255, 0.12);
+  color: #00d2ff;
+  border-color: rgba(0, 210, 255, 0.3);
+}
+
+.ff-badge--neutro {
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 10. Zona de Upload / Dropzone Padronizada */
+.ff-dropzone {
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ff-dropzone:hover,
+.ff-dropzone--has-file {
+  border-color: #00d2ff;
+  background: rgba(0, 210, 255, 0.04);
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.12);
+}
+
+.ff-dropzone__icon {
+  font-size: 1.8rem;
+  margin-bottom: 2px;
+  filter: drop-shadow(0 0 8px rgba(0, 210, 255, 0.4));
+}
+
+.ff-dropzone__title {
+  color: var(--ff-text);
+  font-size: 0.95rem;
+}
+
+.ff-dropzone__subtitle {
+  font-size: 0.8rem;
+}
+
 .ff-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .ff-actions--end { justify-content: flex-end; margin-top: 14px; }
 
@@ -531,6 +877,27 @@ h3 { font-size: 0.925rem; font-weight: 600; }
 .ff-matrix-cell:hover {
   box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
   border-color: rgba(0, 210, 255, 0.4);
+}
+.ff-matrix-cell--paid {
+  color: #00f59b !important;
+}
+.ff-matrix-cell--paid span[aria-hidden="true"] {
+  color: #00f59b;
+  text-shadow: var(--neon-glow-green);
+}
+.ff-matrix-cell--partial {
+  color: #00d2ff !important;
+}
+.ff-matrix-cell--partial span[aria-hidden="true"] {
+  color: #00d2ff;
+  text-shadow: var(--neon-glow-cyan);
+}
+.ff-matrix-cell--review {
+  color: #ffb800 !important;
+}
+.ff-matrix-cell--review span[aria-hidden="true"] {
+  color: #ffb800;
+  text-shadow: var(--neon-glow-amber);
 }
 
 /* Gráficos Neon com Barras Suaves */

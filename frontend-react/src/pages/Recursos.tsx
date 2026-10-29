@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@heroui/react'
-import { Campo, Carregando, Confirmar, Escolha, Falha, Janela, Painel, Vazio } from '../components/Controles'
+import { Alerta, Campo, Carregando, Confirmar, Escolha, Falha, Janela, Painel, Rotulo, Vazio } from '../components/Controles'
 import { Tabela } from '../components/Tabela'
 import { useFinanceiro, useGravar } from '../hooks/useFinanceiro'
 import { useSessao } from '../hooks/useSessao'
@@ -95,7 +95,7 @@ function ConteudoRecursos({ recurso }: { recurso: Recurso }) {
       <div className="ff-actions">{recurso === 'rules' && <Button variant="outline" onPress={() => definirGeracao(true)} isDisabled={!dados}>{rotulos.gerar}</Button>}
         <Button onPress={() => { salvar.reset(); definirSucesso(''); definirEdicao(null) }} isDisabled={!dados || excluir.isPending}>{texto.adicionar}</Button></div>
     </header>
-    {sucesso && <p role="status" className="ff-positive">{sucesso}</p>}
+    {sucesso && <Alerta tipo="sucesso">{sucesso}</Alerta>}
     {excluir.isError && <Falha erro={excluir.error} />}
     {carregando ? <Carregando /> : falha ? <Falha erro={falha} repetir={() => { void financeiro.refetch(); if (recurso === 'wishlist') void desejos.refetch() }} /> : <Painel>
       <div className="ff-filters"><Campo titulo={rotulos.buscar} type="search" value={busca} onChange={evento => definirBusca(evento.target.value)} />
@@ -112,7 +112,7 @@ function ConteudoRecursos({ recurso }: { recurso: Recurso }) {
             {'price' in registro && registro.url && <p><a href={registro.url} target="_blank" rel="noopener noreferrer">Ver produto ↗</a></p>}</div> },
           { id: 'tipo', titulo: recurso === 'wishlist' ? rotulos.prioridade : 'Tipo', conteudo: resumo },
           { id: 'valor', titulo: recurso === 'categories' ? 'Cor' : recurso === 'accounts' ? 'Limite' : 'Valor', conteudo: registro => <span className="ff-number">{valor(registro)}</span> },
-          { id: 'estado', titulo: rotulos.situacao, conteudo: registro => <span className="ff-status">{estado(registro)}</span> },
+          { id: 'estado', titulo: rotulos.situacao, conteudo: registro => <Rotulo tipo={estado(registro) === 'Ativa' || estado(registro) === 'Comprado' ? 'sucesso' : 'neutro'}>{estado(registro)}</Rotulo> },
           { id: 'acoes', titulo: 'Ações', conteudo: registro => <div className="ff-actions"><Button size="sm" variant="ghost" aria-label={`Editar ${nomeRegistro(registro)}`}
             isDisabled={excluir.isPending} onPress={() => { salvar.reset(); definirEdicao(registro) }}>{rotulos.editar}</Button>
             <Button size="sm" variant="ghost" aria-label={`Excluir ${nomeRegistro(registro)}`} isDisabled={excluir.isPending}

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, FieldError, Label, TextArea, TextField } from '@heroui/react'
-import { Campo, Escolha, Falha, Marcacao } from '../../components/Controles'
+import { Button } from '@heroui/react'
+import { AreaTexto, Campo, Escolha, Falha, Marcacao } from '../../components/Controles'
 import { FalhaApi } from '../../services/api'
 import { TIPOS } from '../../services/formatacao'
 import type { BootstrapResponse } from '../../types'
@@ -29,8 +29,7 @@ export function FormularioRecurso({ recurso, registro, dados, salvar, fechar }: 
       opcoes={opcoes} erro={errors[nome]?.message} disabled={isSubmitting} />} />
   }
   const textoLongo = (nome: 'descricao' | 'observacoes' | 'metadados', titulo: string) =>
-    <TextField isInvalid={!!errors[nome]} fullWidth><Label>{titulo}</Label>
-      <TextArea rows={nome === 'metadados' ? 4 : 3} {...register(nome)} /><FieldError>{errors[nome]?.message}</FieldError></TextField>
+    <AreaTexto titulo={titulo} rows={nome === 'metadados' ? 4 : 3} {...register(nome)} erro={errors[nome]?.message} />
   return <form className="ff-form" noValidate onSubmit={handleSubmit(async valores => {
     definirErro(null)
     try { await salvar(corpoFormulario(recurso, valores)) }

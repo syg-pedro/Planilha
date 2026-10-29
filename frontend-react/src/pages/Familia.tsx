@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@heroui/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Campo, Carregando, Escolha, Falha, Janela, Painel } from '../components/Controles'
+import { Alerta, Campo, Carregando, Escolha, Falha, Janela, Painel } from '../components/Controles'
 import { Tabela } from '../components/Tabela'
 import { useSessao } from '../hooks/useSessao'
 import { api } from '../services/api'
@@ -75,7 +75,8 @@ function Conteudo() {
       <Campo titulo="Código recebido" autoComplete="off" maxLength={200} required value={codigo} onChange={evento => definirCodigo(evento.target.value)} disabled={pendente} />
       <div className="ff-actions"><Button type="submit" isPending={pendente}>Aceitar convite</Button></div>
     </form></Painel>
-    {erro != null && <Falha erro={erro} />}{mensagem && <p role="status">{mensagem}</p>}
+    {erro != null && <Falha erro={erro} />}
+    {mensagem && <Alerta tipo="sucesso">{mensagem}</Alerta>}
     <Janela titulo={exclusao?.titulo ?? ''} aberta={exclusao != null} fechar={() => { if (!pendente) definirExclusao(null) }}>
       <p>{exclusao?.descricao}</p><div className="ff-actions ff-actions--end"><Button variant="tertiary" isDisabled={pendente} onPress={() => definirExclusao(null)}>Cancelar</Button>
         <Button variant="danger" isPending={pendente} onPress={() => void executar(async () => { if (!exclusao) return

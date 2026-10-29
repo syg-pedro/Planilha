@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Campo, Carregando, Falha, Painel } from '../components/Controles'
+import { Campo, Carregando, Falha, Painel, Rotulo } from '../components/Controles'
 import { Indicadores } from '../components/Indicadores'
 import { FiltrosFinanceiros } from '../components/FiltrosFinanceiros'
 import { Tabela } from '../components/Tabela'
@@ -27,7 +27,7 @@ export default function Planejamento() {
         { titulo: 'Saldo anual estimado', valor: dados.data.totals.projectedNet, detalhe: `Média dos ${dados.data.totals.recordedMonths} meses com registros` }]} />
       <Painel titulo="Mês a mês" detalhe={`${dados.data.totals.riskMonths} meses com despesas acima das receitas`}>
         <Tabela titulo="Planejamento dos doze meses" registros={dados.data.rows.map(item => ({ ...item, id: item.month }))} colunas={[
-          { id: 'month', titulo: 'Mês', conteudo: item => <strong>{item.label}{item.isCurrentMonth ? ' · Atual' : ''}</strong> },
+          { id: 'month', titulo: 'Mês', conteudo: item => <span><strong>{item.label}</strong>{item.isCurrentMonth && <> · <Rotulo tipo="info">Atual</Rotulo></>}</span> },
           { id: 'income', titulo: 'Receitas', conteudo: item => item.hasRecords ? <span className="ff-number ff-positive">{dinheiro(item.income)}</span> : '—' },
           { id: 'expense', titulo: 'Despesas', conteudo: item => item.hasRecords ? <span className="ff-number">{dinheiro(item.expense)}</span> : '—' },
           { id: 'net', titulo: 'Saldo', conteudo: item => item.hasRecords ? <strong className={`ff-number ${item.net < 0 ? 'ff-negative' : 'ff-positive'}`}>{dinheiro(item.net)}</strong> : 'Sem registros' },

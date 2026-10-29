@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@heroui/react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Carregando, Escolha, Falha, Painel } from '../../components/Controles'
+import { Alerta, Carregando, Escolha, Falha, Painel, ZonaUpload } from '../../components/Controles'
 import { Tabela } from '../../components/Tabela'
 import { api } from '../../services/api'
 import { dataCurta, dinheiro } from '../../services/formatacao'
@@ -27,18 +27,18 @@ interface Props {
 export function ImportadorCsv({ familyId, contas }: Props) {
   const cache = useQueryClient()
   const [contaId, definirContaId] = useState('')
+  const [arquivo, definirArquivo] = useState<File | null>(null)
   const [texto, definirTexto] = useState('')
-  const [nomeArquivo, definirNomeArquivo] = useState('')
   const [previa, definirPrevia] = useState<PreviaCsv | null>(null)
   const [lendo, definirLendo] = useState(false)
   const [importando, definirImportando] = useState(false)
   const [sucesso, definirSucesso] = useState<string | null>(null)
   const [falha, definirFalha] = useState<Error | string | null>(null)
 
-  const processarTexto = async (conteudo: string, nome?: string) => {
+  const processarTexto = async (conteudo: string, file: File) => {
     if (!conteudo.trim()) return
     definirTexto(conteudo)
-    if (nome) definirNomeArquivo(nome)
+    definirArquivo(file)
     definirSucesso(null)
     definirFalha(null)
     definirPrevia(null)
@@ -66,7 +66,7 @@ export function ImportadorCsv({ familyId, contas }: Props) {
     const reader = new FileReader()
     reader.onload = e => {
       const content = e.target?.result as string
-      void processarTexto(content, file.name)
+      void processarTexto(content, file)
     }
     reader.readAsText(file)
   }
@@ -85,7 +85,7 @@ export function ImportadorCsv({ familyId, contas }: Props) {
       })
       definirSucesso(`Importação concluída! ${resultado.count} lançamentos foram criados no extrato.`)
       definirTexto('')
-      definirNomeArquivo('')
+      definirArquivo(null)
       definirPrevia(null)
       await cache.invalidateQueries({ queryKey: ['lab', familyId] })
     } catch (err) {
@@ -100,7 +100,7 @@ export function ImportadorCsv({ familyId, contas }: Props) {
       titulo="Extrato Bancário ou de Cartão (.csv)"
       detalhe="Importe o extrato baixado da sua instituição financeira diretamente para a conta escolhida."
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div className="ff-form">
         <Escolha
           titulo="Vincular à conta"
           valor={contaId}
@@ -111,68 +111,35 @@ export function ImportadorCsv({ familyId, contas }: Props) {
           ]}
         />
 
-        <label
-          htmlFor="arquivo-csv-input"
-          style={{
-            border: '2px dashed rgba(255, 255, 255, 0.15)',
-            borderRadius: '12px',
-            padding: '1.5rem',
-            textAlign: 'center',
-            cursor: 'pointer',
-            background: 'rgba(255, 255, 255, 0.02)'
-          }}
-        >
-          <div style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>📄</div>
-          <strong>{nomeArquivo || 'Selecione ou arraste um arquivo .csv de extrato bancário'}</strong>
-          <input
-            id="arquivo-csv-input"
-            type="file"
-            accept=".csv,text/csv"
-            style={{ display: 'none' }}
-            onChange={selecionarArquivo}
-          />
-        </label>
+        <ZonaUpload
+          id="arquivo-csv-input"
+          accept=".csv,text/csv"
+          arquivo={arquivo}
+          aoSelecionar={selecionarArquivo}
+          titulo="Selecione ou arraste um arquivo .csv de extrato bancário"
+          subtitulo="Extrato com colunas de data, valor e descrição"
+          icone="📄"
+        />
 
         {lendo && <Carregando />}
         {falha && <Falha erro={falha} />}
-
-        {sucesso && (
-          <div
-            style={{
-              padding: '1rem',
-              borderRadius: '8px',
-              background: 'rgba(0, 245, 155, 0.12)',
-              border: '1px solid rgba(0, 245, 155, 0.35)',
-              color: '#00f59b'
-            }}
-          >
-            ✓ {sucesso}
-          </div>
-        )}
+        {sucesso && <Alerta tipo="sucesso">{sucesso}</Alerta>}
 
         {previa && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
-            <p className="ff-muted" style={{ margin: 0, fontSize: '0.875rem' }}>
+          <div className="ff-form">
+            <p className="ff-muted" style={{ margin: 0 }}>
               <strong>{previa.rows.length}</strong> transações identificadas no extrato.
             </p>
 
             {previa.warnings?.length > 0 && (
-              <div
-                style={{
-                  padding: '0.75rem 1rem',
-                  borderRadius: '8px',
-                  background: 'rgba(255, 184, 0, 0.1)',
-                  border: '1px solid rgba(255, 184, 0, 0.3)',
-                  fontSize: '0.85rem'
-                }}
-              >
-                <strong style={{ color: '#ffb800' }}>Avisos:</strong>
-                <ul style={{ margin: '0.25rem 0 0 1.25rem', padding: 0 }}>
+              <Alerta tipo="aviso">
+                <strong>Avisos:</strong>
+                <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
                   {previa.warnings.map(aviso => (
                     <li key={aviso}>{aviso}</li>
                   ))}
                 </ul>
-              </div>
+              </Alerta>
             )}
 
             <Tabela
@@ -194,13 +161,13 @@ export function ImportadorCsv({ familyId, contas }: Props) {
               ]}
             />
 
-            <div className="ff-actions" style={{ justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+            <div className="ff-actions ff-actions--end">
               <Button
                 variant="outline"
                 isDisabled={importando}
                 onPress={() => {
                   definirTexto('')
-                  definirNomeArquivo('')
+                  definirArquivo(null)
                   definirPrevia(null)
                 }}
               >

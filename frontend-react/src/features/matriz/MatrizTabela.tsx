@@ -42,11 +42,12 @@ export function MatrizTabela({ dados, onAbrirCelula }: Props) {
             conteudo: (linha: Matriz['rows'][number]) => {
               const valor = linha.cells[mes]
               const simbolo = valor?.status === 'paid' ? '✓' : valor?.status === 'partial' ? '◐' : valor?.status === 'review' ? '◇' : '○'
+              const statusClass = valor?.status ? `ff-matrix-cell--${valor.status}` : ''
               return (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="ff-matrix-cell"
+                  className={`ff-matrix-cell ${statusClass}`}
                   onPress={() => onAbrirCelula(linha, mes)}
                   aria-label={`${linha.title}, ${mesNome(mes)}: ${valor?.entries.length ? dinheiro(valor.amount) : 'adicionar lançamento'}`}
                 >

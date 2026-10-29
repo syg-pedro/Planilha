@@ -19,7 +19,7 @@ export default function Importacao() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="ff-form">
         <ImportadorXlsx familyId={sessao?.family.id} responsavel={responsavel} />
         <ImportadorCsv familyId={sessao?.family.id} contas={financeiro.data?.accounts ?? []} />
       </div>

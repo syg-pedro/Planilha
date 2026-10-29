@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@heroui/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Campo, Escolha, Falha, Marcacao } from '../../components/Controles'
+import { AreaTexto, Campo, Escolha, Falha, Marcacao } from '../../components/Controles'
 import { useFinanceiro } from '../../hooks/useFinanceiro'
 import { api } from '../../services/api'
 import { hoje, SITUACOES, TIPOS } from '../../services/formatacao'
@@ -64,7 +64,7 @@ export function EditorLancamento({ lancamento, rascunho, fechar }: { lancamento:
       <div className="ff-form-row"><Campo titulo="Parcela nº (0 = sem parcela)" type="number" min="0" {...register('installmentIndex', { valueAsNumber: true })} erro={errors.installmentIndex?.message} />
         <Campo titulo="Total de parcelas (0 = sem parcela)" type="number" min="0" {...register('installmentTotal', { valueAsNumber: true })} erro={errors.installmentTotal?.message} /></div>
       <Controller control={control} name="excludeFromCalc" render={({ field }) => <Marcacao titulo="Excluir dos totais" marcado={field.value} alterar={field.onChange} />} />
-      <Campo titulo="Observações" {...register('description')} />
+      <AreaTexto titulo="Observações" rows={2} {...register('description')} />
     </div></details>{gravar.isError && <Falha erro={gravar.error} />}
     <div className="ff-actions ff-actions--end"><Button variant="tertiary" onPress={fechar} isDisabled={gravar.isPending}>Cancelar</Button>
       <Button type="submit" isPending={gravar.isPending}>Salvar lançamento</Button></div>

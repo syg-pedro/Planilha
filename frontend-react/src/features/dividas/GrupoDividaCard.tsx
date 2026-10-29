@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@heroui/react'
-import { Painel } from '../../components/Controles'
+import { Painel, Rotulo } from '../../components/Controles'
 import { Tabela } from '../../components/Tabela'
 import { dataCurta, dinheiro } from '../../services/formatacao'
 import type { Dividas, FinanceEntry } from '../../types'
@@ -49,7 +49,11 @@ export function GrupoDividaCard({ grupo, onAlternarSituacao, pendente }: Props) 
             {
               id: 'status',
               titulo: 'Situação',
-              conteudo: item => item.status === 'paid' ? 'Pago / recebido' : item.status === 'review' ? 'Revisar' : 'Pendente'
+              conteudo: item => (
+                <Rotulo tipo={item.status === 'paid' ? 'sucesso' : item.status === 'review' ? 'aviso' : 'neutro'}>
+                  {item.status === 'paid' ? '✓ Pago / recebido' : item.status === 'review' ? '◇ Revisar' : '○ Pendente'}
+                </Rotulo>
+              )
             },
             {
               id: 'actions',

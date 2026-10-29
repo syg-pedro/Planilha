@@ -1,4 +1,5 @@
 import { Button } from '@heroui/react'
+import { Rotulo } from '../../components/Controles'
 import { Tabela } from '../../components/Tabela'
 import { dataCurta, dinheiro } from '../../services/formatacao'
 import type { Account, Category, FinanceEntry } from '../../types'
@@ -73,9 +74,9 @@ export function TabelaLancamentos({
             id: 'status',
             titulo: 'Situação',
             conteudo: item => (
-              <span className="ff-status">
+              <Rotulo tipo={item.status === 'paid' ? 'sucesso' : item.status === 'review' ? 'aviso' : 'neutro'}>
                 {item.status === 'paid' ? '✓ Pago / recebido' : item.status === 'review' ? '◇ Revisar' : '○ Pendente'}
-              </span>
+              </Rotulo>
             )
           },
           {
