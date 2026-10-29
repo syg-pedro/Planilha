@@ -60,15 +60,19 @@ export function ImportadorCsv({ familyId, contas }: Props) {
     }
   }
 
-  const selecionarArquivo = (evento: React.ChangeEvent<HTMLInputElement>) => {
-    const file = evento.target.files?.[0]
-    if (!file) return
+  const carregarArquivoCsv = (file: File) => {
     const reader = new FileReader()
     reader.onload = e => {
       const content = e.target?.result as string
       void processarTexto(content, file)
     }
     reader.readAsText(file)
+  }
+
+  const selecionarArquivo = (evento: React.ChangeEvent<HTMLInputElement>) => {
+    const file = evento.target.files?.[0]
+    if (!file) return
+    carregarArquivoCsv(file)
   }
 
   const executarImportacao = async () => {
@@ -116,6 +120,7 @@ export function ImportadorCsv({ familyId, contas }: Props) {
           accept=".csv,text/csv"
           arquivo={arquivo}
           aoSelecionar={selecionarArquivo}
+          onArquivoSolto={carregarArquivoCsv}
           titulo="Selecione ou arraste um arquivo .csv de extrato bancário"
           subtitulo="Extrato com colunas de data, valor e descrição"
           icone="📄"

@@ -47,8 +47,8 @@ export function EditorLancamento({ lancamento, rascunho, fechar }: { lancamento:
     { value: 'none', label: vazio }, ...(financeiro.data?.[tipo] ?? []).map(item => ({ value: item.id, label: item.name }))
   ]
   return <form className="ff-form" noValidate onSubmit={handleSubmit(dados => gravar.mutate(dados))}>
-    <Campo titulo="Descrição" {...register('title')} erro={errors.title?.message} autoFocus />
-    <div className="ff-form-row"><Campo titulo="Valor (R$)" type="number" min="0" step="0.01" inputMode="decimal"
+    <Campo titulo="Descrição" placeholder="Ex: Supermercado, Aluguel, Salário..." {...register('title')} erro={errors.title?.message} autoFocus />
+    <div className="ff-form-row"><Campo titulo="Valor (R$)" type="number" min="0" step="0.01" inputMode="decimal" placeholder="0,00"
       {...register('amount', { valueAsNumber: true })} erro={errors.amount?.message} />
       <Campo titulo="Vencimento / recebimento" type="date" {...register('dueDate')} erro={errors.dueDate?.message} /></div>
     <div className="ff-form-row"><Controller control={control} name="kind" render={({ field }) => <Escolha titulo="Tipo" valor={field.value} alterar={field.onChange} opcoes={TIPOS} />} />
@@ -59,12 +59,12 @@ export function EditorLancamento({ lancamento, rascunho, fechar }: { lancamento:
         alterar={valor => field.onChange(valor === 'none' ? '' : valor)} opcoes={referencias('categories', 'Sem categoria')} />} /></div>
     <details className="ff-details"><summary>Competência, repetição e outros detalhes</summary><div className="ff-form">
       <div className="ff-form-row"><Campo titulo="Competência" type="date" {...register('competenceDate')} erro={errors.competenceDate?.message} />
-        {!lancamento && <Campo titulo="Repetir por quantos meses?" type="number" min="1" max="120" {...register('months', { valueAsNumber: true })} erro={errors.months?.message} />}</div>
+        {!lancamento && <Campo titulo="Repetir por quantos meses?" type="number" min="1" max="120" placeholder="1" {...register('months', { valueAsNumber: true })} erro={errors.months?.message} />}</div>
       {!lancamento && <p className="ff-muted">O valor informado se repete por mês. Os próximos lançamentos ficam pendentes.</p>}
-      <div className="ff-form-row"><Campo titulo="Parcela nº (0 = sem parcela)" type="number" min="0" {...register('installmentIndex', { valueAsNumber: true })} erro={errors.installmentIndex?.message} />
-        <Campo titulo="Total de parcelas (0 = sem parcela)" type="number" min="0" {...register('installmentTotal', { valueAsNumber: true })} erro={errors.installmentTotal?.message} /></div>
+      <div className="ff-form-row"><Campo titulo="Parcela nº (0 = sem parcela)" type="number" min="0" placeholder="Ex: 1" {...register('installmentIndex', { valueAsNumber: true })} erro={errors.installmentIndex?.message} />
+        <Campo titulo="Total de parcelas (0 = sem parcela)" type="number" min="0" placeholder="Ex: 12" {...register('installmentTotal', { valueAsNumber: true })} erro={errors.installmentTotal?.message} /></div>
       <Controller control={control} name="excludeFromCalc" render={({ field }) => <Marcacao titulo="Excluir dos totais" marcado={field.value} alterar={field.onChange} />} />
-      <AreaTexto titulo="Observações" rows={2} {...register('description')} />
+      <AreaTexto titulo="Observações" rows={2} placeholder="Anotações opcionais sobre o lançamento..." {...register('description')} />
     </div></details>{gravar.isError && <Falha erro={gravar.error} />}
     <div className="ff-actions ff-actions--end"><Button variant="tertiary" onPress={fechar} isDisabled={gravar.isPending}>Cancelar</Button>
       <Button type="submit" isPending={gravar.isPending}>Salvar lançamento</Button></div>

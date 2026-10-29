@@ -39,9 +39,9 @@ function Formulario({ settings, responsavel }: { settings: HouseholdSettings; re
       </div><div className="ff-form-row">
         <Escolha titulo="Período financeiro" valor={valores.periodo} alterar={valor => alterar('periodo', valor as Preferencias['periodo'])} disabled={bloqueado}
           opcoes={[{ value: 'due_date', label: 'Vencimento' }, { value: 'competence', label: 'Competência' }]} />
-        <Campo titulo="Horizonte em meses" type="number" min={1} max={120} value={valores.horizonte} onChange={evento => alterar('horizonte', evento.target.value)} erro={erros.horizonte} disabled={bloqueado} />
+        <Campo titulo="Horizonte em meses" type="number" min={1} max={120} placeholder="12" value={valores.horizonte} onChange={evento => alterar('horizonte', evento.target.value)} erro={erros.horizonte} disabled={bloqueado} />
       </div>{valores.tema === 'custom' && <div className="ff-form-row">{pt.cores.map(cor =>
-        <Campo key={cor.value} titulo={cor.label} value={valores.cores[cor.value]} maxLength={7} disabled={bloqueado}
+        <Campo key={cor.value} titulo={cor.label} value={valores.cores[cor.value]} maxLength={7} placeholder="#00f59b" disabled={bloqueado}
           onChange={evento => alterar('cores', { ...valores.cores, [cor.value]: evento.target.value })} />)}</div>}
       {erros.cores && <p role="alert" className="ff-error">{erros.cores}</p>}</div>
     </Painel>
@@ -55,7 +55,7 @@ function Formulario({ settings, responsavel }: { settings: HouseholdSettings; re
           alterar={marcado => alterar('widgets', marcado ? [...valores.widgets, widget.value] : valores.widgets.filter(id => id !== widget.value))} />)}</fieldset>
     </div></Painel>
     <Painel titulo="Avisos no navegador" detalhe={pt.notificacoes}><div className="ff-form">
-      <div className="ff-form-row"><Campo titulo="Dias de antecedência (separados por vírgula)" value={valores.dias} disabled={bloqueado}
+      <div className="ff-form-row"><Campo titulo="Dias de antecedência (separados por vírgula)" placeholder="Ex: 1, 3, 7" value={valores.dias} disabled={bloqueado}
         onChange={evento => alterar('dias', evento.target.value)} erro={erros.dias} />
       <Campo titulo="Horário" type="time" value={valores.horario} disabled={bloqueado} onChange={evento => alterar('horario', evento.target.value)} erro={erros.horario} /></div>
       <p className="ff-muted">{!avisos.suportado ? 'Este navegador não oferece notificações neste contexto.' : avisos.permissao === 'granted' ? 'Permissão concedida neste navegador.' : avisos.permissao === 'denied' ? 'Permissão bloqueada. Altere nas configurações do navegador.' : 'A permissão ainda não foi solicitada.'}</p>

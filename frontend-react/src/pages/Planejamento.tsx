@@ -18,7 +18,7 @@ export default function Planejamento() {
   const dados = useQuery({ queryKey: ['lab', sessao?.family.id, 'annual-plan', ano, filtros],
     queryFn: () => api<DadosPlanejamento>(`/api/reports/annual-plan${consulta({ ...filtros, year: ano })}`), enabled: /^\d{4}$/.test(ano) })
   return <><div className="ff-page-title"><div><h1>Um plano para o ano.</h1><p>Veja os meses com registros e antecipe os próximos passos.</p></div>
-    <Campo titulo="Ano do planejamento" type="number" min="1" max="9999" value={ano} onChange={evento => definirAno(evento.target.value)} /></div>
+    <Campo titulo="Ano do planejamento" type="number" min="2000" max="2099" placeholder="Ex: 2026" value={ano} onChange={evento => definirAno(evento.target.value)} /></div>
     <Painel><FiltrosFinanceiros filtros={filtros} alterar={definirFiltros} prefixo="Planejamento: " /></Painel>
     {dados.isPending ? <Carregando /> : dados.isError ? <Falha erro={dados.error} repetir={() => { void dados.refetch() }} /> : <>
       <Indicadores itens={[{ titulo: 'Receitas cadastradas', valor: dados.data.totals.totalIncome, tipo: 'positivo' },

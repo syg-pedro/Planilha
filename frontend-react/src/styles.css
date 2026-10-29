@@ -410,6 +410,43 @@ h3 { font-size: 0.925rem; font-weight: 600; }
   color: var(--ff-cyan);
 }
 
+.ff-field__password-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.ff-field__password-wrapper input {
+  padding-right: 42px !important;
+}
+
+.ff-password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--ff-muted);
+  cursor: pointer;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.ff-password-toggle:hover {
+  color: var(--ff-cyan);
+  background: rgba(0, 210, 255, 0.1);
+  filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.5));
+}
+
 .ff-field__hint {
   font-size: 0.75rem;
   color: var(--ff-muted);
@@ -500,6 +537,40 @@ input[type="search"] {
 input[type="search"]::-webkit-search-cancel-button {
   cursor: pointer;
   filter: invert(0.8);
+}
+
+/* 4.1 Seletor de Cores (Paleta e Swatch) */
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 48px !important;
+  height: 38px !important;
+  padding: 3px !important;
+  border: 1px solid var(--ff-border) !important;
+  border-radius: 9px !important;
+  background: rgba(14, 20, 32, 0.85) !important;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+input[type="color"]:hover {
+  border-color: rgba(0, 210, 255, 0.5) !important;
+  transform: translateY(-1px);
+}
+
+input[type="color"]:focus {
+  border-color: #00d2ff !important;
+  box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.2), 0 0 12px rgba(0, 210, 255, 0.35) !important;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
 }
 
 /* 5. Dropdowns e Seleções (HeroUI Select) */
@@ -718,6 +789,13 @@ input[type="search"]::-webkit-search-cancel-button {
   border-color: #00d2ff;
   background: rgba(0, 210, 255, 0.04);
   box-shadow: 0 0 20px rgba(0, 210, 255, 0.12);
+}
+
+.ff-dropzone--drag {
+  border-color: #00f59b !important;
+  background: rgba(0, 245, 155, 0.08) !important;
+  box-shadow: 0 0 24px rgba(0, 245, 155, 0.25) !important;
+  transform: scale(1.01);
 }
 
 .ff-dropzone__icon {

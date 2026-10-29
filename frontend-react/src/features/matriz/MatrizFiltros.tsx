@@ -90,6 +90,7 @@ export function MatrizFiltros({
         <Campo
           titulo="Buscar na planilha"
           type="search"
+          placeholder="Filtrar por descrição..."
           value={busca}
           onChange={evento => definirBusca(evento.target.value)}
         />

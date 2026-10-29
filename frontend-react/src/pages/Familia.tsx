@@ -57,7 +57,7 @@ function Conteudo() {
           <Button size="sm" variant="danger" isDisabled={pendente} onPress={() => definirExclusao({ caminho: `/api/families/members/${encodeURIComponent(membro.userId)}`, titulo: 'Remover pessoa', descricao: `${membro.name} perderá o acesso aos dados desta família.` })}>Remover</Button> : '—' }
       ]} />}</Painel>
     {responsavel && <Painel titulo={pt.convites} detalhe={pt.semEmail}><div className="ff-form">
-      <form className="ff-form" onSubmit={convidar}><div className="ff-form-row"><Campo titulo="E-mail da pessoa convidada" type="email" maxLength={254} required value={email} onChange={evento => definirEmail(evento.target.value)} disabled={pendente} />
+      <form className="ff-form" onSubmit={convidar}><div className="ff-form-row"><Campo titulo="E-mail da pessoa convidada" type="email" placeholder="convidado@exemplo.com" maxLength={254} required value={email} onChange={evento => definirEmail(evento.target.value)} disabled={pendente} />
         <Escolha titulo="Acesso" valor={papel} alterar={definirPapel} disabled={pendente} opcoes={[{ value: 'member', label: 'Membro' }, { value: 'owner', label: 'Responsável' }]} /></div>
         <div className="ff-actions"><Button type="submit" isPending={pendente}>Criar convite</Button></div></form>
       {novoConvite && <div className="ff-form" role="status"><p>{pt.token}</p><Campo titulo="Código do convite" value={novoConvite.token} readOnly />
@@ -72,7 +72,7 @@ function Conteudo() {
         ]} />}
     </div></Painel>}
     <Painel titulo="Entrar em outra família" detalhe={pt.entrada}><form className="ff-form" onSubmit={aceitar}>
-      <Campo titulo="Código recebido" autoComplete="off" maxLength={200} required value={codigo} onChange={evento => definirCodigo(evento.target.value)} disabled={pendente} />
+      <Campo titulo="Código recebido" placeholder="Cole o código do convite aqui..." autoComplete="off" maxLength={200} required value={codigo} onChange={evento => definirCodigo(evento.target.value)} disabled={pendente} />
       <div className="ff-actions"><Button type="submit" isPending={pendente}>Aceitar convite</Button></div>
     </form></Painel>
     {erro != null && <Falha erro={erro} />}

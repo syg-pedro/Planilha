@@ -6,7 +6,7 @@ import type { Filtros } from '../types'
 export function FiltrosFinanceiros({ filtros, alterar, prefixo = '' }: { filtros: Filtros; alterar: (filtros: Filtros) => void; prefixo?: string }) {
   const financeiro = useFinanceiro()
   const mudar = (campo: keyof Filtros, valor: string) => alterar({ ...filtros, [campo]: valor })
-  return <div className="ff-filters"><Campo titulo={`${prefixo}Buscar descrição`} type="search" value={filtros.search ?? ''} onChange={evento => mudar('search', evento.target.value)} />
+  return <div className="ff-filters"><Campo titulo={`${prefixo}Buscar descrição`} type="search" placeholder="Filtrar por descrição..." value={filtros.search ?? ''} onChange={evento => mudar('search', evento.target.value)} />
     <Campo titulo={`${prefixo}De`} type="date" value={filtros.from ?? ''} onChange={evento => mudar('from', evento.target.value)} />
     <Campo titulo={`${prefixo}Até`} type="date" value={filtros.to ?? ''} onChange={evento => mudar('to', evento.target.value)} />
     <Escolha titulo={`${prefixo}Critério`} valor={filtros.periodMode ?? 'due_date'} alterar={valor => mudar('periodMode', valor)}

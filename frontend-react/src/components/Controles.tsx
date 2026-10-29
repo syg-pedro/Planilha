@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ComponentProps, ReactNode } from 'react'
 import {
   Button,
@@ -39,6 +40,52 @@ export function Campo({
     </TextField>
   )
 }
+
+// ----------------------------------------------------------------------------
+// ENTRADA DE SENHA COM TOGGLE DE VISIBILIDADE (USABILIDADE)
+// ----------------------------------------------------------------------------
+
+export function CampoSenha({
+  titulo,
+  erro,
+  dica,
+  className = '',
+  ...propriedades
+}: ComponentProps<typeof Input> & {
+  titulo: string
+  erro?: string
+  dica?: string
+}) {
+  const [visivel, definirVisivel] = useState(false)
+
+  return (
+    <TextField isInvalid={!!erro} fullWidth className={`ff-field ${className}`}>
+      <Label>{titulo}</Label>
+      <div className="ff-field__password-wrapper">
+        <Input
+          {...propriedades}
+          type={visivel ? 'text' : 'password'}
+        />
+        <button
+          type="button"
+          tabIndex={-1}
+          className="ff-password-toggle"
+          onClick={() => definirVisivel(v => !v)}
+          aria-label={visivel ? 'Ocultar senha' : 'Ver senha'}
+          title={visivel ? 'Ocultar senha' : 'Ver senha'}
+        >
+          {visivel ? '🙈' : '👁'}
+        </button>
+      </div>
+      {dica && !erro && <p className="ff-field__hint">{dica}</p>}
+      <FieldError>{erro}</FieldError>
+    </TextField>
+  )
+}
+
+// ----------------------------------------------------------------------------
+// ÁREA DE TEXTO MULTILINHA
+// ----------------------------------------------------------------------------
 
 export function AreaTexto({
   titulo,
@@ -366,7 +413,7 @@ export function ValorMoeda({
 }
 
 // ----------------------------------------------------------------------------
-// ZONA DE UPLOAD / DROPZONE DE ARQUIVOS
+// ZONA DE UPLOAD COM SUPORTE COMPLETO A DRAG & DROP
 // ----------------------------------------------------------------------------
 
 export function ZonaUpload({
@@ -374,6 +421,7 @@ export function ZonaUpload({
   accept,
   arquivo,
   aoSelecionar,
+  onArquivoSolto,
   titulo,
   subtitulo,
   icone = '📄',
@@ -383,22 +431,54 @@ export function ZonaUpload({
   accept: string
   arquivo: File | null
   aoSelecionar: (evento: React.ChangeEvent<HTMLInputElement>) => void
+  onArquivoSolto?: (file: File) => void
   titulo: string
   subtitulo?: string
   icone?: string
   className?: string
 }) {
+  const [arrastando, definirArrastando] = useState(false)
+
+  const aoArrastarSobre = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    definirArrastando(true)
+  }
+
+  const aoSairArrasto = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    definirArrastando(false)
+  }
+
+  const aoSoltar = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    definirArrastando(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file && onArquivoSolto) {
+      onArquivoSolto(file)
+    }
+  }
+
   return (
-    <label htmlFor={id} className={`ff-dropzone ${arquivo ? 'ff-dropzone--has-file' : ''} ${className}`}>
+    <label
+      htmlFor={id}
+      className={`ff-dropzone ${arquivo ? 'ff-dropzone--has-file' : ''} ${arrastando ? 'ff-dropzone--drag' : ''} ${className}`}
+      onDragOver={aoArrastarSobre}
+      onDragEnter={aoArrastarSobre}
+      onDragLeave={aoSairArrasto}
+      onDrop={aoSoltar}
+    >
       <span className="ff-dropzone__icon" aria-hidden="true">
         {icone}
       </span>
       <strong className="ff-dropzone__title">
-        {arquivo ? arquivo.name : titulo}
+        {arrastando ? 'Solte o arquivo para carregar!' : arquivo ? arquivo.name : titulo}
       </strong>
       {subtitulo && (
         <span className="ff-dropzone__subtitle ff-muted">
-          {arquivo ? `${(arquivo.size / 1024).toFixed(1)} KB selecionado` : subtitulo}
+          {arrastando ? 'Solte para iniciar a validação' : arquivo ? `${(arquivo.size / 1024).toFixed(1)} KB selecionado` : subtitulo}
         </span>
       )}
       <input

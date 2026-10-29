@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@heroui/react'
-import { Campo, Carregando, Falha } from '../components/Controles'
+import { Campo, CampoSenha, Carregando, Falha } from '../components/Controles'
 import { useSessao } from '../hooks/useSessao'
 import { FalhaApi } from '../services/api'
 
@@ -37,11 +37,39 @@ export default function Acesso() {
       try { if (cadastro) await cadastrar(dados); else await entrar(dados.email, dados.password) }
       catch (falha) { definirErro(falha instanceof FalhaApi && falha.status === 401 ? new Error('E-mail ou senha inválidos.') : falha) }
     })} className="ff-form">
-      {cadastro && <Campo titulo="Seu nome" autoComplete="name" {...register('name')} erro={errors.name?.message} />}
-      {cadastro && <Campo titulo="Nome da família" autoComplete="organization" {...register('familyName')} erro={errors.familyName?.message} />}
-      <Campo titulo="E-mail" type="email" autoComplete="email" {...register('email')} erro={errors.email?.message} />
-      <Campo titulo="Senha" type="password" autoComplete={cadastro ? 'new-password' : 'current-password'}
-        {...register('password')} erro={errors.password?.message} />
+      {cadastro && (
+        <Campo
+          titulo="Seu nome"
+          placeholder="Ex: Pedro Silva"
+          autoComplete="name"
+          {...register('name')}
+          erro={errors.name?.message}
+        />
+      )}
+      {cadastro && (
+        <Campo
+          titulo="Nome da família"
+          placeholder="Ex: Família Silva"
+          autoComplete="organization"
+          {...register('familyName')}
+          erro={errors.familyName?.message}
+        />
+      )}
+      <Campo
+        titulo="E-mail"
+        type="email"
+        placeholder="seu.email@exemplo.com"
+        autoComplete="email"
+        {...register('email')}
+        erro={errors.email?.message}
+      />
+      <CampoSenha
+        titulo="Senha"
+        placeholder={cadastro ? 'Mínimo de 8 caracteres' : 'Digite sua senha'}
+        autoComplete={cadastro ? 'new-password' : 'current-password'}
+        {...register('password')}
+        erro={errors.password?.message}
+      />
       {erro != null && <Falha erro={erro} />}
       <Button type="submit" fullWidth isPending={isSubmitting}>{cadastro ? 'Criar minha conta' : 'Entrar'}</Button>
     </form><p className="ff-access__switch">{cadastro ? 'Já tem uma conta?' : 'Primeiro acesso?'}{' '}

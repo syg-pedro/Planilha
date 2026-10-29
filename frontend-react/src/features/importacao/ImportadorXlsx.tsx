@@ -43,9 +43,7 @@ export function ImportadorXlsx({ familyId, responsavel }: Props) {
     }
   }
 
-  const selecionarArquivo = async (evento: React.ChangeEvent<HTMLInputElement>) => {
-    const file = evento.target.files?.[0]
-    if (!file) return
+  const processarArquivo = async (file: File) => {
     definirArquivo(file)
     definirSucesso(null)
     definirFalha(null)
@@ -71,6 +69,12 @@ export function ImportadorXlsx({ familyId, responsavel }: Props) {
     } finally {
       definirLendo(false)
     }
+  }
+
+  const selecionarArquivo = async (evento: React.ChangeEvent<HTMLInputElement>) => {
+    const file = evento.target.files?.[0]
+    if (!file) return
+    await processarArquivo(file)
   }
 
   const executarImportacao = async () => {
@@ -113,6 +117,7 @@ export function ImportadorXlsx({ familyId, responsavel }: Props) {
           accept=".xlsx"
           arquivo={arquivo}
           aoSelecionar={selecionarArquivo}
+          onArquivoSolto={processarArquivo}
           titulo="Clique ou arraste sua planilha (.xlsx)"
           subtitulo="Aceita arquivos Microsoft Excel compatíveis com o modelo oficial"
           icone="📊"
