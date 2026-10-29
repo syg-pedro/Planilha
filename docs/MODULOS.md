@@ -1,4 +1,4 @@
-# Módulos do Financeiro Familiar
+# Módulos do Planilha
 
 Documentação de todos os módulos implementados — estado atual, fonte de dados, e funcionalidades.
 

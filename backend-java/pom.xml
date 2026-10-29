@@ -9,7 +9,7 @@
   <groupId>com.financeiro</groupId>
   <artifactId>financeiro-lab</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Financeiro Familiar Lab</name>
+  <name>Planilha Lab</name>
   <properties>
     <java.version>21</java.version>
   </properties>

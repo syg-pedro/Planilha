@@ -15,7 +15,7 @@ export function useNotificacoes() {
   }
   const testar = () => {
     if (suportado && Notification.permission === 'granted') {
-      try { new Notification('Financeiro familiar', { body: 'Os avisos deste navegador estão habilitados.' }) }
+      try { new Notification('Planilha', { body: 'Os avisos deste navegador estão habilitados.' }) }
       catch { definirFalha(true) }
     }
   }

@@ -1,4 +1,4 @@
-# Script de verificacao continua local do Laboratorio Java + React
+# Script de verificacao continua local do Laboratorio Planilha (Java + React)
 # Executa a esteira de qualidade local sem invocar servicos remotos, deploys ou credenciais reais.
 param(
     [switch]$PularTestesPesados
@@ -10,7 +10,7 @@ $pastaJava = Join-Path $raiz 'backend-java'
 $pastaReact = Join-Path $raiz 'frontend-react'
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "    LABORATORIO FINANCEIRO FAMILIAR - CI LOCAL INDEPENDENTE" -ForegroundColor Cyan
+Write-Host "         PLANILHA - CI LOCAL INDEPENDENTE" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # 1. Configurar variaveis de sessao para Java

@@ -1,4 +1,4 @@
-# Auditoria do Financeiro Familiar
+# Auditoria do Planilha
 
 Data: 28/10/2026. Base: `origin/main`, commit `c0eb7655560ae8dd0a303fe35b5f20e5bfb3b5a0`.
 Branch do laboratório: `feat/react-springboot`.

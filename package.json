@@ -1,8 +1,8 @@
 {
-  "name": "financeiro-familiar",
+  "name": "planilha",
   "version": "2.0.0",
   "private": true,
-  "description": "Plataforma de Finanças Familiares - Migrado para Spring Boot 3 + Java 21 e React 19 + HeroUI + Dark Neon",
+  "description": "Plataforma Planilha - Migrado para Spring Boot 3 + Java 21 e React 19 + HeroUI + Dark Neon",
   "scripts": {
     "dev": "npm --prefix frontend-react run dev",
     "dev:front": "npm --prefix frontend-react run dev",

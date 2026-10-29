@@ -1,5 +1,5 @@
 // ============================================================================
-// TIPOS DE DOMÍNIO - LABORATÓRIO FINANCEIRO FAMILIAR (JAVA + REACT)
+// TIPOS DE DOMÍNIO - PLANILHA (JAVA + REACT)
 // ============================================================================
 
 export type ThemeMode = 'light' | 'dark' | 'custom' | 'system'

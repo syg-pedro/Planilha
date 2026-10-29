@@ -25,7 +25,7 @@ export default function Acesso() {
   if (carregando) return <Carregando />
   if (sessao) return <Navigate to="/" replace />
   return <main className="ff-access"><aside className="ff-access__story">
-    <Link className="ff-brand" to="/login"><span aria-hidden="true">f.</span>Financeiro Familiar</Link>
+    <Link className="ff-brand" to="/login"><span aria-hidden="true">p.</span>Planilha</Link>
     <div><p className="ff-eyebrow">UM PLANO PARA CADA MÊS</p><h1>Seu mês,<br /><em>em dia.</em></h1>
       <p>Contas, compromissos e planos. Um lugar para cuidar do que vem pela frente.</p></div>
     <p className="ff-access__foot">Organização compartilhada. Decisões mais claras.</p>

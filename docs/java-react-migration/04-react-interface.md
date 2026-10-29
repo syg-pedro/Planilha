@@ -1,6 +1,6 @@
 # Contrato de interface React
 
-Direção: ferramenta financeira de uso diário, com leitura de valores como em um livro-caixa. Nome Financeiro Familiar. Componentes de interação HeroUI v3; React19, Tailwind4 e estilos oficiais conforme [instalação](https://heroui.com/en/docs/react/getting-started/quick-start). Referências funcionais são as telas originais do projeto; não copiar branding externo. O layout proposto será verificado no navegador antes de considerar a interface pronta.
+Direção: ferramenta financeira de uso diário, com leitura de valores como em um livro-caixa. Nome Planilha. Componentes de interação HeroUI v3; React19, Tailwind4 e estilos oficiais conforme [instalação](https://heroui.com/en/docs/react/getting-started/quick-start). Referências funcionais são as telas originais do projeto; não copiar branding externo. O layout proposto será verificado no navegador antes de considerar a interface pronta.
 
 ## Hierarquia e aparência
 

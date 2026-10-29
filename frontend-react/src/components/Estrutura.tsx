@@ -29,7 +29,7 @@ export default function Estrutura() {
   const tema = useGravar<Pick<HouseholdSettings, 'themeMode' | 'densityMode' | 'colorTokens'>>('/api/settings/theme')
   const preferencias = financeiro.data?.settings
   const caminho = useLocation().pathname
-  const pagina = grupos.flatMap(grupo => grupo.paginas).find(([rota]) => rota === caminho)?.[1] ?? 'Financeiro Familiar'
+  const pagina = grupos.flatMap(grupo => grupo.paginas).find(([rota]) => rota === caminho)?.[1] ?? 'Planilha'
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const aplicar = () => {
@@ -82,7 +82,7 @@ export default function Estrutura() {
 
     if (proximos.length > 0) {
       try {
-        new Notification('Financeiro Familiar: Vencimentos Próximos', {
+        new Notification('Planilha: Vencimentos Próximos', {
           body: proximos.length === 1
             ? `O lançamento "${proximos[0].title}" vence em breve.`
             : `Você tem ${proximos.length} lançamentos com vencimento próximo.`
@@ -94,11 +94,11 @@ export default function Estrutura() {
   if (carregando) return <Carregando />
   if (!sessao) return <Navigate to="/login" replace />
   return <div className="ff-app"><a href="#conteudo" className="ff-skip">Pular para o conteúdo</a>
-    <aside className="ff-sidebar"><NavLink className="ff-brand" to="/"><span aria-hidden="true">f.</span><span>Financeiro<br />Familiar</span></NavLink>
+    <aside className="ff-sidebar"><NavLink className="ff-brand" to="/"><span aria-hidden="true">p.</span><span>Planilha</span></NavLink>
       <Navegacao /><div className="ff-sidebar__foot"><span className="ff-tag">Ambiente local</span><p>Seu dinheiro merece atenção.</p></div></aside>
     <div className="ff-workspace"><header className="ff-topbar"><div className="ff-mobile-menu"><Button variant="outline" aria-label="Abrir navegação" onPress={() => definirMenuAberto(true)}>☰</Button>
       <Modal.Backdrop isOpen={menuAberto} onOpenChange={definirMenuAberto}><Modal.Container placement="top"><Modal.Dialog><Modal.CloseTrigger aria-label="Fechar navegação" />
-        <Modal.Header><Modal.Heading>Financeiro Familiar</Modal.Heading></Modal.Header><Modal.Body><Navegacao fechar={() => definirMenuAberto(false)} /></Modal.Body>
+        <Modal.Header><Modal.Heading>Planilha</Modal.Heading></Modal.Header><Modal.Body><Navegacao fechar={() => definirMenuAberto(false)} /></Modal.Body>
       </Modal.Dialog></Modal.Container></Modal.Backdrop></div>
       <div className="ff-topbar__family"><span className="ff-eyebrow">SUA FAMÍLIA</span><strong>{sessao.family.name}</strong></div>
       <div className="ff-topbar__actions"><Button variant="ghost" size="sm" aria-label="Alternar tema" isDisabled={!preferencias}
@@ -108,6 +108,6 @@ export default function Estrutura() {
     </header><main id="conteudo" className="ff-main" tabIndex={-1}><div className="ff-breadcrumb">Sua organização <span aria-hidden="true">/</span> {pagina}</div>
       {erro != null && <Falha erro={erro} />}{tema.isError && <Falha erro={tema.error} />}
       {financeiro.isError ? <Falha erro={financeiro.error} repetir={() => { void financeiro.refetch() }} /> : financeiro.isPending ? <Carregando /> : <Outlet />}
-    </main><footer className="ff-footer">Financeiro Familiar <span>Um mês de cada vez.</span></footer></div>
+    </main><footer className="ff-footer">Planilha <span>Um mês de cada vez.</span></footer></div>
   </div>
 }

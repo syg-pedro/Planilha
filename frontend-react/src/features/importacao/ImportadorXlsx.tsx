@@ -33,7 +33,7 @@ export function ImportadorXlsx({ familyId, responsavel }: Props) {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = 'modelo-financeiro-familiar.xlsx'
+      link.download = 'modelo-planilha.xlsx'
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
