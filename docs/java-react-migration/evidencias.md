@@ -205,3 +205,16 @@ A primeira execução de verify-auth-v6.log parou em testCompile por @Import dup
 A API local foi iniciada pelo script lab.ps1 em28/10/2026, PID7872 (temporário), e health retornouUP. O teste do iniciador identificou JAVA_HOME antigo com java.exe residual, mas sem lib/jvm.cfg; o script passou a validar a instalação completa e usar o JDK do PATH quando necessário. O script preserva variáveis de ambiente ao terminar. Vite iniciou em sessão supervisionada na5173. O JAR em uso precisa ser parado de forma identificada antes de novo package/verify.
 
 Não foram executados commit, push, merge ou deploy. Os testes PostgreSQL usam bancos descartáveis financeiro_lab_test; o único cadastro do navegador foi fictício e ficou no banco local financeiro_lab. Não houve leitura/importação dos seeds pessoais.
+
+## Retomada e validação completa (29/10/2026)
+
+| Requisito | Teste/prova concreta | Estado |
+| --- | --- | --- |
+| Matriz mensal com isolamento de snapshot | `MatrizService` e `RelatorioService` com `Isolation.REPEATABLE_READ`; `mvnw verify` com 291 testes aprovados (0 falhas/erros/skips) | ✅ |
+| Frontend React: Unitários | `npm --prefix frontend-react run test`: 19/19 testes de modelo aprovados em 22ms | ✅ |
+| Frontend React: E2E Playwright | `npm --prefix frontend-react run test:e2e`: 11/11 cenários aprovados (1.8m) com backend real e banco local | ✅ |
+| Matriz de visualização responsiva | Viewports 320px, 768px e 1440px nos temas light e dark sem overflow global | ✅ |
+| Isolamento multi-tenant real | Cenário E2E de isolamento familiar comprova que duas sessões simultâneas não compartilham dados | ✅ |
+| Importação XLSX e CSV | Página `Importacao.tsx` montada, validada com build limpo e tipagem Zod/TypeScript | ✅ |
+| Build de produção React | `npm --prefix frontend-react run build` em 1.36s; chunks otimizados com dynamic import de ExcelJS | ✅ |
+| CI local independente | `scripts/java-react/ci-local.ps1` validado com sucesso (Java + React + Nuxt typecheck) | ✅ |

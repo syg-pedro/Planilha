@@ -11,11 +11,12 @@ import com.financeiro.contas.ContaService;
 import com.financeiro.lancamentos.LancamentoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
 public class RelatorioService {
     private final LancamentoService lancamentos;
     private final ContaService contas;

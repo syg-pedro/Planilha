@@ -33,17 +33,64 @@ export default function Estrutura() {
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const aplicar = () => {
-      const modo = preferencias?.themeMode ?? 'system'
-      const escuro = modo === 'dark' || (modo === 'system' && media.matches)
-      document.documentElement.classList.toggle('dark', escuro)
-      document.documentElement.classList.toggle('light', !escuro)
-      document.documentElement.dataset.theme = escuro ? 'dark' : 'light'
+      const modo = preferencias?.themeMode ?? 'dark'
       document.documentElement.dataset.density = preferencias?.densityMode ?? 'comfortable'
-      document.documentElement.style.setProperty('--ff-custom-accent', preferencias?.colorTokens.primary ?? '')
+      if (modo === 'custom' && preferencias?.colorTokens) {
+        document.documentElement.dataset.theme = 'custom'
+        document.documentElement.classList.remove('dark', 'light')
+        document.documentElement.style.setProperty('--ff-custom-bg', preferencias.colorTokens.background)
+        document.documentElement.style.setProperty('--ff-custom-surface', preferencias.colorTokens.card)
+        document.documentElement.style.setProperty('--ff-custom-text', preferencias.colorTokens.neutral)
+        document.documentElement.style.setProperty('--ff-custom-positive', preferencias.colorTokens.positive)
+        document.documentElement.style.setProperty('--ff-custom-negative', preferencias.colorTokens.negative)
+        document.documentElement.style.setProperty('--ff-custom-accent', preferencias.colorTokens.accent || preferencias.colorTokens.primary)
+      } else {
+        const escuro = modo === 'dark' || (modo === 'system' ? true : media.matches)
+        document.documentElement.classList.toggle('dark', escuro)
+        document.documentElement.classList.toggle('light', !escuro)
+        document.documentElement.dataset.theme = escuro ? 'dark' : 'light'
+        document.documentElement.style.removeProperty('--ff-custom-bg')
+        document.documentElement.style.removeProperty('--ff-custom-surface')
+        document.documentElement.style.removeProperty('--ff-custom-text')
+        document.documentElement.style.removeProperty('--ff-custom-positive')
+        document.documentElement.style.removeProperty('--ff-custom-negative')
+        document.documentElement.style.setProperty('--ff-custom-accent', preferencias?.colorTokens?.primary ?? '')
+      }
     }
     aplicar(); media.addEventListener('change', aplicar)
     return () => media.removeEventListener('change', aplicar)
   }, [preferencias])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') return
+    const lancamentos = financeiro.data?.entries
+    const diasAviso = preferencias?.notificationDays
+    if (!lancamentos?.length || !diasAviso?.length) return
+
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+    const hojeIso = hoje.toISOString().slice(0, 10)
+    const chaveArmazenamento = `ff-notif-${hojeIso}`
+    if (sessionStorage.getItem(chaveArmazenamento)) return
+
+    const pendentes = lancamentos.filter(l => l.status === 'pending')
+    const proximos = pendentes.filter(l => {
+      const dataVenc = new Date(l.dueDate + 'T00:00:00')
+      const diffDias = Math.round((dataVenc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+      return diasAviso.includes(diffDias)
+    })
+
+    if (proximos.length > 0) {
+      try {
+        new Notification('Financeiro Familiar: Vencimentos Próximos', {
+          body: proximos.length === 1
+            ? `O lançamento "${proximos[0].title}" vence em breve.`
+            : `Você tem ${proximos.length} lançamentos com vencimento próximo.`
+        })
+        sessionStorage.setItem(chaveArmazenamento, 'true')
+      } catch { }
+    }
+  }, [financeiro.data?.entries, preferencias?.notificationDays])
   if (carregando) return <Carregando />
   if (!sessao) return <Navigate to="/login" replace />
   return <div className="ff-app"><a href="#conteudo" className="ff-skip">Pular para o conteúdo</a>
