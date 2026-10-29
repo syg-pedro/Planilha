@@ -1,7 +1,0 @@
-/* Nuxt UI owns semantic colors, radius and typography; legacy DS aliases follow it. */
-:root { --ui-header-height: 3rem; }
-body { color: var(--ui-text); }
-.finance-control { min-height: var(--ds-control-height); font-size: var(--ds-control-font-size); }
-@media (max-width: 767px) {
-  [data-slot='input'], [data-slot='textarea'] { font-size: 16px; }
-}

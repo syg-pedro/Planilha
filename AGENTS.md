@@ -1,86 +1,99 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+This file provides guidance to AI coding assistants when working with code in this repository.
+
+## Modern Stack Architecture (Java 21 + Spring Boot 3 & React 19 + Vite)
+
+The legacy Nuxt 3 / Vue / Nitro implementation has been completely migrated to a high-performance, modular full-stack architecture:
+
+- **Backend (`backend-java/`)**: Java 21, Spring Boot 3.4.5, Spring Security (JWT multi-tenant), Spring Data JPA, Flyway migrations, PostgreSQL 17, and Testcontainers.
+- **Frontend (`frontend-react/`)**: React 19, TypeScript, Vite, HeroUI, Tailwind CSS, TanStack Query, Lucide Icons, and Dark Neon theme.
+- **Local Infrastructure (`infra/`)**: Docker Compose for PostgreSQL 17.
+- **Automation (`scripts/java-react/`)**: Local CI pipeline script (`ci-local.ps1`).
+
+---
 
 ## Commands
 
 ```bash
-npm run dev          # dev server at http://localhost:3000/?key=demo-finance-key
-npm run build        # production build
-npm run preview      # preview production build
-npm run test         # run all Vitest tests (also runs nuxt prepare first)
-npm run test:watch   # vitest in watch mode
-npm run typecheck    # Vue + TypeScript type checking
-npm run lint         # ESLint
-npm run lint:fix     # ESLint with auto-fix
-npm run storybook    # Storybook on port 6006
+# Frontend development server (http://localhost:5173)
+npm run dev
+
+# Frontend production build
+npm run build:front
+
+# Frontend unit tests (Vitest)
+npm run test:front
+
+# Frontend end-to-end tests (Playwright)
+npm run test:e2e
+
+# Backend unit & integration tests (Maven + Testcontainers PostgreSQL)
+npm run test:back
+npm run verify:back
+
+# Unified local CI check
+npm run ci
 ```
 
-To run a single test file:
-```bash
-npx vitest run tests/parser.test.ts
-```
+---
 
-## Architecture
-
-### Persistence layer
-
-`server/utils/repo.ts` exports `getRepository()`, which returns either a Supabase repo or an in-memory repo depending on whether `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` env vars are set. The in-memory repo seeds itself from `dados.txt` (parsed by `shared/parser.ts`). All server API routes use this abstraction exclusively.
-
-### `dados.txt` seed format
-
-`dados.txt` is a plain-text natural-language file that `shared/parser.ts` parses into accounts, categories, rules, and entries. Card sections (lines containing "sicredi", "itau final 8235", "nubank limite", etc.) set an installment context; subsequent lines with month abbreviations create installment entries. Default seed data is hardcoded in `shared/defaultDadosText.ts` as fallback for serverless environments.
-
-### Finance rules → entries
-
-`shared/rules.ts` contains `buildEntriesFromRules()`, which generates `FinanceEntry` records from `FinanceRule` records that have `autoGenerate: true` and `frequency: 'monthly'`. The server runs this on bootstrap and exposes `/api/rules/rebuild` to regenerate them.
-
-### Authentication
-
-No login. Every API route (`server/utils/auth.ts`) checks `?key=` against `EDIT_KEY` (default: `demo-finance-key`). The frontend reads it from the URL on startup via the Pinia store.
-
-### Frontend layer structure
+## Directory & Package Structure
 
 ```
-app/design-system/styles/   ← CSS variables (--ds-*), never hardcode hex in components
-app/components/base/        ← feature-agnostic primitives (BaseButton, BasePanel, etc.)
-app/features/finance/       ← all finance UI: components, stores, composables, constants
-app/pages/                  ← thin route wrappers (orchestration only)
-app/stores/ + app/composables/  ← compat re-exports pointing into features
-shared/                     ← types, pure business logic, no Vue/Nuxt imports
-server/                     ← Nitro API routes + utils
+.
+├── backend-java/               # Spring Boot 3.4.5 + Java 21 REST API
+│   ├── src/main/java/com/financeiro/
+│   │   ├── auth/               # Security, JWT, Multi-tenant HouseholdContext
+│   │   ├── cadastros/          # Accounts, Categories, Rules, WishItems
+│   │   ├── lancamentos/        # FinanceEntry, Installments, Mutations
+│   │   ├── relatorios/         # Matrix, Monthly Projections, Debts, Cashflow
+│   │   ├── onboarding/         # Excel (.xlsx) & CSV statement import engine
+│   │   └── infra/              # Exceptions, audit, OpenAPI, CORS configuration
+│   ├── src/main/resources/db/migration/ # Flyway SQL migrations (PostgreSQL 17)
+│   ├── pom.xml
+│   └── mvnw.cmd
+├── frontend-react/             # React 19 + HeroUI + Tailwind + Dark Neon
+│   ├── src/
+│   │   ├── components/         # Reusable UI primitives (Controles, Tabela, Indicadores, Estrutura)
+│   │   ├── features/           # Domain-driven feature modules:
+│   │   │   ├── auth/           # Login, Signup, Session management
+│   │   │   ├── dividas/        # Debt groups, installment tracking cards
+│   │   │   ├── importacao/     # ExcelJS model generator & CSV import components
+│   │   │   ├── lancamentos/    # Entries table, quick settlement, drawer editor
+│   │   │   ├── matriz/         # Financial matrix grid, filters, month summaries, cell modal
+│   │   │   ├── painel/         # Dashboard KPI cards, cashflow & category charts
+│   │   │   ├── planejamento/   # Annual projections & risk calculations
+│   │   │   ├── preferencias/   # Density, notifications, dark neon theme settings
+│   │   │   └── recursos/       # Account, Category, Rule, and Wishlist management
+│   │   ├── hooks/              # Custom React hooks (useFinanceiro, useSessao, useAlterarLancamento)
+│   │   ├── pages/              # Thin page orchestrators (Planilha, Lancamentos, Painel, etc.)
+│   │   ├── services/           # HTTP API client, date/currency formatting utilities
+│   │   ├── types.ts            # Fully self-contained TypeScript domain types
+│   │   ├── App.tsx             # Route definitions with lazy loading
+│   │   └── styles.css          # Dark Neon CSS tokens and animations
+│   ├── e2e/                    # Playwright end-to-end integration tests
+│   ├── public/                 # Static assets, favicons, brand graphics
+│   ├── package.json
+│   └── vite.config.ts
+├── infra/
+│   └── docker-compose.lab.yml  # Local PostgreSQL 17 test environment
+├── scripts/
+│   └── java-react/ci-local.ps1 # Local continuous verification script
+└── package.json                # Root workspace script runner
 ```
 
-Use `#shared/` alias to import from `shared/` inside the `app/` directory (e.g., `import type { FinanceEntry } from '#shared/types'`).
+---
 
-### ESLint architectural boundaries
+## Architectural Rules & Conventions
 
-`eslint-plugin-boundaries` enforces import rules. Violations are errors. Key rules:
-- `feature` can only import from `base`, `design-system`, `shared`, and its **own** feature folder
-- `base` can only import from `design-system` and `shared`
-- `server` can only import from `shared` and `server`
-- `shared` can only import from `shared`
-- Stories and Storybook config are exempt from boundary rules
-
-### State management
-
-All finance state lives in `app/features/finance/stores/useFinanceStore.ts`. Components do not call APIs directly — use store actions. Theme switching is done via `applyTheme` store action, which writes `--ds-*` CSS variables onto `document.documentElement`.
-
-### Supabase integration
-
-- Server-side: `server/utils/supabase/server.ts` (cookie-aware SSR client)
-- Client-side: `app/utils/supabase/client.ts` (browser client)
-- DB schema: `supabase/migrations/0001_init.sql`
-- DB rows use `snake_case`; TypeScript types use `camelCase` — `repo.ts` handles all mapping
-
-## Environment variables
-
-| Variable | Purpose |
-|---|---|
-| `EDIT_KEY` | Auth key for all API routes (default: `demo-finance-key`) |
-| `SUPABASE_URL` | Supabase project URL (also `NUXT_PUBLIC_SUPABASE_URL`) |
-| `SUPABASE_SERVICE_KEY` | Service role key for server (also `SUPABASE_SECRET_KEY`) |
-| `NUXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key for client-side Supabase |
-| `DATA_FILE_PATH` | Custom path to `dados.txt`; defaults to `<cwd>/dados.txt` |
-
-Copy `.env.example` to `.env` to get started. Without Supabase vars the app runs entirely in memory with auto-seeded data.
+1. **Isolation**:
+   - Backend queries and mutations strictly enforce tenant isolation through `HouseholdContext`.
+   - Never bypass tenant boundaries.
+2. **Frontend Componentization**:
+   - Page components in `src/pages/` must remain thin orchestrators (under ~100 lines).
+   - Domain logic and UI presentation belong to `src/features/<feature>/`.
+   - UI primitives and layout belong to `src/components/`.
+3. **Styling**:
+   - Dark Neon is the default theme (`#07090e` obsidian background, glassmorphism, glowing accents `#00f59b`, `#00d2ff`, `#ff3366`, `#ffb800`).
+   - Use CSS classes prefixed with `ff-` and Tailwind classes. Do not hardcode arbitrary ad-hoc inline colors.

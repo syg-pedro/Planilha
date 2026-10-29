@@ -1,5 +1,5 @@
-# Script de verificação contínua local do Laboratório Java + React
-# Executa a esteira de qualidade local sem invocar serviços remotos, deploys ou credenciais reais.
+# Script de verificacao continua local do Laboratorio Java + React
+# Executa a esteira de qualidade local sem invocar servicos remotos, deploys ou credenciais reais.
 param(
     [switch]$PularTestesPesados
 )
@@ -10,16 +10,16 @@ $pastaJava = Join-Path $raiz 'backend-java'
 $pastaReact = Join-Path $raiz 'frontend-react'
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "    LABORATÓRIO FINANCEIRO FAMILIAR - CI LOCAL INDEPENDENTE" -ForegroundColor Cyan
+Write-Host "    LABORATORIO FINANCEIRO FAMILIAR - CI LOCAL INDEPENDENTE" -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-# 1. Configurar variáveis de sessão para Java
+# 1. Configurar variaveis de sessao para Java
 Write-Host "`n[1/4] Configurando ambiente local Java..." -ForegroundColor Yellow
-$javaComando = Get-Command java -ErrorAction SilentlyContinue
-if (!$env:JAVA_HOME -or !(Test-Path -LiteralPath (Join-Path $env:JAVA_HOME 'bin/java.exe'))) {
-    if (Test-Path 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot') {
-        $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
-    } elseif ($javaComando) {
+if (Test-Path 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot') {
+    $env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot'
+} elseif (!$env:JAVA_HOME -or !(Test-Path -LiteralPath (Join-Path $env:JAVA_HOME 'bin/java.exe'))) {
+    $javaComando = Get-Command java -ErrorAction SilentlyContinue
+    if ($javaComando) {
         $env:JAVA_HOME = Split-Path (Split-Path $javaComando.Source -Parent) -Parent
     }
 }
@@ -27,16 +27,16 @@ $temporarioJava = Join-Path $env:SystemDrive 'dev/planilha-java-tmp'
 New-Item -ItemType Directory -Path $temporarioJava -Force | Out-Null
 $env:JAVA_TOOL_OPTIONS = "-Djdk.net.unixdomain.tmpdir=$temporarioJava -Djava.io.tmpdir=$temporarioJava"
 
-# 2. Compilar e empacotar backend Java
+# 2. Compilar e testar backend Java
 Write-Host "`n[2/4] Verificando backend Spring Boot - Java 21..." -ForegroundColor Yellow
 Push-Location $pastaJava
 try {
     if ($PularTestesPesados) {
-        & ./mvnw.cmd package -DskipTests -B -ntp
+        & ./mvnw.cmd test-compile -B -ntp
     } else {
-        & ./mvnw.cmd verify -B -ntp
+        & ./mvnw.cmd test -B -ntp
     }
-    if ($LASTEXITCODE -ne 0) { throw "Falha na compilação/testes do backend Java." }
+    if ($LASTEXITCODE -ne 0) { throw "Falha na compilacao/testes do backend Java." }
     Write-Host "Backend Java validado com sucesso!" -ForegroundColor Green
 } finally {
     Pop-Location
@@ -53,18 +53,17 @@ try {
     Pop-Location
 }
 
-# 4. Typecheck de segurança do Nuxt
-Write-Host "`n[4/4] Verificando integridade de tipos do Nuxt..." -ForegroundColor Yellow
-Push-Location $raiz
+# 4. Testes unitarios do Frontend React
+Write-Host "`n[4/4] Executando testes unitarios do Frontend React..." -ForegroundColor Yellow
+Push-Location $pastaReact
 try {
-    & npm run typecheck
-    if ($LASTEXITCODE -ne 0) { throw "Falha no typecheck do Nuxt." }
-    Write-Host "Tipos do Nuxt validados com sucesso!" -ForegroundColor Green
+    & npm run test
+    if ($LASTEXITCODE -ne 0) { throw "Falha nos testes unitarios do frontend React." }
+    Write-Host "Testes unitarios do Frontend React aprovados com sucesso!" -ForegroundColor Green
 } finally {
     Pop-Location
 }
 
 Write-Host "`n==========================================================" -ForegroundColor Green
-Write-Host "  TODAS AS VERIFICAÇÕES DO LABORATÓRIO FORAM CONCLUÍDAS COM SUCESSO!" -ForegroundColor Green
+Write-Host "  TODAS AS VERIFICACOES DO LABORATORIO FORAM CONCLUIDAS COM SUCESSO!" -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
-
