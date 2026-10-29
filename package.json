@@ -11,6 +11,7 @@
     "test:e2e": "npm --prefix frontend-react run test:e2e",
     "test:back": "powershell -NoProfile -Command \"Set-Location backend-java; .\\mvnw.cmd test -B -ntp\"",
     "verify:back": "powershell -NoProfile -Command \"Set-Location backend-java; .\\mvnw.cmd verify -B -ntp\"",
+    "seed:local": "node scripts/java-react/seed-teste.mjs",
     "ci": "powershell -ExecutionPolicy Bypass -File scripts/java-react/ci-local.ps1",
     "cap": "powershell -NoProfile -Command \"Set-Location frontend-react; npx cap\"",
     "cap:sync": "powershell -NoProfile -Command \"Set-Location frontend-react; npx cap sync\"",
