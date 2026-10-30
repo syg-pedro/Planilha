@@ -61,13 +61,6 @@
       <BaseButton
         variant="ghost"
         class="planilha-toolbar__advanced"
-        :aria-pressed="selecting"
-        @click="$emit('select')"
-        >{{ selecting ? 'Concluir seleção' : 'Selecionar células' }}</BaseButton
-      >
-      <BaseButton
-        variant="ghost"
-        class="planilha-toolbar__advanced"
         :aria-pressed="expanded"
         @click="$emit('expand')"
         >{{ expanded ? 'Reduzir' : 'Ampliar' }}</BaseButton
@@ -80,7 +73,6 @@
         <BaseDropdown v-model="query.kind" label="Tipo" :options="kindOptions" wrap />
         <BaseDropdown v-model="query.status" label="Status" :options="statusOptions" wrap />
         <BaseDropdown v-model="query.accountId" label="Conta" :options="accountOptions" wrap />
-        <UCheckbox v-if="!compact && query.presentation === 'matrix'" :model-value="metadata" label="Mostrar limites e totais por linha" class="planilha-toolbar__check" @update:model-value="$emit('metadata', $event === true)" />
         <BaseButton variant="ghost" @click="$emit('clear')">Limpar filtros</BaseButton>
       </UCard>
       </template>
@@ -98,15 +90,11 @@ const props = defineProps<{
   todayMonth: string
   focusMonth: string
   compact: boolean
-  selecting: boolean
   expanded: boolean
-  metadata: boolean
 }>()
 const emit = defineEmits<{
   create: []
-  select: []
   expand: []
-  metadata: [value: boolean]
   clear: []
   focusMonth: [month: string]
 }>()
@@ -206,18 +194,8 @@ const filterCount = computed(
 }
 .planilha-toolbar__filters { width: 100%; min-width: 0; }
 .planilha-toolbar__filters :deep(.planilha-toolbar__filter-grid) { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; gap: var(--ds-space-4); }
-.planilha-toolbar__check {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  grid-column: span 3;
-  color: var(--text2);
-  font-size: 12px;
-  min-height: 32px;
-}
 @media (min-width: 768px) and (max-width: 1023px) {
   .planilha-toolbar__filters :deep(.planilha-toolbar__filter-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .planilha-toolbar__check { grid-column: 1 / -1; }
 }
 @media (max-width: 767px) {
   .planilha-toolbar {
@@ -264,8 +242,5 @@ const filterCount = computed(
     order: 4;
   }
   .planilha-toolbar__filters :deep(.planilha-toolbar__filter-grid) { grid-template-columns: minmax(0, 1fr); }
-  .planilha-toolbar__check {
-    grid-column: 1 / -1;
-  }
 }
 </style>
