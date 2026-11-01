@@ -141,3 +141,8 @@
 }
 :root:not(.dark) .text-success { color: var(--ds-text-success); }
 :root:not(.dark) .text-error { color: var(--ds-text-danger); }
+
+/* Botões sólidos verdes do tema padrão: branco sobre o verde 500 fica em 2.4:1; texto escuro passa de 8:1. */
+:root[data-ui-preset="default"]:not(.dark) :is(.bg-primary, .bg-success).text-inverted {
+  color: var(--ui-color-neutral-900);
+}
