@@ -27,7 +27,7 @@
           <UDashboardNavbar :title="currentItemLabel" :toggle="false" :ui="{ root: 'h-12 px-3 sm:px-4 gap-2', title: 'text-base' }">
             <template #right>
               <UButton :to="linkTo('alerts')" icon="i-lucide-bell" color="neutral" variant="ghost" :aria-label="alertCount ? `Alertas: ${alertCount} ativo(s)` : 'Alertas'" title="Alertas" class="app-header-action relative">
-                <template v-if="alertCount" #trailing><UBadge :label="alertCount > 99 ? '99+' : alertCount" color="error" size="xs" class="absolute -top-0.5 -end-0.5 min-w-4 justify-center px-1" /></template>
+                <template v-if="alertCount" #trailing><UBadge :label="alertCount > 99 ? '99+' : alertCount" color="error" size="sm" class="absolute -top-0.5 -end-0.5 min-w-4 justify-center px-1" /></template>
               </UButton>
               <UButton icon="i-lucide-circle-help" color="neutral" variant="ghost" title="Ajuda desta tela" aria-label="Ajuda desta tela" class="app-header-action" @click="helpMenuOpen = true" />
             </template>

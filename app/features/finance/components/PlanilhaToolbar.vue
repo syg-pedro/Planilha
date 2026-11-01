@@ -47,7 +47,7 @@
       :aria-expanded="filtersOpen"
       aria-controls="planilha-filters"
       @click="filtersOpen = !filtersOpen"
-      >Filtros<UBadge v-if="filterCount" color="primary" variant="subtle" size="xs">{{ filterCount }}</UBadge></BaseButton
+      >Filtros<UBadge v-if="filterCount" color="primary" variant="subtle" size="md">{{ filterCount }}</UBadge></BaseButton
     >
     <BaseButton
       variant="ghost"

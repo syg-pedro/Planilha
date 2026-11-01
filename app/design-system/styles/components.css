@@ -32,7 +32,13 @@
 
 .ds-field::placeholder {
   color: var(--ds-color-text-muted);
-  opacity: 0.8;
+}
+
+/* Nuxt UI usa o tom "dimmed" no placeholder, abaixo de 4.5:1 no tema escuro. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--ui-text-muted) !important;
+  opacity: 1;
 }
 
 .ds-field:focus {

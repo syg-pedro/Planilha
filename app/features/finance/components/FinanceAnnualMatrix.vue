@@ -23,8 +23,18 @@
       >
       <span v-if="filtered">{{ entries.length }} lançamento(s) no resultado · totais filtrados</span>
     </div>
+    <UAlert
+      v-if="overdue.length"
+      color="error"
+      variant="subtle"
+      icon="i-lucide-circle-alert"
+      :title="`${overdue.length === 1 ? '1 lançamento vencido' : `${overdue.length} lançamentos vencidos`} sem pagamento · ${fmt(overdueTotal)}`"
+      description="Ficam em meses anteriores e não entram em Falta pagar deste período."
+      :actions="[{ label: 'Ver vencidos', color: 'neutral', variant: 'outline', onClick: showOverdue }]"
+    />
     <FinancePeriodSummary
       :totals="totals"
+      :period="periodLabel"
       :label="filtered ? 'Resumo dos resultados filtrados' : 'Resumo do período'"
     />
     <UCollapsible v-if="filtered" class="planilha__general">
@@ -130,6 +140,17 @@ const store = useFinanceStore(),
 const toast = useToast()
 const { query, months, entries, periodEntries, filtered, todayMonth, clearFilters, compact } = usePlanilhaQuery()
 const { formatDate } = useDateFormat()
+const { format: fmt } = useCurrency()
+const todayDate = new Intl.DateTimeFormat('en-CA', { timeZone: store.settings.timezone || 'America/Sao_Paulo' }).format(new Date())
+const overdue = computed(() =>
+  store.entries.filter((entry) => entry.kind === 'expense' && entry.status !== 'paid' && entry.dueDate < todayDate)
+)
+const overdueTotal = computed(() => sumMoney(overdue.value.map((entry) => entry.amount)))
+// Abre a Lista a partir do vencido mais antigo, só com pendentes.
+function showOverdue() {
+  const first = overdue.value.reduce((min, entry) => (entry.dueDate < min ? entry.dueDate : min), todayDate)
+  query.value = { ...query.value, month: first.slice(0, 7), range: 'year', status: 'pending', dateMode: 'due_date', presentation: 'list' }
+}
 const expanded = ref(false)
 const focusMonth = useState(`planilha-focus:${store.settings.id}`, () => query.value.month)
 const model = computed(() =>
@@ -405,7 +426,7 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
   gap: 8px 16px;
   color: var(--text3);
-  font-size: 11px;
+  font-size: 12px;
 }
 .planilha__general {
   color: var(--text2);
@@ -421,7 +442,7 @@ onBeforeUnmount(() => {
     gap: 10px;
   }
   .planilha__context {
-    font-size: 10px;
+    font-size: 12px;
   }
 }
 </style>

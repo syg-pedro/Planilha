@@ -25,7 +25,7 @@
           class="period-summary__pending-value tabular-nums text-highlighted"
         >{{ format(totals.pendingExpense) }}</strong>
         <p class="text-xs text-muted">
-          {{ totals.pendingExpense > 0 ? 'Despesas ainda não pagas.' : 'Nenhuma despesa pendente.' }}
+          {{ totals.pendingExpense > 0 ? 'Despesas ainda não pagas' : 'Nenhuma despesa pendente' }}{{ period ? ` em ${period}` : '' }}.
         </p>
       </UCard>
       <dl class="period-summary__metrics">
@@ -38,7 +38,7 @@
           <dd class="font-semibold tabular-nums text-highlighted">{{ format(totals.expense) }}</dd>
         </div>
         <div>
-          <dt class="text-xs text-muted">Sobra prevista</dt>
+          <dt class="text-xs text-muted">Sobra prevista{{ period ? ` · ${period}` : '' }}</dt>
           <dd class="font-semibold tabular-nums" :class="totals.net < 0 ? 'text-error' : 'text-success'">{{ format(totals.net) }}</dd>
         </div>
       </dl>
@@ -66,6 +66,8 @@ defineProps<{
     settledNet: number
   }
   label: string
+  /** Período coberto pelos totais, para não confundir com o total de outras telas. */
+  period?: string
 }>()
 const { format } = useCurrency()
 const moreOpen = ref(false)

@@ -249,10 +249,10 @@ export const parseDadosText = (text: string): ParsedSeed => {
 
   const catIncome = addCategory(categories, categoryMap, 'Receitas', 'income', '#16a34a')
   const catMoradia = addCategory(categories, categoryMap, 'Moradia', 'expense', '#dc2626')
-  const catServicos = addCategory(categories, categoryMap, 'Servicos', 'expense', '#f97316')
+  const catServicos = addCategory(categories, categoryMap, 'Serviços', 'expense', '#f97316')
   const catEnergia = addCategory(categories, categoryMap, 'Energia', 'expense', '#eab308')
-  const catCartoes = addCategory(categories, categoryMap, 'Cartoes', 'expense', '#0ea5e9')
-  const catEducacao = addCategory(categories, categoryMap, 'Educacao', 'expense', '#8b5cf6')
+  const catCartoes = addCategory(categories, categoryMap, 'Cartões', 'expense', '#0ea5e9')
+  const catEducacao = addCategory(categories, categoryMap, 'Educação', 'expense', '#8b5cf6')
   const catParcelaExterna = addCategory(categories, categoryMap, 'Parcela externa', 'expense', '#ef4444')
 
   const pedroConta = addAccount(accounts, accountMap, 'Conta Pedro', 'Pedro', 'bank')

@@ -77,7 +77,7 @@ export const WIDGET_OPTIONS = [
   { id: 'cashflow', label: 'Fluxo de caixa' },
   { id: 'projection', label: 'Projecao 18 meses' },
   { id: 'category', label: 'Categorias' },
-  { id: 'cards', label: 'Cartoes' },
+  { id: 'cards', label: 'Cartões' },
   { id: 'limits', label: 'Limites' },
   { id: 'heatmap', label: 'Heatmap' },
   { id: 'upcoming', label: 'Proximos vencimentos' }

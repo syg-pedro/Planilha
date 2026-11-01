@@ -178,5 +178,5 @@ async function add() {
 .muted { color: var(--text3); margin: 0; }
 .cell-entries__new { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--ds-space-3); align-items: end; padding: var(--ds-space-5); background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); }
 .cell-entries__new h3 { grid-column: 1 / -1; margin: 0; font-size: 14px; color: var(--text); }
-.cell-entries__error { grid-column: 1 / -1; margin: 0; color: var(--danger); font-size: 12px; }
+.cell-entries__error { grid-column: 1 / -1; margin: 0; color: var(--ds-text-danger); font-size: 12px; }
 </style>

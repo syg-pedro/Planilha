@@ -1,12 +1,12 @@
 <template>
 <div class="space-y-4">
-    <header class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-base font-semibold text-highlighted">Alertas</h2><p class="mt-1 text-xs text-muted">{{ activeAlerts.length }} alerta(s) ativo(s)</p></div><BaseButton v-if="activeAlerts.length" variant="secondary" size="sm" @click="dismissAll">Dispensar todos</BaseButton></header>
+    <header class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-base font-semibold text-highlighted">Alertas</h2><p class="mt-1 text-xs text-muted">{{ activeAlerts.length === 1 ? '1 alerta ativo' : `${activeAlerts.length} alertas ativos` }}</p></div><BaseButton v-if="activeAlerts.length" variant="secondary" size="sm" @click="dismissAll">Dispensar todos</BaseButton></header>
     <BaseEmptyState v-if="!activeAlerts.length" icon="check" title="Nenhum alerta" body="Não há alertas ativos neste momento." />
     <UAlert v-for="alert in activeAlerts" :key="alert.id" :color="alert.tone === 'danger' ? 'error' : alert.tone" variant="subtle" :title="alert.title" :description="alert.body" :icon="alert.tone === 'success' ? appConfig.ui.icons.success : appConfig.ui.icons.warning" :close="true" @update:open="dismiss(alert.id)">
       <template v-if="alert.sub" #description><p>{{ alert.body }}</p><p class="mt-1 text-xs">{{ alert.sub }}</p></template>
-      <template v-if="isClickable(alert)" #actions><BaseButton variant="ghost" size="sm" @click="onAlertClick(alert)">{{ alert.entryId ? 'Abrir lançamento →' : 'Ver na Planilha →' }}</BaseButton></template>
+      <template v-if="isClickable(alert)" #actions><BaseButton variant="ghost" size="sm" @click="onAlertClick(alert)">{{ alert.entryId ? 'Abrir lançamento →' : alert.navigateTo === 'cartoes' ? 'Ver cartões →' : 'Ver na Planilha →' }}</BaseButton></template>
     </UAlert>
-    <BaseButton v-if="dismissedCount" variant="ghost" @click="restoreAll">Restaurar {{ dismissedCount }} alerta(s) dispensado(s)</BaseButton>
+    <BaseButton v-if="dismissedCount" variant="ghost" @click="restoreAll">Restaurar {{ dismissedCount === 1 ? '1 alerta dispensado' : `${dismissedCount} alertas dispensados` }}</BaseButton>
   </div>
 </template>
 

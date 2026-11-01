@@ -4,13 +4,13 @@
     <UCard :ui="{ body: 'p-0 sm:p-0' }">
       <template #header><div class="flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-sm font-semibold text-highlighted">Planejamento {{ year }}</h3><p class="mt-1 text-xs text-muted">Por {{ store.settings.periodMode === 'competence' ? 'competência' : 'vencimento' }} · benefícios e itens fora do cálculo não entram.</p></div><div class="flex items-center gap-2"><BaseButton variant="ghost" aria-label="Ano anterior" @click="year--">‹</BaseButton><span class="text-sm font-medium tabular-nums">{{ year }}</span><BaseButton variant="ghost" aria-label="Próximo ano" @click="year++">›</BaseButton></div></div></template>
       <UTable :data="yearRows" :columns="planningColumns" :ui="{ th: 'text-xs px-3 py-2', td: 'text-xs px-3 py-2' }">
-        <template #label-cell="{ row }"><span class="font-medium text-highlighted">{{ row.original.label }}</span><UBadge v-if="row.original.isCurrentMonth" class="ml-2" size="xs" variant="subtle">Atual</UBadge></template>
+        <template #label-cell="{ row }"><span class="font-medium text-highlighted">{{ row.original.label }}</span><UBadge v-if="row.original.isCurrentMonth" class="ml-2" size="md" variant="subtle">Atual</UBadge></template>
         <template #income-cell="{ row }"><span class="text-success tabular-nums">{{ row.original.hasRecords ? fmt(row.original.income) : '—' }}</span></template>
         <template #expense-cell="{ row }"><span class="text-error tabular-nums">{{ row.original.hasRecords ? fmt(row.original.expense) : '—' }}</span></template>
         <template #net-cell="{ row }"><span :class="row.original.net < 0 ? 'text-error' : 'text-success'" class="tabular-nums">{{ row.original.hasRecords ? fmt(row.original.net) : '—' }}</span></template>
         <template #net-footer><span :class="annualKpis.totalNet < 0 ? 'text-error' : 'text-success'">{{ fmt(annualKpis.totalNet) }}</span></template>
         <template #accumulated-cell="{ row }"><span class="tabular-nums" :class="row.original.accumulated < 0 ? 'text-error' : 'text-default'">{{ row.original.hasRecords ? fmt(row.original.accumulated) : '—' }}</span></template>
-        <template #status-cell="{ row }"><UBadge v-if="row.original.hasRecords" :color="row.original.net < 0 ? 'error' : 'success'" variant="subtle" size="xs">{{ row.original.net < 0 ? 'Déficit' : 'Superávit' }}</UBadge><span v-else class="text-muted">Sem registros</span></template>
+        <template #status-cell="{ row }"><UBadge v-if="row.original.hasRecords" :color="row.original.net < 0 ? 'error' : 'success'" variant="subtle" size="md">{{ row.original.net < 0 ? 'Déficit' : 'Superávit' }}</UBadge><span v-else class="text-muted">Sem registros</span></template>
       </UTable>
     </UCard>
     <UAlert color="info" variant="subtle" title="Como a estimativa é calculada" :description="`A média dos ${annualKpis.recordedMonths} meses com registros é aplicada aos meses sem registros. Não cria lançamentos nem prevê o saldo bancário. A tabela mostra somente valores cadastrados.`" />

@@ -214,7 +214,7 @@ test.describe('fluxos da Planilha após a refatoração', () => {
     expect(paid.entries.find(entry => entry.id === created!.id)).toMatchObject({ status: 'paid', competenceDate: '2026-09-20' })
     await expect(row.getByText('Pago', { exact: true })).toBeVisible()
     await expect(pendingAmount).toHaveText('R$ 0,00')
-    await expect(pendingSummary).toContainText('Nenhuma despesa pendente.')
+    await expect(pendingSummary).toContainText(/Nenhuma despesa pendente em .+\./)
     const restored = await savedBatch(page, () => page.locator('.planilha-toast[data-state="open"]').getByRole('button', { name: 'Desfazer', exact: true }).click())
     expect(restored.entries.find(entry => entry.id === created!.id)).toMatchObject({ status: 'pending', competenceDate: '2026-09-20' })
     await expect(row.getByText('Pendente', { exact: true })).toBeVisible()

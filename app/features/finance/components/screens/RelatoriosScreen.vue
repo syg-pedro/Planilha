@@ -8,7 +8,7 @@
       <UCard title="Por pessoa" description="Sobra prevista por titular da conta"><BaseEmptyState v-if="!personRows.length" icon="income" title="Sem dados" body="Nenhum lançamento no período." /><div v-else class="divide-y divide-default"><div v-for="person in personRows" :key="person.name" class="flex justify-between gap-3 py-3 text-sm"><span>{{ person.name }}</span><strong class="tabular-nums" :class="person.net < 0 ? 'text-error' : 'text-success'">{{ fmt(person.net) }}</strong></div></div><template #footer><BaseButton variant="secondary" @click="exportCsv">Exportar CSV</BaseButton></template></UCard>
     </div>
     <UCard title="Comparativo mensal" description="Receitas e despesas cadastradas"><BaseEmptyState v-if="!cashflowChart.length" icon="reports" title="Sem dados" body="Nenhum lançamento no período." /><BaseBarChart v-else :data="cashflowChart" :height="150" :currency="store.settings.currency || 'BRL'" /></UCard>
-    <UCard title="Resumo mensal" :description="`${cashflowChart.length} meses`" :ui="{ body: 'p-0 sm:p-0' }"><UTable :data="cashflowTable" :columns="reportColumns" :ui="{ th: 'px-3 py-2 text-xs', td: 'px-3 py-2 text-xs' }"><template #label-cell="{ row }"><span class="font-medium text-highlighted">{{ row.original.label }}</span><UBadge v-if="row.original.isCurrentMonth" class="ml-2" size="xs" variant="subtle">Atual</UBadge></template><template #income-cell="{ row }"><span class="text-success tabular-nums">{{ fmt(row.original.income) }}</span></template><template #expense-cell="{ row }"><span class="text-error tabular-nums">{{ fmt(row.original.expense) }}</span></template><template #net-cell="{ row }"><span class="tabular-nums" :class="row.original.net < 0 ? 'text-error' : 'text-success'">{{ fmt(row.original.net) }}</span></template></UTable></UCard>
+    <UCard title="Resumo mensal" :description="`${cashflowChart.length} meses`" :ui="{ body: 'p-0 sm:p-0' }"><UTable :data="cashflowTable" :columns="reportColumns" :ui="{ th: 'px-3 py-2 text-xs', td: 'px-3 py-2 text-xs' }"><template #label-cell="{ row }"><span class="font-medium text-highlighted">{{ row.original.label }}</span><UBadge v-if="row.original.isCurrentMonth" class="ml-2" size="md" variant="subtle">Atual</UBadge></template><template #income-cell="{ row }"><span class="text-success tabular-nums">{{ fmt(row.original.income) }}</span></template><template #expense-cell="{ row }"><span class="text-error tabular-nums">{{ fmt(row.original.expense) }}</span></template><template #net-cell="{ row }"><span class="tabular-nums" :class="row.original.net < 0 ? 'text-error' : 'text-success'">{{ fmt(row.original.net) }}</span></template></UTable></UCard>
   </div>
 </template>
 
@@ -25,7 +25,7 @@ import { filterReportEntries, financialToday, type ReportPeriod } from './auxili
 const store  = useFinanceStore()
 const currency = useCurrency()
 const fmt = (v: number) => currency.format(v)
-const fmtPct = (v: number) => `${v.toFixed(1)}%`
+const fmtPct = (v: number) => `${v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
 
 const period = ref<ReportPeriod>('month')
 
@@ -53,11 +53,11 @@ const kpis = computed(() => {
 })
 
 const savingsColor = computed(() =>
-  kpis.value.savingsRate >= 20
-    ? 'var(--success)'
-    : kpis.value.savingsRate >= 10
+  kpis.value.savingsRate < 0
+    ? 'var(--danger)'
+    : kpis.value.savingsRate < 10
       ? 'var(--warning)'
-      : 'var(--danger)'
+      : 'var(--success)'
 )
 
 const categoryRows = computed(() => {

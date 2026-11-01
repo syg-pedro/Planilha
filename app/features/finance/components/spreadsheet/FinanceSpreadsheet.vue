@@ -4,13 +4,9 @@
       <BaseButton variant="ghost" size="sm" title="Ctrl+Z" :disabled="!history.undoStack.value.length" @click="history.undo()">↶ Desfazer</BaseButton>
       <BaseButton variant="ghost" size="sm" title="Ctrl+Y" :disabled="!history.redoStack.value.length" @click="history.redo()">↷ Refazer</BaseButton>
       <span class="sheet__sep" aria-hidden="true" />
-      <BaseButton variant="ghost" size="sm" @click="openNamer('expense')">+ Coluna de despesa</BaseButton>
-      <BaseButton variant="ghost" size="sm" @click="openNamer('income')">+ Linha de receita</BaseButton>
-      <span class="sheet__legend">
-        <span><span class="sheet__count">3</span>célula com vários lançamentos</span>
-        <span><span class="sheet__paid-mark">✓</span>pago</span>
-        <span>Fundo cinza: calculado</span>
-      </span>
+      <UDropdownMenu :items="addItems">
+        <BaseButton variant="ghost" size="sm">+ Adicionar</BaseButton>
+      </UDropdownMenu>
     </div>
 
     <div class="sheet__formula">
@@ -107,7 +103,14 @@
         </tbody>
       </table>
     </div>
-    <p class="sheet__status" aria-live="polite">{{ status }}</p>
+    <div class="sheet__foot">
+      <p class="sheet__status" aria-live="polite">{{ status }}</p>
+      <span class="sheet__legend">
+        <span><span class="sheet__count">3</span>célula com vários lançamentos</span>
+        <span><span class="sheet__paid-mark">✓</span>pago</span>
+        <span>Fundo cinza: calculado</span>
+      </span>
+    </div>
 
     <SpreadsheetCellEntries v-if="listRow && list" :row="listRow" :month="list.month" :save="history.saveEntries" @close="closeList" />
     <BaseModal :open="Boolean(namer)" :title="namerTitle" :max-width="420" @close="namer = null">
@@ -437,6 +440,9 @@ function onPointerDown(event: PointerEvent) {
   const b = cell.dataset.b as SheetBlock, r = Number(cell.dataset.r), c = Number(cell.dataset.c)
   const same = sel.value.b === b && sel.value.r === r && sel.value.c === c && !isMulti.value
   sel.value = event.shiftKey && b === sel.value.b ? { ...sel.value, r, c } : { b, r, c, ar: r, ac: c }
+  // Clicar de novo na célula já selecionada também define o mês do botão "Novo lançamento".
+  const clickedMonth = cellAt(b, r, c).month
+  if (clickedMonth) emit('focusMonth', clickedMonth)
   if (event.pointerType === 'mouse') {
     dragging = true
     event.preventDefault()
@@ -496,6 +502,10 @@ function closeList() {
 watch(listRow, (row) => { if (list.value && !row) closeList() })
 
 // ---------- nomes de colunas e receitas ----------
+const addItems = [
+  { label: 'Coluna de despesa', icon: 'i-lucide-columns-3', onSelect: () => openNamer('expense') },
+  { label: 'Linha de receita', icon: 'i-lucide-rows-3', onSelect: () => openNamer('income') },
+]
 const namer = ref<{ kind: EntryKind; row?: MatrixRow; text: string; error: string } | null>(null)
 const namerTitle = computed(() => namer.value?.row ? 'Renomear' : namer.value?.kind === 'income' ? 'Nova linha de receita' : 'Nova coluna de despesa')
 function openNamer(kind: EntryKind, row?: MatrixRow) {
@@ -528,7 +538,8 @@ function submitNamer() {
 .sheet { display: grid; gap: var(--ds-space-3); min-width: 0; }
 .sheet__bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-2); }
 .sheet__sep { width: 1px; height: 20px; background: var(--border-strong); }
-.sheet__legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: auto; font-size: 11px; color: var(--text3); align-items: center; }
+.sheet__foot { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.sheet__legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-left: auto; font-size: 12px; color: var(--text3); align-items: center; }
 .sheet__formula { display: grid; grid-template-columns: minmax(120px, 230px) auto 1fr auto; align-items: stretch; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); overflow: hidden; }
 .sheet__ref { padding: 6px 10px; font-size: 13px; font-weight: 600; color: var(--text); border-right: 1px solid var(--border); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sheet__fx { padding: 6px 10px; font-style: italic; color: var(--text3); border-right: 1px solid var(--border); }
@@ -544,7 +555,7 @@ function submitNamer() {
 .sheet__table td { background: var(--surface); color: var(--text); cursor: cell; user-select: none; }
 .sheet__table thead th { position: sticky; top: 0; z-index: 3; min-width: 112px; max-width: 140px; padding: 6px; white-space: normal; line-height: 1.2; text-align: center; font-weight: 600; color: var(--text); background: var(--surface2); }
 .sheet__head { cursor: pointer; user-select: none; }
-.sheet__head small { display: block; font-size: 10px; font-weight: 500; color: var(--text3); }
+.sheet__head small { display: block; font-size: 11px; font-weight: 500; color: var(--text3); }
 .sheet__head.is-card { box-shadow: inset 0 3px 0 var(--accent); }
 .sheet__head.is-hl { box-shadow: inset 0 -2px 0 var(--primary); }
 .sheet__head.is-card.is-hl { box-shadow: inset 0 3px 0 var(--accent), inset 0 -2px 0 var(--primary); }
@@ -553,22 +564,25 @@ function submitNamer() {
 .sheet__table td.is-num { min-width: 112px; text-align: right; }
 .sheet__table td.k-due { min-width: 112px; text-align: center; color: var(--text2); }
 .sheet__table td.k-calc, .sheet__table td.k-blank, .sheet__table td.is-sum { background: var(--bg2); }
+/* A Soma do mês fica sempre visível, como a coluna congelada de uma planilha. */
+.sheet__table td.is-sum, .sheet__head.is-sum { position: sticky; right: 0; z-index: 2; box-shadow: inset 1px 0 0 var(--border-strong); }
+.sheet__head.is-sum { z-index: 4; }
 .sheet__table td.is-strong { font-weight: 700; }
 .sheet__table tr.is-total > * { border-top: 2px solid var(--border-strong); font-weight: 700; }
-.sheet__table td.is-neg { color: var(--danger); }
-.sheet__table td.is-positive { color: var(--success); background: var(--success-light); }
-.sheet__table td.is-negative { color: var(--danger); background: var(--danger-light); }
+.sheet__table td.is-neg { color: var(--ds-text-danger); }
+.sheet__table td.is-positive { color: var(--ds-text-success); background: var(--success-light); }
+.sheet__table td.is-negative { color: var(--ds-text-danger); background: var(--danger-light); }
 .sheet__table td.is-paid { color: var(--text3); }
-.sheet__table td.is-paid::before { content: '✓'; margin-right: 6px; color: var(--success); font-weight: 700; }
+.sheet__table td.is-paid::before { content: '✓'; margin-right: 6px; color: var(--ds-text-success); font-weight: 700; }
 .sheet__table td.is-partial::before { content: '◐'; margin-right: 6px; color: var(--warning); }
 .sheet__table td.k-limit[style] { background-image: linear-gradient(var(--use-color), var(--use-color)); background-size: var(--use) 3px; background-repeat: no-repeat; background-position: left bottom; }
 .sheet__grid.is-multi td.is-sel { background-image: linear-gradient(var(--primary-dim), var(--primary-dim)); background-size: auto; }
 .sheet__table td.is-cur { outline: 2px solid var(--primary); outline-offset: -2px; }
 .sheet__table td.is-today { box-shadow: inset 3px 0 0 var(--primary); }
 .sheet__yr { font-weight: 400; font-size: 0.85em; color: var(--text3); }
-.sheet__today { margin-left: 6px; padding: 0 5px; border-radius: var(--radius-xs); font-size: 10px; font-weight: 600; color: var(--primary); background: var(--primary-dim); vertical-align: 1px; }
-.sheet__count { display: inline-block; min-width: 18px; margin-right: 6px; padding: 0 5px; border-radius: var(--radius-xs); font-size: 10px; font-weight: 600; line-height: 16px; text-align: center; color: var(--primary); background: var(--primary-dim); }
-.sheet__paid-mark { margin-right: 4px; color: var(--success); font-weight: 700; }
+.sheet__today { margin-left: 6px; padding: 0 5px; border-radius: var(--radius-xs); font-size: 11px; font-weight: 600; color: var(--primary); background: var(--primary-dim); vertical-align: 1px; }
+.sheet__count { display: inline-block; min-width: 18px; margin-right: 6px; padding: 0 5px; border-radius: var(--radius-xs); font-size: 11px; font-weight: 600; line-height: 16px; text-align: center; color: var(--primary); background: var(--primary-dim); }
+.sheet__paid-mark { margin-right: 4px; color: var(--ds-text-success); font-weight: 700; }
 .sheet__cell-input { width: 100%; min-width: 104px; height: 28px; padding: 0 6px; border: 0; font: inherit; font-variant-numeric: tabular-nums; text-align: right; color: var(--text); background: var(--surface); outline: 2px solid var(--primary); outline-offset: -2px; }
 .sheet__table td:has(> .sheet__cell-input) { padding: 0; }
 @media (max-width: 767px) {

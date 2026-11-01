@@ -129,3 +129,15 @@
 @media (max-width: 767px) {
   :root { --ds-control-height: 38px; --ds-control-height-sm: 34px; --ds-control-font-size: 16px; }
 }
+
+/* Texto verde/vermelho: no tema claro o tom 500 do Nuxt UI fica abaixo de 4.5:1 sobre branco. */
+:root {
+  --ds-text-success: var(--ui-success);
+  --ds-text-danger: var(--ui-error);
+}
+:root:not(.dark) {
+  --ds-text-success: var(--ui-color-success-700);
+  --ds-text-danger: var(--ui-color-error-700);
+}
+:root:not(.dark) .text-success { color: var(--ds-text-success); }
+:root:not(.dark) .text-error { color: var(--ds-text-danger); }

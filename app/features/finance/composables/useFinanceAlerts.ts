@@ -1,4 +1,5 @@
 import { computed, onMounted, watch } from 'vue'
+import { matrixCardCommitment } from '#shared/matrix'
 import { useFinanceStore } from '~/features/finance/stores/useFinanceStore'
 
 export type AlertTone = 'danger' | 'warning' | 'info' | 'success'
@@ -20,6 +21,11 @@ export function useFinanceAlerts() {
   const storageLoaded = useState('finance-dismissed-alerts-loaded', () => false)
   const fmt = (value: number) => currency.format(value)
   const formatDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString('pt-BR')
+  const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`
+  const percent = (value: number, digits = 0) => `${value.toLocaleString('pt-BR', { maximumFractionDigits: digits })}%`
+  // Ids carry the situation they describe, so a dismissed alert returns when the situation changes.
+  const cents = (list: { amount: number }[]) => Math.round(list.reduce((sum, entry) => sum + entry.amount, 0) * 100)
+  const toneRank: Record<AlertTone, number> = { danger: 0, warning: 1, info: 2, success: 3 }
 
   onMounted(() => {
     if (storageLoaded.value) return
@@ -49,33 +55,38 @@ export function useFinanceAlerts() {
     const in3 = afterDays(3)
     const in7 = afterDays(7)
     const unpaid = store.entries.filter(entry => entry.kind === 'expense' && entry.status !== 'paid')
+    const overdue = unpaid.filter(entry => entry.dueDate < today)
+    if (overdue.length) alerts.push({ id: `overdue-${overdue.length}-${cents(overdue)}`, tone: 'danger',
+      title: `${plural(overdue.length, 'lançamento vencido', 'lançamentos vencidos')}: ${fmt(cents(overdue) / 100)}`,
+      body: 'Despesas com vencimento passado e sem pagamento confirmado.', navigateTo: 'planilha' })
     for (const entry of unpaid.filter(item => item.dueDate >= today && item.dueDate <= in3)) {
       const account = entry.accountId ? store.accountMap.get(entry.accountId) : null
       alerts.push({ id: `urgent-${entry.id}`, tone: 'danger', title: `${entry.title} vence em breve`,
         body: `${fmt(entry.amount)} — vencimento ${formatDate(entry.dueDate)}${account ? ` via ${account.name}` : ''}`, entryId: entry.id })
     }
     const upcoming = unpaid.filter(entry => entry.dueDate > in3 && entry.dueDate <= in7)
-    if (upcoming.length) alerts.push({ id: 'upcoming-week', tone: 'warning', title: `${upcoming.length} vencimento(s) esta semana`,
-      body: `Total de ${fmt(upcoming.reduce((sum, entry) => sum + entry.amount, 0))} vence nos próximos 7 dias.`, navigateTo: 'planilha' })
-    const overdue = unpaid.filter(entry => entry.dueDate < today)
-    if (overdue.length) alerts.push({ id: 'overdue', tone: 'danger', title: `${overdue.length} lançamento(s) vencido(s)`,
-      body: `${fmt(overdue.reduce((sum, entry) => sum + entry.amount, 0))} em despesas vencidas sem confirmação de pagamento.`, navigateTo: 'planilha' })
+    if (upcoming.length) alerts.push({ id: `upcoming-week-${today}-${upcoming.length}`, tone: 'warning',
+      title: `${plural(upcoming.length, 'vencimento', 'vencimentos')} nesta semana`,
+      body: `Total de ${fmt(cents(upcoming) / 100)} vence nos próximos 7 dias.`, navigateTo: 'planilha' })
 
     const entries = store.allCashableEntries.filter(entry => entry.dueDate.startsWith(today.slice(0, 7)))
     const income = entries.filter(entry => entry.kind === 'income').reduce((sum, entry) => sum + entry.amount, 0)
     const expense = entries.filter(entry => entry.kind === 'expense').reduce((sum, entry) => sum + entry.amount, 0)
-    if (income > 0 && expense > income) alerts.push({ id: 'savings-negative', tone: 'danger', title: 'Despesas superam receitas este mês',
+    if (income > 0 && expense > income) alerts.push({ id: `savings-negative-${today.slice(0, 7)}`, tone: 'danger', title: 'Despesas superam receitas este mês',
       body: `Diferença de ${fmt(expense - income)}. Consulte os lançamentos do mês.`, navigateTo: 'planilha' })
-    else if (income > 0 && (income - expense) / income < 0.1) alerts.push({ id: 'savings-low', tone: 'warning',
-      title: `Sobra prevista: ${(((income - expense) / income) * 100).toFixed(1)}%`,
+    else if (income > 0 && (income - expense) / income < 0.1) alerts.push({ id: `savings-low-${today.slice(0, 7)}`, tone: 'warning',
+      title: `Sobra prevista: ${percent(((income - expense) / income) * 100, 1)} da receita`,
       body: 'Confira as despesas e receitas previstas para este mês.', navigateTo: 'planilha' })
 
-    const cardsUsedPercent = store.monthlyKpis.cardsUsedPercent
-    if (cardsUsedPercent >= 90) alerts.push({ id: 'card-critical', tone: 'danger', title: `Limite do cartão em ${cardsUsedPercent.toFixed(0)}%`,
-      body: 'Consulte os limites e as faturas dos cartões.', navigateTo: 'cartoes' })
-    else if (cardsUsedPercent >= 70) alerts.push({ id: 'card-warn', tone: 'warning', title: `Uso do cartão em ${cardsUsedPercent.toFixed(0)}%`,
-      body: 'Atenção ao limite disponível nos cartões de crédito.', navigateTo: 'cartoes' })
-    return alerts
+    for (const account of store.accounts.filter(item => item.type === 'credit_card' && item.active && item.limitTotal)) {
+      const { committed, available } = matrixCardCommitment(store.entries, account)
+      const used = (committed / account.limitTotal!) * 100
+      if (available! < 0) alerts.push({ id: `card-over-${account.id}-${Math.round(committed * 100)}`, tone: 'danger',
+        title: `${account.name} acima do limite`, body: `Passou ${fmt(-available!)} do limite de ${fmt(account.limitTotal!)}.`, navigateTo: 'cartoes' })
+      else if (used >= 90) alerts.push({ id: `card-critical-${account.id}-${Math.floor(used)}`, tone: 'warning',
+        title: `${account.name} com ${percent(used)} do limite usado`, body: `Restam ${fmt(available!)} disponíveis.`, navigateTo: 'cartoes' })
+    }
+    return alerts.sort((a, b) => toneRank[a.tone] - toneRank[b.tone])
   })
   const activeAlerts = computed(() => generatedAlerts.value.filter(alert => !dismissedIds.value.includes(alert.id)))
   const dismissedCount = computed(() => generatedAlerts.value.filter(alert => dismissedIds.value.includes(alert.id)).length)
